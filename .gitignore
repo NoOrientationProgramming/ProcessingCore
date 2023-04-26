@@ -1,0 +1,50 @@
+
+*~lock*
+*_autosave*
+*-bak
+*.bck
+
+# 3D print
+*.obj
+*.stl
+*.gcode
+
+# Praesentation
+**/images/*.eps
+**/images/*.ps
+**/images/*-eps-converted-to*
+do-not-upload/
+
+# BSc
+
+# LaTeX
+*.aux
+*.tcp
+*.run.xml
+*.pdfsync
+*.dict
+*.sty
+*.blg
+*.bbl
+*.bak
+*-blx.bib
+*.cls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex
+*.toc
+
+*.hex
+__pycache__/
+
+*.big.log
+
+idCurr.txt
+
+transactionsOut.json
+
+**/resources/invoice-paypal_in.pdf
+
+ext/
