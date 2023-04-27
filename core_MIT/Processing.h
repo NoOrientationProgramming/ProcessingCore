@@ -236,13 +236,17 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->mName, ##__VA_ARGS__))
 #else
 #define levelLogSet(lvl)
+inline int16_t logEntryCreateDummy(const int16_t code)
+{
+	return code;
+}
 
-#define errLog(c, m, ...)				c
+#define errLog(c, m, ...)				logEntryCreateDummy(c)
 #define wrnLog(m, ...)
 #define infLog(m, ...)
 #define dbgLog(l, m, ...)
 
-#define procErrLog(c, m, ...)				c
+#define procErrLog(c, m, ...)				logEntryCreateDummy(c)
 #define procWrnLog(m, ...)
 #define procInfLog(m, ...)
 #define procDbgLog(l, m, ...)
