@@ -220,8 +220,13 @@ private:
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
+void levelLogSet(int lvl);
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...);
 #else
+inline void levelLogSet(int lvl)
+{
+	(void)lvl;
+}
 inline int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
 {
 	(void)severity;
