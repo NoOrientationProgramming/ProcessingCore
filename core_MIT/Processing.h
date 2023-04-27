@@ -223,20 +223,8 @@ private:
 void levelLogSet(int lvl);
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...);
 #else
-inline void levelLogSet(int lvl)
-{
-	(void)lvl;
-}
-inline int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
-{
-	(void)severity;
-	(void)filename;
-	(void)function;
-	(void)line;
-	(void)msg;
-
-	return code;
-}
+#define levelLogSet(lvl)
+#define logEntryCreate(lv, fn, fu, li, c, m, ...)		((int)lv)
 #endif
 
 #define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
