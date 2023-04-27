@@ -222,10 +222,6 @@ private:
 #if CONFIG_PROC_HAVE_LOG
 void levelLogSet(int lvl);
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...);
-#else
-#define levelLogSet(lvl)
-#define logEntryCreate(lv, fn, fu, li, c, m, ...)		((int)lv)
-#endif
 
 #define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
 #define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, m, ##__VA_ARGS__) : c)
@@ -238,6 +234,19 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #define procWrnLog(m, ...)				(wrnLog("%p %-35s" m, this, this->mName, ##__VA_ARGS__))
 #define procInfLog(m, ...)				(infLog("%p %-35s" m, this, this->mName, ##__VA_ARGS__))
 #define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->mName, ##__VA_ARGS__))
+#else
+#define levelLogSet(lvl)
+
+#define errLog(c, m, ...)
+#define wrnLog(m, ...)
+#define infLog(m, ...)
+#define dbgLog(l, m, ...)
+
+#define procErrLog(c, m, ...)
+#define procWrnLog(m, ...)
+#define procInfLog(m, ...)
+#define procDbgLog(l, m, ...)
+#endif
 
 //#define dInfoDebugPrefix				printf("%-20s (%3d): %p %p '%c'%s\n", __FILENAME__, __LINE__, pBuf, pBufEnd, *(pBuf - 1), pBuf > pBufEnd ? " -> FAIL" : ""),
 #define dInfoDebugPrefix
