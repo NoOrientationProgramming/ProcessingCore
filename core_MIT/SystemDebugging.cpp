@@ -35,7 +35,7 @@
 #endif
 
 using namespace std;
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 using namespace Json;
 #endif
 
@@ -106,7 +106,7 @@ Success SystemDebugging::initialize()
 	start(mpLstEnv);
 #endif
 
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	ppGlobLogEntries.connect(&ppLogEntries);
 #endif
 
@@ -118,7 +118,7 @@ Success SystemDebugging::process()
 	peerListUpdate();
 
 	processTreeSend();
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	logEntriesSend();
 #endif
 #if CONFIG_DBG_HAVE_ENVIRONMENT
@@ -137,7 +137,7 @@ void SystemDebugging::peerListUpdate()
 {
 	peerRemove();
 	peerAdd(mpLstProc, PeerProc, "process tree");
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	peerAdd(mpLstLog, PeerLog, "log");
 #endif
 	peerAdd(mpLstCmd, PeerCmd, "command");
@@ -273,7 +273,7 @@ void SystemDebugging::processTreeSend()
 	mProcTreeChangedTime = nowMs();
 }
 
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 void SystemDebugging::logEntriesSend()
 {
 	Value logEntry;

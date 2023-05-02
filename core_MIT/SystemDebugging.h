@@ -45,7 +45,7 @@
 
 enum PeerType {
 	PeerProc = 0,
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	PeerLog,
 #endif
 	PeerCmd,
@@ -102,7 +102,7 @@ private:
 	void peerRemove();
 	void peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc);
 	void processTreeSend();
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	void logEntriesSend();
 #endif
 #if CONFIG_DBG_HAVE_ENVIRONMENT
@@ -131,7 +131,7 @@ private:
 	bool mEnvironmentChanged;
 	uint16_t mPortStart;
 	clock_t mEnvironmentChangedTime;
-#if CONFIG_PROC_HAVE_LOG
+#if 0
 	Pipe<Json::Value> ppLogEntries;
 #endif
 
