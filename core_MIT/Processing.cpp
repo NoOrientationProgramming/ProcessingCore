@@ -845,7 +845,7 @@ int Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 		return 0;
 
 #if CONFIG_PROC_SHOW_ADDRESS_IN_ID
-	dInfo("%p ", pProc);
+	dInfo("%p ", (const void *)pProc);
 #endif
 	dInfo("%s", pProc->mName);
 
