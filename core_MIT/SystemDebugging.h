@@ -38,9 +38,6 @@
 #include <string>
 #include <list>
 #include <time.h>
-#if CONFIG_PROC_HAVE_LOG
-#include "Log.h"
-#endif
 
 #include "Processing.h"
 #include "TcpListening.h"
