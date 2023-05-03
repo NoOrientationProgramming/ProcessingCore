@@ -28,13 +28,13 @@
 
 #include <string>
 #include <mutex>
+#include <jsoncpp/json/json.h>
 #include <cryptopp/secblock.h>
 #include <cryptopp/sha.h>
 #include <curl/curl.h>
 
 #include "Processing.h"
 #include "Res.h"
-#include "Log.h"
 #include "LibTime.h"
 #include "LibFilesys.h"
 

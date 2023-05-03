@@ -138,6 +138,8 @@ protected:
 	Processing(const char *name);
 	virtual ~Processing();
 
+	const char *procName() const { return mName; }
+
 	Processing *start(Processing *pChild, DriverMode driver = DrivenByParent);
 	Processing *repel(Processing *pChild);
 	Processing *whenFinishedRepel(Processing *pChild);
@@ -160,8 +162,6 @@ protected:
 	static int procId(char *pBuf, char *pBufEnd, const Processing *pProc);
 	static int progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal);
 
-	const char *mName;
-
 private:
 	// This area is used by the abstract process
 
@@ -171,6 +171,8 @@ private:
 	{
 		return *this;
 	}
+
+	const char *mName;
 
 #if CONFIG_PROC_USE_STD_LISTS
 	std::list<Processing *> mChildList;
@@ -230,10 +232,10 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #define dbgLog(l, m, ...)				(genericLog(4 + l, 0, m, ##__VA_ARGS__))
 
 #define GLOBAL_PROC_LOG_LEVEL_OFFSET		0
-#define procErrLog(c, m, ...)				(errLog(c, "%p %-35s" m, this, this->mName, ##__VA_ARGS__))
-#define procWrnLog(m, ...)				(wrnLog("%p %-35s" m, this, this->mName, ##__VA_ARGS__))
-#define procInfLog(m, ...)				(infLog("%p %-35s" m, this, this->mName, ##__VA_ARGS__))
-#define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->mName, ##__VA_ARGS__))
+#define procErrLog(c, m, ...)				(errLog(c, "%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
+#define procWrnLog(m, ...)				(wrnLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
+#define procInfLog(m, ...)				(infLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
+#define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
 #else
 #define levelLogSet(lvl)
 inline int16_t logEntryCreateDummy(const int16_t code)

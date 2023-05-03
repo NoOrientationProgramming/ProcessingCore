@@ -41,7 +41,6 @@
 #include <fcntl.h>
 #endif
 
-#include "Log.h"
 #include "LibDspc.h"
 
 using namespace std;

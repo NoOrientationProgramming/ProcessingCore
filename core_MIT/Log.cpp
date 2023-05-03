@@ -48,7 +48,7 @@ const string red("\033[0;31m");
 const string yellow("\033[0;33m");
 const string reset("\033[0m");
 
-const size_t dLogEntryBufferSize = 1024;
+const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
 
 void levelLogSet(int lvl)
@@ -64,12 +64,12 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 
 	(void)filename;
 
-	char *pBuf = new (nothrow) char[dLogEntryBufferSize];
+	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
 	if (!pBuf)
 		return code;
 
 	char *pStart = pBuf;
-	char *pEnd = pStart + dLogEntryBufferSize;
+	char *pEnd = pStart + cLogEntryBufferSize;
 
 	va_list args;
 
