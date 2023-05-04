@@ -100,7 +100,7 @@ private:
 	Success process();
 	void inputsProcess();
 
-	void inputAdd(TcpTransfering *pTrans, const void *pData, size_t len);
+	void inputAdd();
 
 	void processInfo(char *pBuf, char *pBufEnd);
 

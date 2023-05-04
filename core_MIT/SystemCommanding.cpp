@@ -99,6 +99,9 @@ Success SystemCommanding::initialize()
 	}
 
 	mpTrans = TcpTransfering::create(mSocketFd);
+	if (!mpTrans)
+		return procErrLog(-1, "could not create process");
+
 	start(mpTrans);
 
 	return Positive;
@@ -137,6 +140,7 @@ Success SystemCommanding::process()
 		break;
 	case StMain:
 
+		inputAdd();
 		inputsProcess();
 
 		break;
@@ -152,36 +156,24 @@ Success SystemCommanding::process()
 
 void SystemCommanding::inputsProcess()
 {
-	bool lineTaken = false;
 	string lineInput, resp = "";
 
 	while (true)
 	{
-		lineTaken = false;
-
 		/* execution may take some time.
 		 * don't lock input list while executing.
 		 * let peers add new requests */
 		{
 			lock_guard<mutex> lock(mMtxInputs);
 
-			if (!mInputs.empty())
-			{
-				lineInput = mInputs.front();
-				mInputs.pop();
-				lineTaken = true;
-			}
+			if (!mInputs.size())
+				break;
 		}
 
-		if (!lineTaken)
-			break;
+		lineInput = mInputs.front();
+		mInputs.pop();
 
 		if (!lineInput.size())
-			continue;
-
-		lineInput = lineInput.substr(0, lineInput.size() - 1);
-
-		if (lineInput == "")
 			lineInput = mLastInput;
 
 		resp = commandExecute(lineInput);
@@ -194,20 +186,29 @@ void SystemCommanding::inputsProcess()
 	}
 }
 
-void SystemCommanding::inputAdd(TcpTransfering *pTrans, const void *pData, size_t len)
+void SystemCommanding::inputAdd()
 {
+	ssize_t lenReq, lenPlanned, lenDone;
+
+	(void)lenReq;
+	(void)lenPlanned;
+	(void)lenDone;
+
+	return;
+
 	if (mInputs.size() >= cMaxQueueSize)
 		return;
 
 	lock_guard<mutex> lock(mMtxInputs);
 
-	(void)pTrans;
+	string cmd;
 
-	string cmd((const char *)pData, len);
-	mInputs.push(cmd);
+	if (cmd.back() == '\n')
+		cmd.pop_back();
 
-	cmd = cmd.substr(0, len - 1);
-	procDbgLog(LOG_LVL, "received input: %s", cmd.c_str());
+	mInputs.push(cmd); // Important: Stored WITHOUT newline
+
+	procDbgLog(LOG_LVL, "received input: '%s'", cmd.c_str());
 }
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
@@ -324,14 +325,15 @@ string SystemCommanding::commandExecute(const string &line)
 	{
 		lock_guard<mutex> lock(mtxCmds);
 
+		// Just search, do NOT execute here, because of mutex
 		for (list<struct SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
 		{
-			if (cmd == (*iter).id or cmd == (*iter).shortcut)
-			{
-				func = (*iter).func;
-				cmdFound = true;
-				break;
-			}
+			if (cmd != (*iter).id and cmd != (*iter).shortcut)
+				continue;
+
+			func = (*iter).func;
+			cmdFound = true;
+			break;
 		}
 	}
 
