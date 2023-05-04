@@ -131,6 +131,9 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 		}
 	}
 
+	if (pFctLogEntryCreated)
+		pFctLogEntryCreated(severity, filename, function, line, code, pBuf, pStart - pBuf);
+
 	delete[] pBuf;
 
 	return code;
