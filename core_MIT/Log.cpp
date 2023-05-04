@@ -38,6 +38,17 @@
 using namespace std;
 using namespace chrono;
 
+typedef void (*LogEntryCreatedFct)(
+			const int severity,
+			const char *filename,
+			const char *function,
+			const int line,
+			const int16_t code,
+			const char *msg,
+			const uint32_t len);
+
+static LogEntryCreatedFct pFctLogEntryCreated = NULL;
+
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxPrint;
 #endif
@@ -54,6 +65,11 @@ static int levelLog = 2;
 void levelLogSet(int lvl)
 {
 	levelLog = lvl;
+}
+
+void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct)
+{
+	pFctLogEntryCreated = pFct;
 }
 
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
