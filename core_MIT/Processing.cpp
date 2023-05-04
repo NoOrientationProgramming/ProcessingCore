@@ -598,6 +598,7 @@ Processing::Processing(const char *name)
 {
 	procDbgLog(LOG_LVL, "Processing()");
 
+	mStatDrv = 0;
 	if (disableTreeDefault)
 		mStatDrv = PsbDrvPrTreeDisable;
 }
