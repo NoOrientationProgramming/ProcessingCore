@@ -37,6 +37,7 @@
 
 #include <string>
 #include <list>
+#include <queue>
 #include <time.h>
 
 #include "Processing.h"
@@ -45,13 +46,9 @@
 
 enum PeerType {
 	PeerProc = 0,
-#if 0
 	PeerLog,
-#endif
 	PeerCmd,
-#if CONFIG_DBG_HAVE_ENVIRONMENT
 	PeerEnv,
-#endif
 };
 
 struct SystemDebuggingPeer
@@ -102,7 +99,7 @@ private:
 	void peerRemove();
 	void peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc);
 	void processTreeSend();
-#if 0
+#if CONFIG_PROC_HAVE_LOG
 	void logEntriesSend();
 #endif
 #if CONFIG_DBG_HAVE_ENVIRONMENT
@@ -131,17 +128,23 @@ private:
 	bool mEnvironmentChanged;
 	uint16_t mPortStart;
 	clock_t mEnvironmentChangedTime;
-#if 0
-	Pipe<Json::Value> ppLogEntries;
-#endif
 
 	/* static functions */
 	static std::string procTreeDetailedToggle(const std::string &args);
 	static std::string procTreeColoredToggle(const std::string &args);
+	static void logEntryCreated(
+			const int severity,
+			const char *filename,
+			const char *function,
+			const int line,
+			const int16_t code,
+			const char *msg,
+			const uint32_t len);
 
 	/* static variables */
 	static bool procTreeDetailed;
 	static bool procTreeColored;
+	static std::queue<std::string> qLogEntries;
 
 	/* constants */
 	static const size_t maxPeers;

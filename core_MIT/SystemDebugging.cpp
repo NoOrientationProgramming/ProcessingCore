@@ -35,9 +35,6 @@
 #endif
 
 using namespace std;
-#if 0
-using namespace Json;
-#endif
 
 #define LOG_LVL	0
 
@@ -45,6 +42,7 @@ typedef list<struct SystemDebuggingPeer>::iterator PeerIter;
 
 bool SystemDebugging::procTreeDetailed = true;
 bool SystemDebugging::procTreeColored = true;
+queue<string> SystemDebugging::qLogEntries;
 
 const size_t SystemDebugging::maxPeers = 100;
 
@@ -85,12 +83,12 @@ Success SystemDebugging::initialize()
 	mpLstProc = TcpListening::create();
 	mpLstProc->portSet(mPortStart, mListenLocal);
 	start(mpLstProc);
-
+#if CONFIG_PROC_HAVE_LOG
 	// log
 	mpLstLog = TcpListening::create();
 	mpLstLog->portSet(mPortStart + 1, mListenLocal);
 	start(mpLstLog);
-
+#endif
 	// command
 	mpLstCmd = TcpListening::create();
 	mpLstCmd->portSet(mPortStart + 2, mListenLocal);
@@ -106,9 +104,7 @@ Success SystemDebugging::initialize()
 	start(mpLstEnv);
 #endif
 
-#if 0
-	ppGlobLogEntries.connect(&ppLogEntries);
-#endif
+	pFctLogEntryCreatedSet(SystemDebugging::logEntryCreated);
 
 	return Positive;
 }
@@ -118,7 +114,7 @@ Success SystemDebugging::process()
 	peerListUpdate();
 
 	processTreeSend();
-#if 0
+#if CONFIG_PROC_HAVE_LOG
 	logEntriesSend();
 #endif
 #if CONFIG_DBG_HAVE_ENVIRONMENT
@@ -137,7 +133,7 @@ void SystemDebugging::peerListUpdate()
 {
 	peerRemove();
 	peerAdd(mpLstProc, PeerProc, "process tree");
-#if 0
+#if CONFIG_PROC_HAVE_LOG
 	peerAdd(mpLstLog, PeerLog, "log");
 #endif
 	peerAdd(mpLstCmd, PeerCmd, "command");
@@ -246,7 +242,7 @@ void SystemDebugging::processTreeSend()
 
 	mProcTreePeerAdded = false;
 
-	//procDbgLog(LOG_LVL, "process tree changed");
+	procDbgLog(LOG_LVL, "process tree changed");
 	//procDbgLog(LOG_LVL, "\n%s", procTree.c_str());
 
 	string msg("\033[2J\033[H");
@@ -263,6 +259,9 @@ void SystemDebugging::processTreeSend()
 		peer = *iter++;
 		pTrans = (TcpTransfering *)peer.pProc;
 
+		if (!pTrans->mSendReady)
+			continue;
+
 		if (peer.type == PeerProc)
 			pTrans->send(msg.c_str(), msg.size());
 	}
@@ -273,10 +272,9 @@ void SystemDebugging::processTreeSend()
 	mProcTreeChangedTime = nowMs();
 }
 
-#if 0
+#if CONFIG_PROC_HAVE_LOG
 void SystemDebugging::logEntriesSend()
 {
-	Value logEntry;
 	string msg;
 	PeerIter iter;
 	struct SystemDebuggingPeer peer;
@@ -284,13 +282,11 @@ void SystemDebugging::logEntriesSend()
 
 	while (1)
 	{
-		if (ppLogEntries.isEmpty())
+		if (!qLogEntries.size())
 			break;
 
-		logEntry = ppLogEntries.front();
-		ppLogEntries.pop();
-
-		msg = logEntry["msg"].asString();
+		msg = qLogEntries.front();
+		qLogEntries.pop();
 
 		if (!msg.size())
 			break;
@@ -302,6 +298,9 @@ void SystemDebugging::logEntriesSend()
 		{
 			peer = *iter++;
 			pTrans = (TcpTransfering *)peer.pProc;
+
+			if (!pTrans->mSendReady)
+				continue;
 
 			if (peer.type == PeerLog)
 				pTrans->send(msg.c_str(), msg.size());
@@ -382,3 +381,22 @@ string SystemDebugging::procTreeColoredToggle(const string &args)
 	return "error: color mode not supported\n";
 #endif
 }
+
+void SystemDebugging::logEntryCreated(
+		const int severity,
+		const char *filename,
+		const char *function,
+		const int line,
+		const int16_t code,
+		const char *msg,
+		const uint32_t len)
+{
+	(void)severity;
+	(void)filename;
+	(void)function;
+	(void)line;
+	(void)code;
+
+	qLogEntries.emplace(msg, len);
+}
+
