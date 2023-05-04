@@ -226,10 +226,46 @@ private:
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
-void levelLogSet(int lvl);
-int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...);
+typedef void (*LogEntryCreatedFct)(
+			const int severity,
+			const char *filename,
+			const char *function,
+			const int line,
+			const int16_t code,
+			const char *msg,
+			const uint32_t len);
 
+void levelLogSet(int lvl);
+void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct);
+int16_t logEntryCreate(
+				const int severity,
+				const char *filename,
+				const char *function,
+				const int line,
+				const int16_t code,
+				const char *msg, ...);
 #define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
+#else
+#define levelLogSet(lvl)
+#define pFctLogEntryCreatedSet(pFct)
+inline int16_t logEntryCreateDummy(
+				const int severity,
+				const char *filename,
+				const char *function,
+				const int line,
+				const int16_t code,
+				const char *msg, ...)
+{
+	(void)severity;
+	(void)filename;
+	(void)function;
+	(void)line;
+	(void)msg;
+	return code;
+}
+#define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
+#endif
+
 #define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, m, ##__VA_ARGS__) : c)
 #define wrnLog(m, ...)					(genericLog(2, 0, m, ##__VA_ARGS__))
 #define infLog(m, ...)					(genericLog(3, 0, m, ##__VA_ARGS__))
@@ -240,23 +276,6 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #define procWrnLog(m, ...)				(wrnLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
 #define procInfLog(m, ...)				(infLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
 #define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
-#else
-#define levelLogSet(lvl)
-inline int16_t logEntryCreateDummy(const int16_t code)
-{
-	return code;
-}
-
-#define errLog(c, m, ...)				logEntryCreateDummy(c)
-#define wrnLog(m, ...)
-#define infLog(m, ...)
-#define dbgLog(l, m, ...)
-
-#define procErrLog(c, m, ...)				logEntryCreateDummy(c)
-#define procWrnLog(m, ...)
-#define procInfLog(m, ...)
-#define procDbgLog(l, m, ...)
-#endif
 
 //#define dInfoDebugPrefix				printf("%-20s (%3d): %p %p '%c'%s\n", __FILENAME__, __LINE__, pBuf, pBufEnd, *(pBuf - 1), pBuf > pBufEnd ? " -> FAIL" : ""),
 #define dInfoDebugPrefix
