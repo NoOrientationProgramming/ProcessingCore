@@ -95,8 +95,8 @@ Success SystemDebugging::initialize()
 	mpLstCmd->maxConnSet(4);
 	start(mpLstCmd);
 
-	SystemCommanding::internalReg("detailed", "d", &SystemDebugging::procTreeDetailedToggle, "toggle detailed process tree output");
-	SystemCommanding::internalReg("colored", "c", &SystemDebugging::procTreeColoredToggle, "toggle colored process tree output");
+	intCmdReg("detailed", "d", &SystemDebugging::procTreeDetailedToggle, "toggle detailed process tree output");
+	intCmdReg("colored", "c", &SystemDebugging::procTreeColoredToggle, "toggle colored process tree output");
 
 #if CONFIG_DBG_HAVE_ENVIRONMENT
 	mpLstEnv = TcpListening::create();

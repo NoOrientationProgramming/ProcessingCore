@@ -38,15 +38,33 @@
 #include "Processing.h"
 #include "TcpTransfering.h"
 
-typedef std::string (*StaticCommandFunc)(const std::string & /* args */);
+typedef std::string (*FuncCommand)(const std::string & /* args */);
 
-struct SystemCommand {
+struct SystemCommand
+{
 	std::string cls;
 	std::string id;
 	std::string shortcut;
 	std::string desc;
-	StaticCommandFunc func;
+	FuncCommand func;
 };
+
+void cmdReg(
+		const std::string &cls,
+		const std::string &id,
+		const std::string &shortcut,
+		FuncCommand cmdFunc,
+		const std::string &desc);
+
+//void procReg(const std::string &cls, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
+
+void intCmdReg(
+		const std::string &id,
+		const std::string &shortcut,
+		FuncCommand cmdFunc,
+		const std::string &desc);
+
+void unreg(const std::string &id);
 
 class SystemCommanding : public Processing
 {
@@ -57,11 +75,6 @@ public:
 	{
 		return new (std::nothrow) SystemCommanding(fd);
 	}
-
-	static void reg(const std::string &cls, const std::string &id, const std::string &shortcut, StaticCommandFunc cmdFunc, const std::string &desc);
-	//static void reg(const std::string &cls, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
-	static void internalReg(const std::string &id, const std::string &shortcut, StaticCommandFunc cmdFunc, const std::string &desc);
-	static void unreg(const std::string &id);
 
 protected:
 
@@ -88,11 +101,12 @@ private:
 	void inputsProcess();
 
 	void inputAdd(TcpTransfering *pTrans, const void *pData, size_t len);
-	void transDisconnect(TcpTransfering *pTrans);
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
+	uint32_t mState;
+	uint32_t mStartMs;
 	int mSocketFd;
 	TcpTransfering *mpTrans;
 	std::queue<std::string> mInputs;
@@ -108,19 +122,11 @@ private:
 	static std::string messageBroadcast(const std::string &args);
 	static std::string memoryWrite(const std::string &args);
 
-	static bool cmdSort(struct SystemCommand &cmdFirst, struct SystemCommand &cmdSecond);
-
 	/* static variables */
-	static std::list<struct SystemCommand> cmds;
-	static std::mutex mtxCmds;
-	static std::mutex mtxCmdExec;
 	static std::mutex mtxGlobalInit;
 	static bool globalInitDone;
 
 	/* constants */
-	static const size_t maxQueueSize;
-	static const size_t maxCmdIdSize;
-	static const std::string internalCmdCls;
 
 };
 

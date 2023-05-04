@@ -115,7 +115,8 @@ Success TcpTransfering::process()
 	int res;
 	ssize_t connCheck;
 #if 0
-	procWrnLog("mState = %s", ProcStateString[mState]);
+	if (mState != StConnMain)
+		procWrnLog("mState = %s", ProcStateString[mState]);
 #endif
 	switch (mState)
 	{
