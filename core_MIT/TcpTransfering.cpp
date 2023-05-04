@@ -191,11 +191,10 @@ Success TcpTransfering::process()
 		break;
 	case StConnMain:
 
-		connCheck = read(NULL, 0);
-
 		if (mDone)
 			return Positive;
 
+		connCheck = read(NULL, 0);
 		if (connCheck >= 0)
 			break;
 
