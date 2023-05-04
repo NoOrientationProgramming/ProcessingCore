@@ -627,10 +627,15 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 {
 	if (!pChild)
 	{
-		procErrLog(-1, "pointer to child is zero. not started");
+		procErrLog(-1, "could not start child. NULL pointer");
 		return NULL;
 	}
 
+	if (pChild == this)
+	{
+		procErrLog(-1, "could not start child. pointer to child is me");
+		return NULL;
+	}
 #if !CONFIG_PROC_USE_STD_LISTS
 	if (mNumChildren >= mNumChildrenMax)
 	{
@@ -699,7 +704,13 @@ Processing *Processing::repel(Processing *pChild)
 {
 	if (!pChild)
 	{
-		procErrLog(-1, "can't repel child. NULL pointer");
+		procErrLog(-1, "could not repel child. NULL pointer");
+		return NULL;
+	}
+
+	if (pChild == this)
+	{
+		procErrLog(-1, "could not start child. pointer to child is me");
 		return NULL;
 	}
 
@@ -724,6 +735,12 @@ Processing *Processing::whenFinishedRepel(Processing *pChild)
 	if (!pChild)
 	{
 		procErrLog(-1, "can't repel child when finished. NULL pointer");
+		return NULL;
+	}
+
+	if (pChild == this)
+	{
+		procErrLog(-1, "can't repel child when finished. pointer to child is me");
 		return NULL;
 	}
 
