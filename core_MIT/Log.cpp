@@ -85,7 +85,10 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 		return code;
 
 	char *pStart = pBuf;
-	char *pEnd = pStart + cLogEntryBufferSize;
+	char *pEnd = pStart + cLogEntryBufferSize - 1;
+
+	*pStart = 0;
+	*pEnd = 0;
 
 	va_list args;
 
