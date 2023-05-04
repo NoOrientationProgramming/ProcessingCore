@@ -315,8 +315,12 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 
 	lock_guard<mutex> lock(mSocketFdMtx);
 
+	// DO NOT SEND AN ERROR MESSAGE AT THIS POINT!
+	// Reason:
+	// Otherwise we have an endless loop for the
+	// SystemDebugging() log peers
 	if (mSocketFd < 0)
-		return procErrLog(-1, "socket not set");
+		return -1;
 
 	ssize_t res;
 	size_t lenBkup = lenReq;
