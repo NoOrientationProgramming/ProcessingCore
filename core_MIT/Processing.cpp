@@ -70,6 +70,9 @@ using namespace std;
 typedef list<Processing *>::iterator ChildIter;
 #endif
 
+uint8_t Processing::showAddressInId = CONFIG_PROC_SHOW_ADDRESS_IN_ID;
+uint8_t Processing::disableTreeDefault = CONFIG_PROC_DISABLE_TREE_DEFAULT;
+
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 #if CONFIG_PROC_USE_STD_LISTS
 list<GlobDestructorFunc> Processing::globalDestructors;
@@ -590,15 +593,13 @@ Processing::Processing(const char *name)
 	, mProcState(PsExistent)
 	, mDriver(DrivenByExternalDriver)
 	, mStatParent(0)
-#if CONFIG_PROC_DISABLE_TREE_DEFAULT
-	, mStatDrv(PsbDrvPrTreeDisable)
-#else
-	, mStatDrv(0)
-#endif
 	, mLevel(0)
 	, mDriverLevel(0)
 {
 	procDbgLog(LOG_LVL, "Processing()");
+
+	if (disableTreeDefault)
+		mStatDrv = PsbDrvPrTreeDisable;
 }
 
 /*
@@ -861,9 +862,9 @@ int Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 	if (!pProc)
 		return 0;
 
-#if CONFIG_PROC_SHOW_ADDRESS_IN_ID
-	dInfo("%p ", (const void *)pProc);
-#endif
+	if (showAddressInId)
+		dInfo("%p ", (const void *)pProc);
+
 	dInfo("%s", pProc->mName);
 
 	return pBuf - pBufStart;

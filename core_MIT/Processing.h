@@ -131,6 +131,8 @@ public:
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	static void globalDestructorRegister(GlobDestructorFunc globDestr);
 #endif
+	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
+	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 
 protected:
 	// This area is used by the concrete processes
@@ -203,6 +205,8 @@ private:
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDrive(Processing *pChild);
 #endif
+	static uint8_t showAddressInId;
+	static uint8_t disableTreeDefault;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 #if CONFIG_PROC_USE_STD_LISTS
