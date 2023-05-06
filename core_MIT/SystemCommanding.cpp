@@ -188,6 +188,9 @@ void SystemCommanding::inputsProcess()
 
 void SystemCommanding::inputAdd()
 {
+	if (mInputs.size() >= cMaxQueueSize)
+		return;
+
 	ssize_t lenReq, lenPlanned, lenDone;
 
 	(void)lenReq;
@@ -195,9 +198,6 @@ void SystemCommanding::inputAdd()
 	(void)lenDone;
 
 	return;
-
-	if (mInputs.size() >= cMaxQueueSize)
-		return;
 
 	lock_guard<mutex> lock(mMtxInputs);
 
