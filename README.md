@@ -9,7 +9,7 @@ MIT see file LICENSE
 
 ## How to add to your project
 
-git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git
+`git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
 
 ## Supported targets
 
