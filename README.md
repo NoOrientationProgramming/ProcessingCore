@@ -5,7 +5,7 @@ as well as a powerful debugging system!
 
 ## How to add to your project
 
-git submodule add https://github.com/NoOrientationProgramming/Processing.git
+git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git
 
 ## Supported targets
 
