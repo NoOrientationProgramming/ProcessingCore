@@ -115,6 +115,8 @@ private:
 	uint32_t mBytesSent;
 
 	/* static functions */
+	uint32_t millis();
+	bool fileNonBlockingSet(int fd);
 
 	/* static variables */
 

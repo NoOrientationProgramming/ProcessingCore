@@ -28,12 +28,11 @@
   SOFTWARE.
 */
 
+#include <chrono>
 #include <mutex>
 #include <unistd.h>
 
 #include "TcpTransfering.h"
-#include "LibTime.h"
-#include "LibFilesys.h"
 
 #define dForEach_ProcState(gen) \
 		gen(StSrvStart) \
@@ -53,6 +52,7 @@ dProcessStateStr(ProcState);
 #endif
 
 using namespace std;
+using namespace chrono;
 
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL 0
@@ -441,5 +441,37 @@ void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
 
 	dInfo("%s:%d <--> ", mAddrLocal.c_str(), mPortLocal);
 	dInfo("%s:%d\n", mAddrRemote.c_str(), mPortRemote);
+}
+
+/* static functions */
+
+uint32_t TcpTransfering::millis()
+{
+	auto now = steady_clock::now();
+	auto nowMs = time_point_cast<milliseconds>(now);
+	return nowMs.time_since_epoch().count();
+}
+
+bool TcpTransfering::fileNonBlockingSet(int fd)
+{
+	int opt = 1;
+#ifdef _WIN32
+	unsigned long nonBlockMode = 1;
+
+	opt = ioctlsocket(fd, FIONBIO, &nonBlockMode);
+	if (opt == SOCKET_ERROR)
+		return false;
+#else
+	opt = fcntl(fd, F_GETFL, 0);
+	if (opt == -1)
+		return false;
+
+	opt |= O_NONBLOCK;
+
+	opt = fcntl(fd, F_SETFL, opt);
+	if (opt == -1)
+		return false;
+#endif
+	return true;
 }
 
