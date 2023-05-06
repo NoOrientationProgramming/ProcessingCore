@@ -12,6 +12,7 @@ git submodule add https://github.com/NoOrientationProgramming/Processing.git
 ### Tested
 
 - STM32G030
+  - Bare Metal
 - ESP32
 - Raspberry Pi
 - Linux
@@ -20,7 +21,4 @@ git submodule add https://github.com/NoOrientationProgramming/Processing.git
 ### UnTested
 
 - Arduino
-- Others
-  - Bare Metal
-  - RTOS
-
+- RTOS
