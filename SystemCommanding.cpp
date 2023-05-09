@@ -28,7 +28,6 @@
   SOFTWARE.
 */
 
-#include <stdio.h>
 #include "SystemCommanding.h"
 
 #define dForEach_ProcState(gen) \
@@ -58,16 +57,19 @@ const string cWelcomeMsg = "\n" dPackageName "\n" \
 			"type 'help' or just 'h' for a list of available commands\n\n" \
 			"# ";
 
-const size_t cMaxQueueSize = 256;
-const size_t cMaxCmdIdSize = 16;
 const string cInternalCmdCls = "dbg";
+const int cSizeCmdIdMax = 16;
+const size_t cSizeBufCmdIn = 63;
+const size_t cSizeBufCmdOut = 512;
 
 mutex SystemCommanding::mtxGlobalInit;
 bool SystemCommanding::globalInitDone = false;
 
-static list<struct SystemCommand> cmds;
+static list<SystemCommand> cmds;
 static mutex mtxCmds;
 static mutex mtxCmdExec;
+
+static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond);
 
 SystemCommanding::SystemCommanding(int fd)
 	: Processing("SystemCommanding")
@@ -75,7 +77,8 @@ SystemCommanding::SystemCommanding(int fd)
 	, mStartMs(0)
 	, mSocketFd(fd)
 	, mpTrans(NULL)
-	, mLastInput("")
+	, mpCmdLast(NULL)
+	, mArgLast("")
 {
 }
 
@@ -90,10 +93,10 @@ Success SystemCommanding::initialize()
 	if (!globalInitDone)
 	{
 		/* register standard commands here */
-		intCmdReg("dummy",		"",	dummyExecute,		"dummy command");
-		intCmdReg("help",		"h",	helpPrint,		"this help screen");
-		intCmdReg("broadcast",	"b",	messageBroadcast,	"broadcast message to other command terminals");
-		intCmdReg("memWrite",	"w",	memoryWrite,		"write memory");
+		//intCmdReg("dummy",		dummyExecute,		"",		"dummy command");
+		intCmdReg("help",		helpPrint,		"h",		"this help screen");
+		//intCmdReg("broadcast",	messageBroadcast,	"b",		"broadcast message to other command terminals");
+		//intCmdReg("memWrite",	memoryWrite,		"w",		"write memory");
 
 		globalInitDone = true;
 	}
@@ -112,6 +115,7 @@ Success SystemCommanding::process()
 	//uint32_t curTimeMs = millis();
 	//uint32_t diffMs = curTimeMs - mStartMs;
 	Success success;
+	//bool ok;
 	//int res;
 #if 0
 	procWrnLog("mState = %s", ProcStateString[mState]);
@@ -140,8 +144,14 @@ Success SystemCommanding::process()
 		break;
 	case StMain:
 
-		inputAdd();
-		inputsProcess();
+		success = commandReceive();
+		if (success == Pending)
+			break;
+
+		if (success == Positive)
+			break;
+
+		return Positive;
 
 		break;
 	case StTmp:
@@ -154,110 +164,192 @@ Success SystemCommanding::process()
 	return Pending;
 }
 
-void SystemCommanding::inputsProcess()
+Success SystemCommanding::commandReceive()
 {
-	string lineInput, resp = "";
-
-	while (true)
-	{
-		/* execution may take some time.
-		 * don't lock input list while executing.
-		 * let peers add new requests */
-		{
-			lock_guard<mutex> lock(mMtxInputs);
-
-			if (!mInputs.size())
-				break;
-		}
-
-		lineInput = mInputs.front();
-		mInputs.pop();
-
-		if (!lineInput.size())
-			lineInput = mLastInput;
-
-		resp = commandExecute(lineInput);
-
-		procDbgLog(LOG_LVL, "sending response to: 0x%08X", mpTrans);
-		resp = resp + "# ";
-		mpTrans->send(resp.c_str(), resp.size());
-
-		mLastInput = lineInput;
-	}
-}
-
-void SystemCommanding::inputAdd()
-{
-	if (mInputs.size() >= cMaxQueueSize)
-		return;
-
+	char buf[cSizeBufCmdIn];
 	ssize_t lenReq, lenPlanned, lenDone;
 
-	(void)lenReq;
-	(void)lenPlanned;
-	(void)lenDone;
+	buf[0] = 0;
 
-	return;
+	lenReq = sizeof(buf) - 1;
+	lenPlanned = lenReq;
 
-	lock_guard<mutex> lock(mMtxInputs);
+	lenDone = mpTrans->read(buf, lenPlanned);
+	if (!lenDone)
+		return Pending;
 
-	string cmd;
+	if (lenDone < 0)
+		return lenDone;
 
-	if (cmd.back() == '\n')
-		cmd.pop_back();
+	buf[lenDone] = 0;
 
-	mInputs.push(cmd); // Important: Stored WITHOUT newline
+	if (lenDone >= lenPlanned)
+	{
+		string msg = "command too long";
 
-	procDbgLog(LOG_LVL, "received input: '%s'", cmd.c_str());
+		procWrnLog("%s", msg.c_str());
+		mpTrans->send(msg.c_str(), msg.size());
+
+		return Pending;
+	}
+
+	//procWrnLog("Command received: %s", buf);
+
+	--lenDone;
+	if (buf[lenDone] != '\n')
+	{
+		string msg = "newline not found";
+		procWrnLog("%s", msg.c_str());
+
+		msg += "\n# ";
+		mpTrans->send(msg.c_str(), msg.size());
+
+		return Pending;
+	}
+
+	buf[lenDone] = 0;
+
+	const char *pCmd, *pArgs;
+	char *pFound;
+
+	pCmd = buf;
+	pArgs = &buf[lenDone];
+
+	pFound = strchr(buf, ' ');
+	if (pFound)
+	{
+		*pFound = 0;
+		pArgs = pFound + 1;
+	}
+
+	commandExecute(pCmd, pArgs);
+
+	return Positive;
+}
+
+void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
+{
+	string id, msg;
+
+	char bufOut[cSizeBufCmdOut];
+	size_t lenBuf = sizeof(bufOut) - 1;
+	list<SystemCommand>::const_iterator iter;
+
+	bufOut[0] = 0;
+
+	if (!*pCmd)
+	{
+		if (!mpCmdLast)
+		{
+			msg = "no last command";
+			procWrnLog("%s", msg.c_str());
+
+			msg += "\n# ";
+			mpTrans->send(msg.c_str(), msg.size());
+
+			return;
+		}
+
+		msg = "# ";
+		msg += mpCmdLast->id;
+
+		if (mArgLast.size())
+		{
+			msg += " ";
+			msg += mArgLast;
+		}
+
+		msg += "\n";
+
+		mpTrans->send(msg.c_str(), msg.size());
+
+		mpCmdLast->func(mArgLast.c_str(), bufOut, bufOut + lenBuf);
+		bufOut[lenBuf] = 0;
+
+		msg = string(bufOut);
+
+		if (msg.size() and msg.back() != '\n')
+			msg.push_back('\n');
+
+		msg += "# ";
+		mpTrans->send(msg.c_str(), msg.size());
+		
+		return;
+	}
+
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
+	{
+		id = iter->id;
+
+		//procWrnLog("Checking command: %s", id.c_str());
+
+		if (strcmp(pCmd, id.c_str()))
+			continue;
+#if 0
+		procWrnLog("Command executed   '%s'", pCmd);
+		procWrnLog("Command arguments  '%s'", pArgs);
+#endif
+		mpCmdLast = &(*iter);
+		mArgLast = string(pArgs);
+
+		iter->func(pArgs, bufOut, bufOut + lenBuf);
+		bufOut[lenBuf] = 0;
+
+		msg = string(bufOut);
+
+		if (msg.size() and msg.back() != '\n')
+			msg.push_back('\n');
+
+		msg += "# ";
+		mpTrans->send(msg.c_str(), msg.size());
+
+		return;
+	}
+
+	msg = "command not found";
+	procWrnLog("%s", msg.c_str());
+
+	msg += "\n# ";
+	mpTrans->send(msg.c_str(), msg.size());
 }
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 {
 #if 1
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
+	dInfo("Last command\t\t");
+
+	if (mpCmdLast)
+	{
+		dInfo("%s", mpCmdLast->id.c_str());
+		if (mArgLast.size())
+			dInfo(" %s", mArgLast.c_str());
+	}
+	else
+		dInfo("<none>");
+
+	dInfo("\n");
 #endif
-	//dInfo("Peer\t\t\t%p\n", (void *)mpTrans);
 }
 
 /* static functions */
-bool cmdSort(struct SystemCommand &cmdFirst, struct SystemCommand &cmdSecond)
-{
-	if (cmdFirst.cls == cInternalCmdCls and cmdSecond.cls != cInternalCmdCls)
-		return true;
-	if (cmdFirst.cls != cInternalCmdCls and cmdSecond.cls == cInternalCmdCls)
-		return false;
-
-	if (cmdFirst.cls < cmdSecond.cls)
-		return true;
-	if (cmdFirst.cls > cmdSecond.cls)
-		return false;
-
-	if (cmdFirst.shortcut != "" and cmdSecond.shortcut == "")
-		return true;
-	if (cmdFirst.shortcut == "" and cmdSecond.shortcut != "")
-		return false;
-
-	if (cmdFirst.id < cmdSecond.id)
-		return true;
-	if (cmdFirst.id > cmdSecond.id)
-		return false;
-
-	return true;
-}
 
 void cmdReg(
-		const string &cls,
 		const string &id,
-		const string &shortcut,
 		FuncCommand cmdFunc,
+		const string &group,
+		const string &shortcut,
 		const string &desc)
 {
 	dbgLog(LOG_LVL, "registering command %s", id.c_str());
 	lock_guard<mutex> lock(mtxCmds);
 
-	struct SystemCommand cmd, newCmd = {cls, id, shortcut, desc, cmdFunc};
+	SystemCommand cmd, newCmd = {id, cmdFunc, group, shortcut, desc};
+	list<SystemCommand>::iterator iter;
 
-	for (list<struct SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
 	{
 		cmd = *iter;
 
@@ -281,162 +373,106 @@ void cmdReg(
 	}
 
 	cmds.push_back(newCmd);
-	cmds.sort(cmdSort);
+	cmds.sort(commandSort);
 
 	dbgLog(LOG_LVL, "registering command %s: done", id.c_str());
 }
 
-void intCmdReg(const string &id, const string &shortcut, FuncCommand cmdFunc, const string &desc)
+void intCmdReg(const string &id, FuncCommand cmdFunc, const string &shortcut, const string &desc)
 {
-	cmdReg(cInternalCmdCls, id, shortcut, cmdFunc, desc);
+	cmdReg(id, cmdFunc, cInternalCmdCls, shortcut, desc);
 }
 
-void unreg(const string &id)
+void SystemCommanding::dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	dbgLog(LOG_LVL, "");
-	lock_guard<mutex> lock(mtxCmds);
+	(void)pArgs;
+	(void)pBuf;
+	(void)pBufEnd;
 
-	(void)id;
-
-	wrnLog("not implemented");
-
-	dbgLog(LOG_LVL, ": done");
+	wrnLog("dummy with '%s'", pArgs);
+	dInfo("dummy with '%s'\n", pArgs);
 }
 
-string SystemCommanding::commandExecute(const string &line)
+void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	size_t pos;
-	string cmd, args, resp;
-	bool cmdFound = false;
-	FuncCommand func;
+	SystemCommand cmd;
+	string group = "";
 
-	if (!line.size())
-		return "";
+	(void)pArgs;
 
-	pos = line.find(' ');
-	if (pos != string::npos)
-	{
-		cmd = line.substr(0, pos);
-		args = line.substr(pos);
-	}
-	else
-		cmd = line;
+	dInfo("\nAvailable commands\n");
 
-	{
-		lock_guard<mutex> lock(mtxCmds);
-
-		// Just search, do NOT execute here, because of mutex
-		for (list<struct SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
-		{
-			if (cmd != (*iter).id and cmd != (*iter).shortcut)
-				continue;
-
-			func = (*iter).func;
-			cmdFound = true;
-			break;
-		}
-	}
-
-	if (!cmdFound)
-	{
-		dbgLog(LOG_LVL, "error: unknown command");
-		return "error: unknown command\n";
-	}
-
-	dbgLog(LOG_LVL, "executing command: %s", line.c_str());
-	{
-		lock_guard<mutex> lock(mtxCmdExec);
-		resp = func(args);
-	}
-	dbgLog(LOG_LVL, "executing command: %s: done", cmd.c_str());
-
-	return resp;
-}
-
-string SystemCommanding::dummyExecute(const string &args)
-{
-	(void)args;
-	return "";
-}
-
-string SystemCommanding::helpPrint(const string &args)
-{
-	struct SystemCommand cmd;
-	string cls = "";
-	string resp = "\nAvailable commands\n";
-
-	(void)args;
-
-	for (list<struct SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
+	for (list<SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
 	{
 		cmd = *iter;
 
-		if (cmd.cls != cls)
+		if (cmd.group != group)
 		{
-			resp += "\n";
-			if (cmd.cls != cInternalCmdCls)
-				resp += cmd.cls + "\n";
-			cls = cmd.cls;
+			dInfo("\n");
+
+			if (cmd.group.size() and cmd.group != cInternalCmdCls)
+				dInfo("%s\n", cmd.group.c_str());
+			group = cmd.group;
 		}
 
-		resp += "  ";
+		dInfo("  ");
 
 		if (cmd.shortcut != "")
-			resp += cmd.shortcut.substr(0, 1) + ", ";
+			dInfo("%s, ", cmd.shortcut.c_str());
 		else
-			resp += "   ";
+			dInfo("   ");
 
-		resp += string(cMaxCmdIdSize + 2, ' ').replace(0, cmd.id.length(), cmd.id);
-		resp += ".. " + cmd.desc + "\n";
+		dInfo("%-*s", cSizeCmdIdMax + 2, cmd.id.c_str());
+
+		if (cmd.desc.size())
+			dInfo(".. %s", cmd.desc.c_str());
+
+		dInfo("\n");
 	}
 
-	resp += "\n";
-
-	return resp;
+	dInfo("\n");
 }
 
-string SystemCommanding::messageBroadcast(const string &args)
+void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	(void)args;
-	return "error: not implemented\n";
+	(void)pArgs;
+	(void)pBuf;
+	(void)pBufEnd;
+
+	dInfo("error: not implemented\n");
 }
 
-string SystemCommanding::memoryWrite(const string &args)
+void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	(void)args;
-	return "error: not implemented\n";
+	(void)pArgs;
+	(void)pBuf;
+	(void)pBufEnd;
+
+	dInfo("error: not implemented\n");
 }
 
-#if 0
-void SystemCommanding::executeCommand(SystemDebuggingCmd *pCmd)
+bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
 {
-	TcpTransfering *pTrans = mpTrans;
-	string cmd, resp;
+	if (cmdFirst.group == cInternalCmdCls and cmdSecond.group != cInternalCmdCls)
+		return true;
+	if (cmdFirst.group != cInternalCmdCls and cmdSecond.group == cInternalCmdCls)
+		return false;
 
-	switch (pCmd->str[0])
-	{
-	case '\n':
-	case 'b':
-		if (pCmd->str.size() > 3)
-		{
-			string arg(pCmd->str, 2);
+	if (cmdFirst.group < cmdSecond.group)
+		return true;
+	if (cmdFirst.group > cmdSecond.group)
+		return false;
 
-			for (PeerIter iter = mPeerList.begin(); iter != mPeerList.end(); ++iter)
-			{
-				SystemDebuggingPeer peer = *iter;
+	if (cmdFirst.shortcut != "" and cmdSecond.shortcut == "")
+		return true;
+	if (cmdFirst.shortcut == "" and cmdSecond.shortcut != "")
+		return false;
 
-				if (peer.type != PeerCmd or peer.pTrans == pTrans)
-					continue;
+	if (cmdFirst.id < cmdSecond.id)
+		return true;
+	if (cmdFirst.id > cmdSecond.id)
+		return false;
 
-				peer.pTrans->send("\n> ", 3);
-				peer.pTrans->send(arg.c_str(), arg.size());
-				peer.pTrans->send("# ", 2);
-			}
-		}
-		break;
-	}
-
-	mLastCmd = *pCmd;
-
+	return true;
 }
-#endif
+

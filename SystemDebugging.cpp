@@ -29,7 +29,6 @@
 */
 
 #include "SystemDebugging.h"
-#include "SystemCommanding.h"
 #if CONFIG_DBG_HAVE_ENVIRONMENT
 #include "env.h"
 #endif
@@ -81,26 +80,42 @@ Success SystemDebugging::initialize()
 
 	// proc tree
 	mpLstProc = TcpListening::create();
+	if (!mpLstProc)
+		return procErrLog(-1, "could not create process");
+
 	mpLstProc->portSet(mPortStart, mListenLocal);
+
 	start(mpLstProc);
 #if CONFIG_PROC_HAVE_LOG
 	// log
 	mpLstLog = TcpListening::create();
+	if (!mpLstLog)
+		return procErrLog(-1, "could not create process");
+
 	mpLstLog->portSet(mPortStart + 1, mListenLocal);
+
 	start(mpLstLog);
 #endif
 	// command
 	mpLstCmd = TcpListening::create();
+	if (!mpLstCmd)
+		return procErrLog(-1, "could not create process");
+
 	mpLstCmd->portSet(mPortStart + 2, mListenLocal);
 	mpLstCmd->maxConnSet(4);
+
 	start(mpLstCmd);
 
-	intCmdReg("detailed", "d", &SystemDebugging::procTreeDetailedToggle, "toggle detailed process tree output");
-	intCmdReg("colored", "c", &SystemDebugging::procTreeColoredToggle, "toggle colored process tree output");
+	intCmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "d", "toggle detailed process tree output");
+	intCmdReg("colored", &SystemDebugging::procTreeColoredToggle, "c", "toggle colored process tree output");
 
 #if CONFIG_DBG_HAVE_ENVIRONMENT
 	mpLstEnv = TcpListening::create();
+	if (!mpLstEnv)
+		return procErrLog(-1, "could not create process");
+
 	mpLstEnv->portSet(mPortStart + 3);
+
 	start(mpLstEnv);
 #endif
 
@@ -183,12 +198,25 @@ void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, c
 
 		if (peerType == PeerCmd)
 		{
-			whenFinishedRepel(start(
-				SystemCommanding::create(peerFd)));
+			pProc = SystemCommanding::create(peerFd);
+			if (!pProc)
+			{
+				procErrLog(-1, "could not create process");
+				continue;
+			}
+
+			whenFinishedRepel(start(pProc));
+
 			continue;
 		}
 
 		pProc = TcpTransfering::create(peerFd);
+		if (!pProc)
+		{
+			procErrLog(-1, "could not create process");
+			continue;
+		}
+
 		start(pProc);
 
 		procDbgLog(LOG_LVL, "adding %s peer. process: %p", pTypeDesc, pProc);
@@ -362,23 +390,23 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
-string SystemDebugging::procTreeDetailedToggle(const string &args)
+void SystemDebugging::procTreeDetailedToggle(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	(void)args;
+	(void)pArgs;
+	(void)pBuf;
+	(void)pBufEnd;
 
 	procTreeDetailed = not procTreeDetailed;
-	return "";
 }
 
-string SystemDebugging::procTreeColoredToggle(const string &args)
+void SystemDebugging::procTreeColoredToggle(const char *pArgs, char *pBuf, char *pBufEnd)
 {
-	(void)args;
+	(void)pArgs;
+	(void)pBuf;
+	(void)pBufEnd;
 
-#ifdef CONFIG_USE_PROCESS_DRIVER_COLOR
+#if CONFIG_PROC_USE_DRIVER_COLOR
 	procTreeColored = not procTreeColored;
-	return "";
-#else
-	return "error: color mode not supported\n";
 #endif
 }
 

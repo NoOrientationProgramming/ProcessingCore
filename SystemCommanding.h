@@ -33,38 +33,35 @@
 
 #include <string>
 #include <list>
-#include <queue>
 #include <mutex>
 #include "Processing.h"
 #include "TcpTransfering.h"
 
-typedef std::string (*FuncCommand)(const std::string & /* args */);
+typedef void (*FuncCommand)(const char *pArgs, char *pBuf, char *pBufEnd);
 
 struct SystemCommand
 {
-	std::string cls;
 	std::string id;
+	FuncCommand func;
+	std::string group;
 	std::string shortcut;
 	std::string desc;
-	FuncCommand func;
 };
 
 void cmdReg(
-		const std::string &cls,
 		const std::string &id,
-		const std::string &shortcut,
 		FuncCommand cmdFunc,
-		const std::string &desc);
+		const std::string &group = "",
+		const std::string &shortcut = "",
+		const std::string &desc = "");
 
-//void procReg(const std::string &cls, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
+//void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 
 void intCmdReg(
 		const std::string &id,
-		const std::string &shortcut,
 		FuncCommand cmdFunc,
-		const std::string &desc);
-
-void unreg(const std::string &id);
+		const std::string &shortcut = "",
+		const std::string &desc = "");
 
 class SystemCommanding : public Processing
 {
@@ -98,8 +95,11 @@ private:
 	/* member functions */
 	Success initialize();
 	Success process();
-	void inputsProcess();
 
+	Success commandReceive();
+	void commandExecute(const char *pCmd, const char *pArg);
+
+	void inputsProcess();
 	void inputAdd();
 
 	void processInfo(char *pBuf, char *pBufEnd);
@@ -109,18 +109,14 @@ private:
 	uint32_t mStartMs;
 	int mSocketFd;
 	TcpTransfering *mpTrans;
-	std::queue<std::string> mInputs;
-	std::mutex mMtxInputs;
-	std::string mLastInput;
+	const SystemCommand *mpCmdLast;
+	std::string mArgLast;
 
 	/* static functions */
-	static std::string commandExecute(const std::string &line);
-
-	static std::string commandRepeat(const std::string &args);
-	static std::string dummyExecute(const std::string &args);
-	static std::string helpPrint(const std::string &args);
-	static std::string messageBroadcast(const std::string &args);
-	static std::string memoryWrite(const std::string &args);
+	static void dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void helpPrint(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
 	static std::mutex mtxGlobalInit;

@@ -43,6 +43,7 @@
 #include "Processing.h"
 #include "TcpListening.h"
 #include "TcpTransfering.h"
+#include "SystemCommanding.h"
 
 enum PeerType {
 	PeerProc = 0,
@@ -130,8 +131,8 @@ private:
 	clock_t mEnvironmentChangedTime;
 
 	/* static functions */
-	static std::string procTreeDetailedToggle(const std::string &args);
-	static std::string procTreeColoredToggle(const std::string &args);
+	static void procTreeDetailedToggle(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void procTreeColoredToggle(const char *pArgs, char *pBuf, char *pBufEnd);
 	static void logEntryCreated(
 			const int severity,
 			const char *filename,
