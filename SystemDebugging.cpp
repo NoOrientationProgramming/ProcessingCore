@@ -270,7 +270,7 @@ void SystemDebugging::processTreeSend()
 
 	mProcTreePeerAdded = false;
 
-	procDbgLog(LOG_LVL, "process tree changed");
+	//procDbgLog(LOG_LVL, "process tree changed");
 	//procDbgLog(LOG_LVL, "\n%s", procTree.c_str());
 
 	string msg("\033[2J\033[H");
