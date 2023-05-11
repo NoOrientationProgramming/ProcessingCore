@@ -29,6 +29,7 @@
 */
 
 #include "SystemCommanding.h"
+//#include "LibDspc.h"
 
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
@@ -56,6 +57,8 @@ const string cWelcomeMsg = "\n" dPackageName "\n" \
 			"System Terminal\n\n" \
 			"type 'help' or just 'h' for a list of available commands\n\n" \
 			"# ";
+const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
+const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
 const string cInternalCmdCls = "dbg";
 const int cSizeCmdIdMax = 16;
@@ -193,7 +196,20 @@ Success SystemCommanding::commandReceive()
 		return Pending;
 	}
 
-	//procWrnLog("Command received: %s", buf);
+	//procWrnLog("Command received");
+	//hexDump(buf, lenDone);
+
+	if (buf[0] == 0x04) // Ctrl-D
+	{
+		procInfLog("end of transmission");
+		return -1;
+	}
+
+	if (!strncmp(buf, cSeqCtrlC.c_str(), cLenSeqCtrlC))
+	{
+		procInfLog("transmission cancelled");
+		return -1;
+	}
 
 	--lenDone;
 	if (buf[lenDone] != '\n')
@@ -208,6 +224,13 @@ Success SystemCommanding::commandReceive()
 	}
 
 	buf[lenDone] = 0;
+
+	// for telnet
+	if (buf[lenDone - 1] == '\r')
+	{
+		--lenDone;
+		buf[lenDone] = 0;
+	}
 
 	const char *pCmd, *pArgs;
 	char *pFound;
