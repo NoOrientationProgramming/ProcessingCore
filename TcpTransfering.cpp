@@ -153,7 +153,11 @@ Success TcpTransfering::process()
 			return procErrLog(-1, "invalid argument. Only IPv4 address supported by now. Given: '%s'",
 					mHostAddrStr.c_str());
 
-		mSocketFd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+		res = SOCK_STREAM;
+#ifndef _WIN32
+		res |= SOCK_NONBLOCK;
+#endif
+		mSocketFd = socket(AF_INET, res, 0);
 		if (mSocketFd < 0)
 			return procErrLog(-1, "could not create socket: %s (%d)", strerror(errno), errno);
 

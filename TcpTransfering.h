@@ -34,9 +34,15 @@
 #include <string>
 
 #ifdef _WIN32
-/* See http://stackoverflow.com/questions/12765743/getaddrinfo-on-win32 */
+// https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-170
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501  /* Windows XP. */
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
+#endif
+#ifndef WINVER
+#define WINVER _WIN32_WINNT_WIN10
+#endif
+#ifndef NTDDI_VERSION
+#define NTDDI_VERSION NTDDI_WIN10_19H1
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
