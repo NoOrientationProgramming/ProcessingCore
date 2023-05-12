@@ -32,12 +32,12 @@
 #define TCP_LISTENING_H
 
 #include <list>
+#include <mutex>
 #ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <netinet/in.h>
 #endif
-#include <mutex>
 
 #include "Processing.h"
 #include "Pipe.h"
