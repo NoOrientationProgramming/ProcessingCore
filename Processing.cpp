@@ -361,7 +361,7 @@ int Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool co
 	}
 
 	pBuf += procId(pBuf, pBufEnd, this);
-	dInfo("()\n");
+	dInfo("()\r\n");
 
 #if CONFIG_PROC_USE_DRIVER_COLOR
 	if (colored)
@@ -404,7 +404,7 @@ int Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool co
 
 			*pBufIter = 0; // terminate current line starting at pBufLineStart
 
-			dInfo("%s\n", pBufLineStart);
+			dInfo("%s\r\n", pBufLineStart);
 
 			++pBufIter;
 			pBufLineStart = pBufIter;
@@ -441,7 +441,7 @@ int Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool co
 			for (n = 0; n < 2 * mLevel + 2; ++n)
 				dInfo(" ");
 
-			dInfo("..\n");
+			dInfo("..\r\n");
 
 			break;
 		}
