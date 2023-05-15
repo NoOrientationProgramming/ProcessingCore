@@ -53,9 +53,9 @@ using namespace std;
 #define dPackageName "<unknown package>"
 #endif
 
-const string cWelcomeMsg = "\n" dPackageName "\n" \
-			"System Terminal\n\n" \
-			"type 'help' or just 'h' for a list of available commands\n\n" \
+const string cWelcomeMsg = "\r\n" dPackageName "\r\n" \
+			"System Terminal\r\n\r\n" \
+			"type 'help' or just 'h' for a list of available commands\r\n\r\n" \
 			"# ";
 const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
@@ -217,7 +217,7 @@ Success SystemCommanding::commandReceive()
 		string msg = "newline not found";
 		procWrnLog("%s", msg.c_str());
 
-		msg += "\n# ";
+		msg += "\r\n# ";
 		mpTrans->send(msg.c_str(), msg.size());
 
 		return Pending;
@@ -267,7 +267,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 			msg = "no last command";
 			procWrnLog("%s", msg.c_str());
 
-			msg += "\n# ";
+			msg += "\r\n# ";
 			mpTrans->send(msg.c_str(), msg.size());
 
 			return;
@@ -282,7 +282,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 			msg += mArgLast;
 		}
 
-		msg += "\n";
+		msg += "\r\n";
 
 		mpTrans->send(msg.c_str(), msg.size());
 
@@ -292,7 +292,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 		msg = string(bufOut);
 
 		if (msg.size() and msg.back() != '\n')
-			msg.push_back('\n');
+			msg += "\r\n";
 
 		msg += "# ";
 		mpTrans->send(msg.c_str(), msg.size());
@@ -322,7 +322,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 		msg = string(bufOut);
 
 		if (msg.size() and msg.back() != '\n')
-			msg.push_back('\n');
+			msg += "\r\n";
 
 		msg += "# ";
 		mpTrans->send(msg.c_str(), msg.size());
@@ -333,7 +333,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 	msg = "command not found";
 	procWrnLog("%s", msg.c_str());
 
-	msg += "\n# ";
+	msg += "\r\n# ";
 	mpTrans->send(msg.c_str(), msg.size());
 }
 
@@ -413,7 +413,7 @@ void SystemCommanding::dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd
 	(void)pBufEnd;
 
 	wrnLog("dummy with '%s'", pArgs);
-	dInfo("dummy with '%s'\n", pArgs);
+	dInfo("dummy with '%s'\r\n", pArgs);
 }
 
 void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -423,7 +423,7 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 
 	(void)pArgs;
 
-	dInfo("\nAvailable commands\n");
+	dInfo("\r\nAvailable commands\r\n");
 
 	for (list<SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
 	{
@@ -431,10 +431,10 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 
 		if (cmd.group != group)
 		{
-			dInfo("\n");
+			dInfo("\r\n");
 
 			if (cmd.group.size() and cmd.group != cInternalCmdCls)
-				dInfo("%s\n", cmd.group.c_str());
+				dInfo("%s\r\n", cmd.group.c_str());
 			group = cmd.group;
 		}
 
@@ -450,10 +450,10 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 		if (cmd.desc.size())
 			dInfo(".. %s", cmd.desc.c_str());
 
-		dInfo("\n");
+		dInfo("\r\n");
 	}
 
-	dInfo("\n");
+	dInfo("\r\n");
 }
 
 void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -462,7 +462,7 @@ void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBu
 	(void)pBuf;
 	(void)pBufEnd;
 
-	dInfo("error: not implemented\n");
+	dInfo("error: not implemented\r\n");
 }
 
 void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -471,7 +471,7 @@ void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
 	(void)pBuf;
 	(void)pBufEnd;
 
-	dInfo("error: not implemented\n");
+	dInfo("error: not implemented\r\n");
 }
 
 bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
