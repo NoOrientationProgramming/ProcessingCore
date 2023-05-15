@@ -319,7 +319,7 @@ void SystemDebugging::logEntriesSend()
 		if (!msg.size())
 			break;
 
-		msg += "\n";
+		msg += "\r\n";
 
 		iter = mPeerList.begin();
 		while (iter != mPeerList.end())
