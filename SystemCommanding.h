@@ -97,6 +97,7 @@ private:
 	Success process();
 
 	Success commandReceive();
+	void lfToCrLf(char *pBuf, std::string &str);
 	void commandExecute(const char *pCmd, const char *pArg);
 
 	void inputsProcess();

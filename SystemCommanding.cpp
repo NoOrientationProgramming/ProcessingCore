@@ -250,6 +250,54 @@ Success SystemCommanding::commandReceive()
 	return Positive;
 }
 
+void SystemCommanding::lfToCrLf(char *pBuf, string &str)
+{
+	size_t lenBuf = strlen(pBuf);
+	char *pBufLineStart, *pBufIter;
+	int8_t lastLine;
+
+	str.clear();
+
+	if (!pBuf or !*pBuf)
+		return;
+
+	str.reserve(lenBuf);
+
+	pBufLineStart = pBufIter = pBuf;
+	lastLine = 0;
+
+	while (1)
+	{
+		if (pBufIter >= pBuf + lenBuf)
+			break;
+
+		if (*pBufIter != '\n')
+		{
+			++pBufIter;
+			continue;
+		}
+
+		if (!*pBufIter)
+		{
+			if (!*(pBufIter - 1)) // last line drawn already
+				break;
+
+			lastLine = 1;
+		}
+
+		*pBufIter = 0; // terminate current line starting at pBufLineStart
+
+		str += pBufLineStart;
+		str += "\r\n";
+
+		++pBufIter;
+		pBufLineStart = pBufIter;
+
+		if (lastLine)
+			break;
+	}
+}
+
 void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 {
 	string id, msg;
@@ -289,7 +337,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 		mpCmdLast->func(mArgLast.c_str(), bufOut, bufOut + lenBuf);
 		bufOut[lenBuf] = 0;
 
-		msg = string(bufOut);
+		lfToCrLf(bufOut, msg);
 
 		if (msg.size() and msg.back() != '\n')
 			msg += "\r\n";
@@ -319,7 +367,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 		iter->func(pArgs, bufOut, bufOut + lenBuf);
 		bufOut[lenBuf] = 0;
 
-		msg = string(bufOut);
+		lfToCrLf(bufOut, msg);
 
 		if (msg.size() and msg.back() != '\n')
 			msg += "\r\n";
@@ -413,7 +461,7 @@ void SystemCommanding::dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd
 	(void)pBufEnd;
 
 	wrnLog("dummy with '%s'", pArgs);
-	dInfo("dummy with '%s'\r\n", pArgs);
+	dInfo("dummy with '%s'\n", pArgs);
 }
 
 void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -423,7 +471,7 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 
 	(void)pArgs;
 
-	dInfo("\r\nAvailable commands\r\n");
+	dInfo("\nAvailable commands\n");
 
 	for (list<SystemCommand>::iterator iter = cmds.begin(); iter != cmds.end(); ++iter)
 	{
@@ -431,10 +479,10 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 
 		if (cmd.group != group)
 		{
-			dInfo("\r\n");
+			dInfo("\n");
 
 			if (cmd.group.size() and cmd.group != cInternalCmdCls)
-				dInfo("%s\r\n", cmd.group.c_str());
+				dInfo("%s\n", cmd.group.c_str());
 			group = cmd.group;
 		}
 
@@ -450,10 +498,10 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 		if (cmd.desc.size())
 			dInfo(".. %s", cmd.desc.c_str());
 
-		dInfo("\r\n");
+		dInfo("\n");
 	}
 
-	dInfo("\r\n");
+	dInfo("\n");
 }
 
 void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -462,7 +510,7 @@ void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBu
 	(void)pBuf;
 	(void)pBufEnd;
 
-	dInfo("error: not implemented\r\n");
+	dInfo("error: not implemented\n");
 }
 
 void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
@@ -471,7 +519,7 @@ void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
 	(void)pBuf;
 	(void)pBufEnd;
 
-	dInfo("error: not implemented\r\n");
+	dInfo("error: not implemented\n");
 }
 
 bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
