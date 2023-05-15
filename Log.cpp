@@ -114,21 +114,12 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	if (severity <= levelLog)
 	{
 		if (severity == 1)
-		{
-			cerr << red << pBuf << reset << endl;
-			cerr.flush();
-		}
+			cerr << red << pBuf << reset << "\r\n" << flush;
 		else
 		if (severity == 2)
-		{
-			cerr << yellow << pBuf << reset << endl;
-			cerr.flush();
-		}
+			cerr << yellow << pBuf << reset << "\r\n" << flush;
 		else
-		{
-			cout << pBuf << endl;
-			cout.flush();
-		}
+			cout << pBuf << "\r\n" << std::flush;
 	}
 
 	if (pFctLogEntryCreated)
