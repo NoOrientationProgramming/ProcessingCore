@@ -112,6 +112,7 @@ private:
 	TcpTransfering *mpTrans;
 	const SystemCommand *mpCmdLast;
 	std::string mArgLast;
+	std::string mBufFragment;
 
 	/* static functions */
 	static void dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd);

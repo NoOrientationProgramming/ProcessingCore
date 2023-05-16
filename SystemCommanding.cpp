@@ -63,6 +63,7 @@ const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 const string cInternalCmdCls = "dbg";
 const int cSizeCmdIdMax = 16;
 const size_t cSizeBufCmdIn = 63;
+const size_t cSizeBufFragmentMax = cSizeBufCmdIn - 5;
 const size_t cSizeBufCmdOut = 512;
 
 mutex SystemCommanding::mtxGlobalInit;
@@ -82,6 +83,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mpTrans(NULL)
 	, mpCmdLast(NULL)
 	, mArgLast("")
+	, mBufFragment("")
 {
 }
 
@@ -171,6 +173,7 @@ Success SystemCommanding::commandReceive()
 {
 	char buf[cSizeBufCmdIn];
 	ssize_t lenReq, lenPlanned, lenDone;
+	bool newlineFound = false;
 
 	buf[0] = 0;
 
@@ -211,26 +214,46 @@ Success SystemCommanding::commandReceive()
 		return -1;
 	}
 
-	--lenDone;
-	if (buf[lenDone] != '\n')
+	if (buf[lenDone - 1] == '\n')
 	{
-		string msg = "newline not found";
-		procWrnLog("%s", msg.c_str());
-
-		msg += "\r\n# ";
-		mpTrans->send(msg.c_str(), msg.size());
-
-		return Pending;
+		--lenDone;
+		buf[lenDone] = 0;
+		newlineFound = true;
 	}
 
-	buf[lenDone] = 0;
-
-	// for telnet
 	if (buf[lenDone - 1] == '\r')
 	{
 		--lenDone;
 		buf[lenDone] = 0;
 	}
+
+	string strFragment(buf);
+
+	if (!newlineFound)
+	{
+		procWrnLog("Only got fragment: '%s'", strFragment.c_str());
+		mBufFragment += strFragment;
+
+		if (mBufFragment.size() > cSizeBufFragmentMax)
+		{
+			mBufFragment.clear();
+
+			msg = "Fragment buffer overflow";
+			procWrnLog("%s", msg.c_str());
+
+			msg += "\r\n# ";
+			mpTrans->send(msg.c_str(), msg.size());
+		}
+
+		return Pending;
+	}
+
+	string cmd = mBufFragment + strFragment;
+	mBufFragment.clear();
+#if 0
+	procWrnLog("Command received: '%s'", cmd.c_str());
+#endif
+	snprintf(buf, lenReq, "%s", cmd.c_str());
 
 	const char *pCmd, *pArgs;
 	char *pFound;
