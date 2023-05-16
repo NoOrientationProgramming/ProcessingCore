@@ -296,8 +296,11 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 
 	if (peek)
 		return numBytes;
-
+#ifdef _WIN32
+	numBytes = ::recv(mSocketFd, (char *)pBuf, (int)numBytes, 0);
+#else
 	numBytes = ::recv(mSocketFd, (char *)pBuf, numBytes, 0);
+#endif
 	//procDbgLog(LOG_LVL, "received data. len: %d", numBytes);
 
 	mBytesReceived += numBytes;
