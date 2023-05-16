@@ -286,13 +286,13 @@ inline int16_t logEntryCreateDummy(
 enum StateName \
 { \
 	dForEach_ ## StateName(dGen ## StateName ## Enum) \
-};
+}
 
 #define dProcessStateStr(StateName) \
 static const char *StateName ## String[] = \
 { \
 	dForEach_ ## StateName(dGen ## StateName ## String) \
-};
+}
 
 template <typename T>
 T MIN(T a, T b)
