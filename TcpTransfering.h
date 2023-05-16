@@ -113,6 +113,7 @@ private:
 	Success socketOptionsSet();
 	void addrInfoSet();
 
+	int errGet();
 	std::string intStrErr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 

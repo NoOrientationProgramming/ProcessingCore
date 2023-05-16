@@ -114,7 +114,7 @@ Success TcpTransfering::process()
 	uint32_t curTimeMs = millis();
 	uint32_t diffMs = curTimeMs - mStartMs;
 	Success success;
-	int res;
+	int res, numErr;
 	ssize_t connCheck;
 #if 0
 	procWrnLog("mState = %s", ProcStateString[mState]);
@@ -158,7 +158,7 @@ Success TcpTransfering::process()
 		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (mSocketFd == INVALID_SOCKET)
 			return procErrLog(-1, "could not create socket: %s",
-							intStrErr(errno).c_str());
+							intStrErr(errGet()).c_str());
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -177,15 +177,21 @@ Success TcpTransfering::process()
 			return procErrLog(-1, "timeout connecting to host");
 
 		res = connect(mSocketFd, (struct sockaddr *)&mHostAddr, sizeof(mHostAddr));
-		if (res < 0 and errno == EINPROGRESS)
-			break;
-
-		if (res < 0 and errno == EAGAIN)
-			break;
+		if (res < 0)
+		{
+			numErr = errGet();
+#ifdef _WIN32
+			if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+				break;
+#else
+			if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+				break;
+#endif
+		}
 
 		if (res < 0)
 			return procErrLog(-1, "could not connect to host: %s",
-							intStrErr(errno).c_str());
+							intStrErr(numErr).c_str());
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -278,10 +284,15 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 #endif
 	if (numBytes < 0)
 	{
-		if (errno == EAGAIN or errno == EWOULDBLOCK)
+		int numErr = errGet();
+#ifdef _WIN32
+		if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
 			return 0; // std case and ok
-
-		disconnect(errno);
+#else
+		if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+			return 0; // std case and ok
+#endif
+		disconnect(numErr);
 
 		return procErrLog(-2, "recv() failed: %s",
 							intStrErr(mErrno).c_str());
@@ -355,7 +366,9 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 #endif
 		if (res < 0)
 		{
-			disconnect(errno);
+			int numErr = errGet();
+
+			disconnect(numErr);
 			return procErrLog(-1, "connection down: %s",
 							intStrErr(mErrno).c_str());
 		}
@@ -459,6 +472,15 @@ void TcpTransfering::addrInfoSet()
 	mPortRemote = ::ntohs(addr.sin_port);
 
 	mInfoSet = true;
+}
+
+int TcpTransfering::errGet()
+{
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
 }
 
 string TcpTransfering::intStrErr(int num)
