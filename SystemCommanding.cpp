@@ -199,7 +199,7 @@ Success SystemCommanding::commandReceive()
 	//procWrnLog("Command received");
 	//hexDump(buf, lenDone);
 
-	if (buf[0] == 0x04) // Ctrl-D
+	if ((buf[0] == 0x03) or (buf[0] == 0x04))
 	{
 		procInfLog("end of transmission");
 		return -1;

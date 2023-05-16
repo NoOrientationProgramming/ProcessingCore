@@ -161,68 +161,6 @@ void SystemDebugging::peerListUpdate()
 #endif
 }
 
-void hexDump(const void *pData, size_t len, size_t colWidth)
-{
-	const char *pByte = (const char *)pData;
-	uint32_t addressAbs = 0;
-	char bufLine[256];
-	char *pBufEnd = bufLine + sizeof(bufLine);
-	char *pBuf = bufLine;
-	const char *pLine = pByte;
-	uint8_t lenPrinted;
-	uint8_t numBytesPerLine = colWidth;
-	size_t i = 0;
-
-	while (len)
-	{
-		pBuf = bufLine;
-		*pBuf = 0;
-		pLine = pByte;
-		lenPrinted = 0;
-
-		dInfo("%08x", addressAbs);
-
-		for (i = 0; i < numBytesPerLine; ++i)
-		{
-			if (!(i & 7))
-				dInfo(" ");
-
-			if (!len)
-			{
-				dInfo("   ");
-				continue;
-			}
-
-			dInfo(" %02x", (uint8_t)*pByte);
-
-			++pByte;
-			--len;
-			++lenPrinted;
-		}
-
-		dInfo("  |");
-
-		for (i = 0; i < lenPrinted; ++i, ++pLine, ++pBuf)
-		{
-			char c = *pLine;
-
-			if (c < 32 or c > 126)
-			{
-				*pBuf = '.';
-				continue;
-			}
-
-			*pBuf = c;
-		}
-
-		dInfo("|");
-
-		cout << bufLine << endl;
-
-		addressAbs += lenPrinted;
-	}
-}
-
 bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 {
 	if (!pTrans)
@@ -246,9 +184,7 @@ bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 
 	buf[lenDone] = 0;
 
-	hexDump(buf, lenDone, 16);
-
-	if (buf[0] == 0x04) // Ctrl-D
+	if ((buf[0] == 0x03) or (buf[0] == 0x04))
 	{
 		procInfLog("end of transmission");
 		return true;
