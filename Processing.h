@@ -272,10 +272,10 @@ inline int16_t logEntryCreateDummy(
 #define dbgLog(l, m, ...)				(genericLog(4 + l, 0, m, ##__VA_ARGS__))
 
 #define GLOBAL_PROC_LOG_LEVEL_OFFSET		0
-#define procErrLog(c, m, ...)				(errLog(c, "%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
-#define procWrnLog(m, ...)				(wrnLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
-#define procInfLog(m, ...)				(infLog("%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
-#define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-35s" m, this, this->procName(), ##__VA_ARGS__))
+#define procErrLog(c, m, ...)				(errLog(c, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procWrnLog(m, ...)				(wrnLog("%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procInfLog(m, ...)				(infLog("%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
 
 //#define dInfoDebugPrefix				printf("%-20s (%3d): %p %p '%c'%s\n", __FILENAME__, __LINE__, pBuf, pBufEnd, *(pBuf - 1), pBuf > pBufEnd ? " -> FAIL" : ""),
 #define dInfoDebugPrefix
