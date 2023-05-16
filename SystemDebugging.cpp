@@ -45,6 +45,9 @@ queue<string> SystemDebugging::qLogEntries;
 
 const size_t SystemDebugging::maxPeers = 100;
 
+const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
+const size_t cLenSeqCtrlC = cSeqCtrlC.size();
+
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
@@ -157,11 +160,50 @@ void SystemDebugging::peerListUpdate()
 #endif
 }
 
+bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
+{
+	if (!pTrans)
+		return false;
+
+	char buf[31];
+	ssize_t lenReq, lenPlanned, lenDone;
+
+	lenReq = sizeof(buf) - 1;
+	lenPlanned = lenReq;
+
+	buf[0] = 0;
+	buf[lenReq] = 0;
+
+	lenDone = pTrans->read(buf, lenPlanned);
+	if (!lenDone)
+		return false;
+
+	if (lenDone < 0)
+		return true;
+
+	buf[lenDone] = 0;
+
+	if (buf[0] == 0x04) // Ctrl-D
+	{
+		procInfLog("end of transmission");
+		return true;
+	}
+
+	if (!strncmp(buf, cSeqCtrlC.c_str(), cLenSeqCtrlC))
+	{
+		procInfLog("transmission cancelled");
+		return true;
+	}
+
+	return false;
+}
+
 void SystemDebugging::peerRemove()
 {
 	PeerIter iter;
 	struct SystemDebuggingPeer peer;
 	Processing *pProc;
+	bool disconnectReq, removeReq;
 
 	iter = mPeerList.begin();
 	while (iter != mPeerList.end())
@@ -169,7 +211,14 @@ void SystemDebugging::peerRemove()
 		peer = *iter;
 		pProc = peer.pProc;
 
-		if (pProc->success() == Pending)
+		if (peer.type == PeerProc or peer.type == PeerLog)
+			disconnectReq = disconnectRequestedCheck((TcpTransfering *)pProc);
+		else
+			disconnectReq = false;
+
+		removeReq = (pProc->success() != Pending) or disconnectReq;
+
+		if (removeReq)
 		{
 			++iter;
 			continue;

@@ -97,6 +97,7 @@ private:
 	Success shutdown();
 
 	void peerListUpdate();
+	bool disconnectRequestedCheck(TcpTransfering *pTrans);
 	void peerRemove();
 	void peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc);
 	void processTreeSend();
