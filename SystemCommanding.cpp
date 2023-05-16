@@ -182,7 +182,7 @@ Success SystemCommanding::commandReceive()
 		return Pending;
 
 	if (lenDone < 0)
-		return lenDone;
+		return -1;
 
 	buf[lenDone] = 0;
 
