@@ -161,9 +161,11 @@ Success TcpListening::process()
 
 	tv.tv_sec = 0;
 	tv.tv_usec = 1000;
-
+#ifdef _WIN32
+	res = ::select(0, &rfds, NULL, NULL, &tv);
+#else
 	res = ::select(mListeningFd + 1, &rfds, NULL, NULL, &tv);
-
+#endif
 	if (res < 0)
 	{
 		if (errno == EINTR)
