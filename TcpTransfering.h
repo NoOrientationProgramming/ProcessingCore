@@ -129,8 +129,8 @@ private:
 	bool mInfoSet;
 
 	// statistics
-	uint32_t mBytesReceived;
-	uint32_t mBytesSent;
+	size_t mBytesReceived;
+	size_t mBytesSent;
 
 	/* static functions */
 	uint32_t millis();

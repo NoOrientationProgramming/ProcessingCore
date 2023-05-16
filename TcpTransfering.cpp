@@ -271,9 +271,11 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 		lenReq = sizeof(buf);
 		peek = true;
 	}
-
+#ifdef _WIN32
+	numBytes = ::recv(mSocketFd, (char *)pBuf, (int)lenReq, MSG_PEEK);
+#else
 	numBytes = ::recv(mSocketFd, (char *)pBuf, lenReq, MSG_PEEK);
-
+#endif
 	if (numBytes < 0)
 	{
 		if (errno == EAGAIN or errno == EWOULDBLOCK)
@@ -343,7 +345,11 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 		  * emit signal SIGPIPE and therefore kill the entire
 		  * application in this case.
 		  */
+#ifdef _WIN32
+		res = ::send(mSocketFd, (const char *)pData, (int)lenReq, MSG_NOSIGNAL);
+#else
 		res = ::send(mSocketFd, (const char *)pData, lenReq, MSG_NOSIGNAL);
+#endif
 		if (res < 0)
 		{
 			disconnect(errno);
@@ -467,7 +473,7 @@ string TcpTransfering::intStrErr(int num)
 void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
 {
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
-	dInfo("Bytes received\t\t%d\n", mBytesReceived);
+	dInfo("Bytes received\t\t%d\n", (int)mBytesReceived);
 
 	if (!mInfoSet)
 		return;
@@ -482,7 +488,7 @@ uint32_t TcpTransfering::millis()
 {
 	auto now = steady_clock::now();
 	auto nowMs = time_point_cast<milliseconds>(now);
-	return nowMs.time_since_epoch().count();
+	return (uint32_t)nowMs.time_since_epoch().count();
 }
 
 bool TcpTransfering::fileNonBlockingSet(SOCKET fd)
