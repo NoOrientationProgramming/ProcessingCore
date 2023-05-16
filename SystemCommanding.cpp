@@ -232,7 +232,7 @@ Success SystemCommanding::commandReceive()
 
 	if (!newlineFound)
 	{
-		procWrnLog("Only got fragment: '%s'", strFragment.c_str());
+		//procWrnLog("Only got fragment: '%s'", strFragment.c_str());
 		mBufFragment += strFragment;
 
 		if (mBufFragment.size() > cSizeBufFragmentMax)
