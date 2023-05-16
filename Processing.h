@@ -306,5 +306,12 @@ T MAX(T a, T b)
 	return a > b ? a : b;
 }
 
+#ifdef _MSC_VER
+#ifndef SSIZE_TYPE_DEFINE
+#define SSIZE_TYPE_DEFINE
+#define ssize_t SSIZE_T
+#endif
+#endif
+
 #endif
 
