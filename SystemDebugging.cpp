@@ -217,8 +217,7 @@ void SystemDebugging::peerRemove()
 			disconnectReq = false;
 
 		removeReq = (pProc->success() != Pending) or disconnectReq;
-
-		if (removeReq)
+		if (!removeReq)
 		{
 			++iter;
 			continue;
