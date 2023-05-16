@@ -156,7 +156,7 @@ protected:
 	Success childrenSuccess();
 	size_t mncpy(void *dest, size_t destSize, const void *src, size_t srcSize);
 #if !CONFIG_PROC_USE_STD_LISTS
-	void maxChildrenSet(size_t cnt);
+	void maxChildrenSet(uint16_t cnt);
 #endif
 	bool initDone() const;
 	DriverMode driver() const;
