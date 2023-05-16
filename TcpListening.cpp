@@ -118,7 +118,7 @@ Success TcpListening::initialize()
 	procDbgLog(LOG_LVL, "creating listening socket");
 
 	if ((mListeningFd = ::socket(AF_INET, SOCK_STREAM, 0)) == 0)
-		return procErrLog(-4, "socket() failed: %s", strerror(errno));
+		return procErrLog(-4, "socket() failed: %s", intStrErr(errno).c_str());
 
 	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
 
@@ -127,13 +127,13 @@ Success TcpListening::initialize()
 	// This is done in function shutdown()
 
 	if (::setsockopt(mListeningFd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-5, "setsockopt(SO_REUSEADDR) failed: %s", strerror(errno));
+		return procErrLog(-5, "setsockopt(SO_REUSEADDR) failed: %s", intStrErr(errno).c_str());
 
 	if (::bind(mListeningFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
-		return procErrLog(-6, "bind() failed: %s", strerror(errno));
+		return procErrLog(-6, "bind() failed: %s", intStrErr(errno).c_str());
 
 	if (::listen(mListeningFd, 3) < 0)
-		return procErrLog(-7, "listen() failed: %s", strerror(errno));
+		return procErrLog(-7, "listen() failed: %s", intStrErr(errno).c_str());
 
 	return Positive;
 }
@@ -166,11 +166,11 @@ Success TcpListening::process()
 	{
 		if (errno == EINTR)
 		{
-			procDbgLog(LOG_LVL, "select() failed: %s", strerror(errno));
+			procDbgLog(LOG_LVL, "select() failed: %s", intStrErr(errno).c_str());
 			return Positive;
 		}
 
-		return procErrLog(-1, "select() failed: %s", strerror(errno));
+		return procErrLog(-1, "select() failed: %s", intStrErr(errno).c_str());
 	}
 
 	if (!res) // timeout ok
@@ -184,7 +184,7 @@ Success TcpListening::process()
 
 	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&address, &addrLen);
 	if (peerSocketFd < 0) {
-		procWrnLog("accept() failed: %s", strerror(errno));
+		procWrnLog("accept() failed: %s", intStrErr(errno).c_str());
 
 		return Pending;
 	}
@@ -229,6 +229,22 @@ Success TcpListening::shutdown()
 	}
 
 	return Positive;
+}
+
+string TcpListening::intStrErr(int num)
+{
+	char buf[64];
+	size_t len = sizeof(buf) - 1;
+
+	buf[0] = 0;
+	buf[len] = 0;
+
+#ifdef _WIN32
+	::strerror_s(buf, len, num);
+#else
+	::strerror_r(num, buf, len);
+#endif
+	return string(buf);
 }
 
 /* Literature

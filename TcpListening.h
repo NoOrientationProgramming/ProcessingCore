@@ -90,6 +90,7 @@ private:
 	Success process();
 	Success shutdown();
 
+	std::string intStrErr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	size_t mPort;
