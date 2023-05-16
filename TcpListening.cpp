@@ -28,17 +28,9 @@
   SOFTWARE.
 */
 
-#ifdef _WIN32
-/* See http://stackoverflow.com/questions/12765743/getaddrinfo-on-win32 */
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501  /* Windows XP. */
-#endif
-#include <ws2tcpip.h>
-#else
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#endif
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "TcpListening.h"
 
@@ -188,9 +180,9 @@ Success TcpListening::process()
 
 	int peerSocketFd;
 	struct sockaddr_in address = mAddress;
-	int addrLen = sizeof(address);
+	socklen_t addrLen = sizeof(address);
 
-	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&address, (socklen_t *)&addrLen);
+	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&address, &addrLen);
 	if (peerSocketFd < 0) {
 		procWrnLog("accept() failed: %s", strerror(errno));
 
@@ -215,7 +207,11 @@ Success TcpListening::shutdown()
 		ppPeerFd.pop();
 
 		procDbgLog(LOG_LVL, "closing unused peer socket %d", peerFd);
+#ifdef _WIN32
+		::closesocket(peerFd);
+#else
 		::close(peerFd);
+#endif
 		peerFd = -1;
 		procDbgLog(LOG_LVL, "closing unused peer socket %d: done", peerFd);
 	}
@@ -223,7 +219,11 @@ Success TcpListening::shutdown()
 	if (mListeningFd >= 0)
 	{
 		procDbgLog(LOG_LVL, "closing listening socket %d", mListeningFd);
+#ifdef _WIN32
+		::closesocket(mListeningFd);
+#else
 		::close(mListeningFd);
+#endif
 		mListeningFd = -1;
 		procDbgLog(LOG_LVL, "closing listening socket %d: done", mListeningFd);
 	}
