@@ -140,7 +140,7 @@ private:
 			const int line,
 			const int16_t code,
 			const char *msg,
-			const uint32_t len);
+			const size_t len);
 
 	/* static variables */
 	static bool procTreeDetailed;

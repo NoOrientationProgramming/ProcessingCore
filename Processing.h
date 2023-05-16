@@ -233,7 +233,7 @@ typedef void (*LogEntryCreatedFct)(
 			const int line,
 			const int16_t code,
 			const char *msg,
-			const uint32_t len);
+			const size_t len);
 
 void levelLogSet(int lvl);
 void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct);
