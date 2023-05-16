@@ -228,6 +228,7 @@ Success SystemCommanding::commandReceive()
 	}
 
 	string strFragment(buf);
+	string msg;
 
 	if (!newlineFound)
 	{
