@@ -119,10 +119,10 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	if (severity <= levelLog)
 	{
 		if (severity == 1)
-			cerr << red << pBuf << reset << "\r\n" << flush;
+			cerr << "\033[31m" << pBuf << "\033[37m" << "\r\n" << flush;
 		else
 		if (severity == 2)
-			cerr << yellow << pBuf << reset << "\r\n" << flush;
+			cerr << "\033[33m" << pBuf << "\033[37m" << "\r\n" << flush;
 		else
 			cout << pBuf << "\r\n" << std::flush;
 	}
