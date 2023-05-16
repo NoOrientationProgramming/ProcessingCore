@@ -43,6 +43,7 @@ bool TcpListening::globalInitDone = false;
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
+	, mAddrFamily(AF_INET)
 	, mPort(0)
 	, mMaxConn(20)
 	, mListeningFd(-1)
@@ -52,7 +53,7 @@ TcpListening::TcpListening()
 
 void TcpListening::portSet(uint16_t port, bool localOnly)
 {
-	mAddress.sin_family = AF_INET;
+	mAddress.sin_family = mAddrFamily;
 	if (localOnly)
 		mAddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	else
@@ -117,7 +118,7 @@ Success TcpListening::initialize()
 
 	procDbgLog(LOG_LVL, "creating listening socket");
 
-	if ((mListeningFd = ::socket(AF_INET, SOCK_STREAM, 0)) == 0)
+	if ((mListeningFd = ::socket(mAddrFamily, SOCK_STREAM, 0)) == 0)
 		return procErrLog(-4, "socket() failed: %s", intStrErr(errno).c_str());
 
 	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
@@ -249,6 +250,7 @@ string TcpListening::intStrErr(int num)
 
 /* Literature
  * - https://linux.die.net/man/3/inet_ntoa
+ * - https://man7.org/linux/man-pages/man3/inet_ntop.3.html
  * - https://linux.die.net/man/3/htons
  */
 void TcpListening::processInfo(char *pBuf, char *pBufEnd)
@@ -256,7 +258,15 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	if (!mPort)
 		return;
 
-	dInfo("%s:%d\n", ::inet_ntoa(mAddress.sin_addr), ::ntohs(mAddress.sin_port));
+	char buf[128];
+	size_t len = sizeof(buf) - 1;
+
+	buf[0] = 0;
+	buf[len] = 0;
+
+	::inet_ntop(mAddrFamily, &mAddress.sin_addr, buf, len);
+
+	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
 	dInfo("Connections created:\t%d\n", mConnCreated);
 }
 
