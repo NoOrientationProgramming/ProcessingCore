@@ -104,7 +104,6 @@ private:
 	std::string intStrErr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	int mAddrFamily;
 	uint16_t mPort;
 	size_t mMaxConn;
 

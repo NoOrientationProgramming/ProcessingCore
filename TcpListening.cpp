@@ -43,17 +43,16 @@ bool TcpListening::globalInitDone = false;
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
-	, mAddrFamily(AF_INET)
 	, mPort(0)
 	, mMaxConn(20)
 	, mListeningFd(INVALID_SOCKET)
 	, mConnCreated(0)
 {
+	mAddress.sin_family = AF_INET;
 }
 
 void TcpListening::portSet(uint16_t port, bool localOnly)
 {
-	mAddress.sin_family = mAddrFamily;
 	if (localOnly)
 		mAddress.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	else
@@ -118,7 +117,7 @@ Success TcpListening::initialize()
 
 	procDbgLog(LOG_LVL, "creating listening socket");
 
-	mListeningFd = ::socket(mAddrFamily, SOCK_STREAM, 0);
+	mListeningFd = ::socket(mAddress.sin_family, SOCK_STREAM, 0);
 	if (mListeningFd == INVALID_SOCKET)
 		return procErrLog(-4, "socket() failed: %s", intStrErr(errno).c_str());
 
@@ -268,7 +267,7 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	buf[0] = 0;
 	buf[len] = 0;
 
-	::inet_ntop(mAddrFamily, &mAddress.sin_addr, buf, len);
+	::inet_ntop(mAddress.sin_family, &mAddress.sin_addr, buf, len);
 
 	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
 	dInfo("Connections created:\t%d\n", mConnCreated);

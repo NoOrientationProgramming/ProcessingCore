@@ -441,17 +441,21 @@ void TcpTransfering::addrInfoSet()
 
 	struct sockaddr_in addr;
 	socklen_t addrLen;
+	char buf[128];
+	size_t len = sizeof(buf) - 1;
 
 	memset(&addr, 0, sizeof(addr));
 
 	addrLen = sizeof(addr);
 	::getsockname(mSocketFd, (struct sockaddr*)&addr, &addrLen);
-	mAddrLocal = ::inet_ntoa(addr.sin_addr);
+	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
+	mAddrLocal = string(buf);
 	mPortLocal = ::ntohs(addr.sin_port);
 
 	addrLen = sizeof(addr);
 	::getpeername(mSocketFd, (struct sockaddr*)&addr, &addrLen);
-	mAddrRemote = ::inet_ntoa(addr.sin_addr);
+	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
+	mAddrRemote = string(buf);
 	mPortRemote = ::ntohs(addr.sin_port);
 
 	mInfoSet = true;
