@@ -30,7 +30,9 @@
 
 #include <chrono>
 #include <mutex>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "TcpTransfering.h"
 
@@ -373,7 +375,11 @@ void TcpTransfering::disconnect(int err)
 
 	procDbgLog(LOG_LVL, "closing socket: %d", mSocketFd);
 	mErrno = err;
+#ifdef _WIN32
+	::closesocket(mSocketFd);
+#else
 	::close(mSocketFd);
+#endif
 	mSocketFd = INVALID_SOCKET;
 	procDbgLog(LOG_LVL, "closing socket: %d: done", mSocketFd);
 }
