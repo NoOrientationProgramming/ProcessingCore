@@ -157,7 +157,8 @@ Success TcpTransfering::process()
 
 		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (mSocketFd == INVALID_SOCKET)
-			return procErrLog(-1, "could not create socket: %s (%d)", strerror(errno), errno);
+			return procErrLog(-1, "could not create socket: %s",
+							intStrErr(errno).c_str());
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -183,7 +184,8 @@ Success TcpTransfering::process()
 			break;
 
 		if (res < 0)
-			return procErrLog(-1, "could not connect to host: %s (%d)", strerror(errno), errno);
+			return procErrLog(-1, "could not connect to host: %s",
+							intStrErr(errno).c_str());
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -204,7 +206,8 @@ Success TcpTransfering::process()
 			break;
 
 		if (mErrno)
-			return procErrLog(-1, "connection error occured: %s (%d)", strerror(mErrno), mErrno);
+			return procErrLog(-1, "connection error occured: %s",
+							intStrErr(mErrno).c_str());
 
 		return Positive;
 
@@ -278,7 +281,8 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 
 		disconnect(errno);
 
-		return procErrLog(-2, "recv() failed: %s", strerror(errno));
+		return procErrLog(-2, "recv() failed: %s",
+							intStrErr(mErrno).c_str());
 	}
 
 	if (!numBytes)
@@ -343,7 +347,8 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 		if (res < 0)
 		{
 			disconnect(errno);
-			return procErrLog(-1, "connection down: %s", strerror(errno));
+			return procErrLog(-1, "connection down: %s",
+							intStrErr(mErrno).c_str());
 		}
 
 		if (!res)
@@ -394,11 +399,13 @@ Success TcpTransfering::socketOptionsSet()
 	addrInfoSet();
 
 	if (::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-2, "setsockopt(SO_KEEPALIVE) failed: %s", strerror(errno));
+		return procErrLog(-2, "setsockopt(SO_KEEPALIVE) failed: %s",
+							intStrErr(mErrno).c_str());
 
 	ok = fileNonBlockingSet(mSocketFd);
 	if (!ok)
-		return procErrLog(-3, "could not set non blocking mode: %s", strerror(errno));
+		return procErrLog(-3, "could not set non blocking mode: %s",
+							intStrErr(mErrno).c_str());
 
 	mReadReady = true;
 
@@ -439,6 +446,22 @@ void TcpTransfering::addrInfoSet()
 	mPortRemote = ::ntohs(addr.sin_port);
 
 	mInfoSet = true;
+}
+
+string TcpTransfering::intStrErr(int num)
+{
+	char buf[64];
+	size_t len = sizeof(buf) - 1;
+
+	buf[0] = 0;
+	buf[len] = 0;
+
+#ifdef _WIN32
+	::strerror_s(buf, len, num);
+#else
+	::strerror_r(num, buf, len);
+#endif
+	return string(buf);
 }
 
 void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
