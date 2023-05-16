@@ -260,7 +260,7 @@ Success SystemCommanding::commandReceive()
 	char *pFound;
 
 	pCmd = buf;
-	pArgs = &buf[lenDone];
+	pArgs = &buf[cmd.size()];
 
 	pFound = strchr(buf, ' ');
 	if (pFound)
