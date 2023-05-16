@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <time.h>
 #include <stdarg.h>
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
@@ -96,12 +97,16 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	duration<long, nano> tDiff = t - tOld;
 	double tDiffSec = tDiff.count() / 10e9;
 	time_t tt_t = system_clock::to_time_t(t);
-	tm *tm_t = ::localtime(&tt_t);
+	tm bt {};
 	char timeBuf[32];
 
 	tOld = t;
-
-	strftime(timeBuf, sizeof(timeBuf), "%d.%m.%y %H:%M:%S", tm_t);
+#ifdef _WIN32
+	::localtime_s(&bt, &tt_t);
+#else
+	::localtime_r(&tt_t, &bt);
+#endif
+	strftime(timeBuf, sizeof(timeBuf), "%d.%m.%y %H:%M:%S", &bt);
 
 	// "%03d"
 	pStart += snprintf(pStart, pEnd - pStart, "%s.000 +%3.3f %4d %3d  %-24s ", timeBuf, tDiffSec, line, severity, function);
