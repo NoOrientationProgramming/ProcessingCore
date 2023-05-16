@@ -36,16 +36,6 @@
 
 using namespace std;
 
-/* Literature
- * - https://handsonnetworkprogramming.com/articles/differences-windows-winsock-linux-unix-bsd-sockets-compatibility/
- * - https://handsonnetworkprogramming.com/articles/socket-function-return-value-windows-linux-macos/
- */
-#ifndef _WIN32
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET -1
-#endif
-#endif
-
 #define LOG_LVL	0
 
 mutex TcpListening::mtxGlobalInit;

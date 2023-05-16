@@ -58,12 +58,6 @@ using namespace chrono;
 #define MSG_NOSIGNAL 0
 #endif
 
-#ifndef _WIN32
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET -1
-#endif
-#endif
-
 #define LOG_LVL	0
 
 #define dTmoDefaultConnDoneMs			2000

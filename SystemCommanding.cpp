@@ -74,7 +74,7 @@ static mutex mtxCmdExec;
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond);
 
-SystemCommanding::SystemCommanding(int fd)
+SystemCommanding::SystemCommanding(SOCKET fd)
 	: Processing("SystemCommanding")
 	, mState(StStart)
 	, mStartMs(0)
@@ -90,7 +90,7 @@ Success SystemCommanding::initialize()
 {
 	lock_guard<mutex> lock(mtxGlobalInit);
 
-	if (mSocketFd < 0)
+	if (mSocketFd == INVALID_SOCKET)
 		return procErrLog(-1, "socket file descriptor not set");
 
 	if (!globalInitDone)

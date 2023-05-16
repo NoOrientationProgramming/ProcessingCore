@@ -68,7 +68,7 @@ class SystemCommanding : public Processing
 
 public:
 
-	static SystemCommanding *create(int fd)
+	static SystemCommanding *create(SOCKET fd)
 	{
 		return new (std::nothrow) SystemCommanding(fd);
 	}
@@ -76,7 +76,7 @@ public:
 protected:
 
 	SystemCommanding() : Processing("SystemCommanding") {}
-	SystemCommanding(int fd);
+	SystemCommanding(SOCKET fd);
 	virtual ~SystemCommanding() {}
 
 private:
@@ -108,7 +108,7 @@ private:
 	/* member variables */
 	uint32_t mState;
 	uint32_t mStartMs;
-	int mSocketFd;
+	SOCKET mSocketFd;
 	TcpTransfering *mpTrans;
 	const SystemCommand *mpCmdLast;
 	std::string mArgLast;

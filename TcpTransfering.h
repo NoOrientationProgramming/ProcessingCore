@@ -53,9 +53,14 @@
 #include <fcntl.h>
 #endif
 
+/* Literature
+ * - https://handsonnetworkprogramming.com/articles/differences-windows-winsock-linux-unix-bsd-sockets-compatibility/
+ * - https://handsonnetworkprogramming.com/articles/socket-function-return-value-windows-linux-macos/
+ */
 #ifndef _WIN32
 #ifndef SOCKET
 #define SOCKET int
+#define INVALID_SOCKET -1
 #endif
 #endif
 
