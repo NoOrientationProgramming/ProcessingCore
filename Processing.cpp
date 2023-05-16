@@ -308,7 +308,7 @@ void Processing::procTreeDisplaySet(bool display)
 		mStatDrv |= PsbDrvPrTreeDisable;
 }
 
-int Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool colored)
+size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool colored)
 {
 	Processing *pChild = NULL;
 	static char bufInfo[CONFIG_PROC_INFO_BUFFER_SIZE];

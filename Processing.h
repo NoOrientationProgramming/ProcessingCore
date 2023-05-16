@@ -123,7 +123,7 @@ public:
 	void unusedSet();
 	void procTreeDisplaySet(bool display);
 
-	int processTreeStr(char *pBuf, char *pBufEnd, bool detailed = true, bool colored = false);
+	size_t processTreeStr(char *pBuf, char *pBufEnd, bool detailed = true, bool colored = false);
 
 	static void undrivenSet(Processing *pChild);
 	static void destroy(Processing *pChild);
