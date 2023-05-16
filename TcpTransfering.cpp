@@ -58,6 +58,12 @@ using namespace chrono;
 #define MSG_NOSIGNAL 0
 #endif
 
+#ifndef _WIN32
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET -1
+#endif
+#endif
+
 #define LOG_LVL	0
 
 #define dTmoDefaultConnDoneMs			2000
@@ -66,7 +72,7 @@ using namespace chrono;
  * Literature
  * - https://stackoverflow.com/questions/28027937/cross-platform-sockets
  */
-TcpTransfering::TcpTransfering(int fd)
+TcpTransfering::TcpTransfering(SOCKET fd)
 	: Transfering("TcpTransfering")
 	, mState(StSrvStart)
 	, mStartMs(0)
@@ -89,7 +95,7 @@ TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
 	: Transfering("TcpTransfering")
 	, mState(StCltStart)
 	, mStartMs(0)
-	, mSocketFd(-1)
+	, mSocketFd(INVALID_SOCKET)
 	, mHostAddrStr(hostAddr)
 	, mHostPort(hostPort)
 	, mErrno(0)
@@ -126,7 +132,7 @@ Success TcpTransfering::process()
 		break;
 	case StSrvArgCheck:
 
-		if (mSocketFd < 0)
+		if (mSocketFd == INVALID_SOCKET)
 			return procErrLog(-1, "socket file descriptor not set");
 
 		success = socketOptionsSet();
@@ -154,7 +160,7 @@ Success TcpTransfering::process()
 					mHostAddrStr.c_str());
 
 		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
-		if (mSocketFd < 0)
+		if (mSocketFd == INVALID_SOCKET)
 			return procErrLog(-1, "could not create socket: %s (%d)", strerror(errno), errno);
 
 		success = socketOptionsSet();
@@ -253,7 +259,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 	if (!mReadReady)
 		return 0;
 
-	if (mSocketFd < 0)
+	if (mSocketFd == INVALID_SOCKET)
 		return -1;
 
 	ssize_t numBytes = 0;
@@ -322,7 +328,7 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 	// Reason:
 	// Otherwise we have an endless loop for the
 	// SystemDebugging() log peers
-	if (mSocketFd < 0)
+	if (mSocketFd == INVALID_SOCKET)
 		return -1;
 
 	ssize_t res;
@@ -365,7 +371,7 @@ void TcpTransfering::disconnect(int err)
 {
 	//lock_guard<mutex> lock(mSocketFdMtx); // every caller must lock in advance!
 
-	if (mSocketFd < 0)
+	if (mSocketFd == INVALID_SOCKET)
 	{
 		procDbgLog(LOG_LVL, "socket closed already");
 		return;
@@ -374,7 +380,7 @@ void TcpTransfering::disconnect(int err)
 	procDbgLog(LOG_LVL, "closing socket: %d", mSocketFd);
 	mErrno = err;
 	::close(mSocketFd);
-	mSocketFd = -1;
+	mSocketFd = INVALID_SOCKET;
 	procDbgLog(LOG_LVL, "closing socket: %d: done", mSocketFd);
 }
 
@@ -414,7 +420,7 @@ void TcpTransfering::addrInfoSet()
 	if (mInfoSet)
 		return;
 
-	if (mSocketFd < 0)
+	if (mSocketFd == INVALID_SOCKET)
 		return;
 
 	struct sockaddr_in addr;
@@ -456,7 +462,7 @@ uint32_t TcpTransfering::millis()
 	return nowMs.time_since_epoch().count();
 }
 
-bool TcpTransfering::fileNonBlockingSet(int fd)
+bool TcpTransfering::fileNonBlockingSet(SOCKET fd)
 {
 	int opt = 1;
 #ifdef _WIN32

@@ -36,6 +36,16 @@
 
 using namespace std;
 
+/* Literature
+ * - https://handsonnetworkprogramming.com/articles/differences-windows-winsock-linux-unix-bsd-sockets-compatibility/
+ * - https://handsonnetworkprogramming.com/articles/socket-function-return-value-windows-linux-macos/
+ */
+#ifndef _WIN32
+#ifndef INVALID_SOCKET
+#define INVALID_SOCKET -1
+#endif
+#endif
+
 #define LOG_LVL	0
 
 mutex TcpListening::mtxGlobalInit;
@@ -46,7 +56,7 @@ TcpListening::TcpListening()
 	, mAddrFamily(AF_INET)
 	, mPort(0)
 	, mMaxConn(20)
-	, mListeningFd(-1)
+	, mListeningFd(INVALID_SOCKET)
 	, mConnCreated(0)
 {
 }
@@ -118,7 +128,8 @@ Success TcpListening::initialize()
 
 	procDbgLog(LOG_LVL, "creating listening socket");
 
-	if ((mListeningFd = ::socket(mAddrFamily, SOCK_STREAM, 0)) == 0)
+	mListeningFd = ::socket(mAddrFamily, SOCK_STREAM, 0);
+	if (mListeningFd == INVALID_SOCKET)
 		return procErrLog(-4, "socket() failed: %s", intStrErr(errno).c_str());
 
 	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
@@ -179,12 +190,13 @@ Success TcpListening::process()
 
 	procDbgLog(LOG_LVL, "listening socket has data");
 
-	int peerSocketFd;
+	SOCKET peerSocketFd;
 	struct sockaddr_in address = mAddress;
 	socklen_t addrLen = sizeof(address);
 
 	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&address, &addrLen);
-	if (peerSocketFd < 0) {
+	if (peerSocketFd == INVALID_SOCKET)
+	{
 		procWrnLog("accept() failed: %s", intStrErr(errno).c_str());
 
 		return Pending;
@@ -200,7 +212,7 @@ Success TcpListening::process()
 
 Success TcpListening::shutdown()
 {
-	int peerFd;
+	SOCKET peerFd;
 
 	while (!ppPeerFd.isEmpty())
 	{
@@ -213,11 +225,11 @@ Success TcpListening::shutdown()
 #else
 		::close(peerFd);
 #endif
-		peerFd = -1;
+		peerFd = INVALID_SOCKET;
 		procDbgLog(LOG_LVL, "closing unused peer socket %d: done", peerFd);
 	}
 
-	if (mListeningFd >= 0)
+	if (mListeningFd != INVALID_SOCKET)
 	{
 		procDbgLog(LOG_LVL, "closing listening socket %d", mListeningFd);
 #ifdef _WIN32
@@ -225,7 +237,7 @@ Success TcpListening::shutdown()
 #else
 		::close(mListeningFd);
 #endif
-		mListeningFd = -1;
+		mListeningFd = INVALID_SOCKET;
 		procDbgLog(LOG_LVL, "closing listening socket %d: done", mListeningFd);
 	}
 

@@ -184,7 +184,7 @@ void SystemDebugging::peerRemove()
 
 void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc)
 {
-	int peerFd;
+	SOCKET peerFd;
 	Processing *pProc = NULL;
 	struct SystemDebuggingPeer peer;
 

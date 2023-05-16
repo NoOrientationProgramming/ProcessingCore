@@ -53,6 +53,12 @@
 #include <fcntl.h>
 #endif
 
+#ifndef _WIN32
+#ifndef SOCKET
+#define SOCKET int
+#endif
+#endif
+
 #include "Transfering.h"
 
 class TcpTransfering : public Transfering
@@ -60,7 +66,7 @@ class TcpTransfering : public Transfering
 
 public:
 
-	static TcpTransfering *create(int fd)
+	static TcpTransfering *create(SOCKET fd)
 	{
 		return new (std::nothrow) TcpTransfering(fd);
 	}
@@ -76,7 +82,7 @@ public:
 
 protected:
 
-	TcpTransfering(int fd);
+	TcpTransfering(SOCKET fd);
 	TcpTransfering(const std::string &hostAddr, uint16_t hostPort);
 	virtual ~TcpTransfering() {}
 
@@ -108,7 +114,7 @@ private:
 	uint32_t mState;
 	uint32_t mStartMs;
 	std::mutex mSocketFdMtx;
-	int mSocketFd;
+	SOCKET mSocketFd;
 	std::string mHostAddrStr;
 	struct sockaddr_in mHostAddr;
 	uint16_t mHostPort;
@@ -122,7 +128,7 @@ private:
 
 	/* static functions */
 	uint32_t millis();
-	bool fileNonBlockingSet(int fd);
+	bool fileNonBlockingSet(SOCKET fd);
 
 	/* static variables */
 

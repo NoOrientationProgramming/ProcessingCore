@@ -57,6 +57,12 @@
 #include "Processing.h"
 #include "Pipe.h"
 
+#ifndef _WIN32
+#ifndef SOCKET
+#define SOCKET int
+#endif
+#endif
+
 class TcpListening : public Processing
 {
 
@@ -70,8 +76,8 @@ public:
 	void portSet(uint16_t port, bool localOnly = false);
 	void maxConnSet(size_t maxConn);
 
-	int nextPeerFd();
-	Pipe<int> ppPeerFd;
+	SOCKET nextPeerFd();
+	Pipe<SOCKET> ppPeerFd;
 
 protected:
 
@@ -97,7 +103,7 @@ private:
 	uint16_t mPort;
 	size_t mMaxConn;
 
-	int mListeningFd;
+	SOCKET mListeningFd;
 	struct sockaddr_in mAddress;
 
 	static std::mutex mtxGlobalInit;
