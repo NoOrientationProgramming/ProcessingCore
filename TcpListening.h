@@ -67,7 +67,7 @@ public:
 		return new (std::nothrow) TcpListening;
 	}
 
-	void portSet(size_t port, bool localOnly = false);
+	void portSet(uint16_t port, bool localOnly = false);
 	void maxConnSet(size_t maxConn);
 
 	int nextPeerFd();
@@ -93,7 +93,7 @@ private:
 	std::string intStrErr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	size_t mPort;
+	uint16_t mPort;
 	size_t mMaxConn;
 
 	int mListeningFd;

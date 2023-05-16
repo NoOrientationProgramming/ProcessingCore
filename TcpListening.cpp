@@ -50,7 +50,7 @@ TcpListening::TcpListening()
 {
 }
 
-void TcpListening::portSet(size_t port, bool localOnly)
+void TcpListening::portSet(uint16_t port, bool localOnly)
 {
 	mAddress.sin_family = AF_INET;
 	if (localOnly)
