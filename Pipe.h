@@ -55,7 +55,7 @@
     - toPushTry()                  .. Try to push particles to children
 */
 
-#define nowMs()		(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
+#define nowMs()		((uint32_t)std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 
 typedef uint32_t ParticleTime;
 
