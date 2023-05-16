@@ -94,7 +94,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 
 	system_clock::time_point t = system_clock::now();
 	duration<long, nano> tDiff = t - tOld;
-	float tDiffSec = tDiff.count() / 10e9;
+	double tDiffSec = tDiff.count() / 10e9;
 	time_t tt_t = system_clock::to_time_t(t);
 	tm *tm_t = ::localtime(&tt_t);
 	char timeBuf[32];
