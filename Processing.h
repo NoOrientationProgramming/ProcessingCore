@@ -244,7 +244,7 @@ int16_t logEntryCreate(
 				const int line,
 				const int16_t code,
 				const char *msg, ...);
-#define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
+#define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #else
 #define levelLogSet(lvl)
 #define pFctLogEntryCreatedSet(pFct)
@@ -263,7 +263,7 @@ inline int16_t logEntryCreateDummy(
 	(void)msg;
 	return code;
 }
-#define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __FILENAME__, __FUNCTION__, __LINE__, c, m, ##__VA_ARGS__))
+#define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #endif
 
 #define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, m, ##__VA_ARGS__) : c)
