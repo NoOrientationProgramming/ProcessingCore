@@ -35,6 +35,9 @@
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 using namespace chrono;
@@ -118,6 +121,25 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// Creating log entry
 	if (severity <= levelLog)
 	{
+#ifdef _WIN32
+		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+		if (severity == 1)
+		{
+			SetConsoleTextAttribute(hConsole, 4);
+			cerr << pBuf << "\r\n" << flush;
+		}
+		else
+		if (severity == 2)
+		{
+			SetConsoleTextAttribute(hConsole, 6);
+			cerr << pBuf << "\r\n" << flush;
+		}
+		else
+			cout << pBuf << "\r\n" << std::flush;
+
+		SetConsoleTextAttribute(hConsole, 7);
+#else
 		if (severity == 1)
 			cerr << "\033[31m" << pBuf << "\033[37m" << "\r\n" << flush;
 		else
@@ -125,6 +147,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 			cerr << "\033[33m" << pBuf << "\033[37m" << "\r\n" << flush;
 		else
 			cout << pBuf << "\r\n" << std::flush;
+#endif
 	}
 
 	if (pFctLogEntryCreated)
