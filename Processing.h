@@ -161,8 +161,8 @@ protected:
 	bool initDone() const;
 	DriverMode driver() const;
 
-	static int procId(char *pBuf, char *pBufEnd, const Processing *pProc);
-	static int progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal);
+	static size_t procId(char *pBuf, char *pBufEnd, const Processing *pProc);
+	static size_t progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal);
 
 private:
 	// This area is used by the abstract process

@@ -856,7 +856,7 @@ DriverMode Processing::driver() const
 	return mDriver;
 }
 
-int Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
+size_t Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 {
 	char *pBufStart = pBuf;
 
@@ -871,7 +871,7 @@ int Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 	return pBuf - pBufStart;
 }
 
-int Processing::progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal)
+size_t Processing::progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal)
 {
 	char *pBufStart = pBuf;
 
