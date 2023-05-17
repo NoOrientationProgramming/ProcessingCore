@@ -13,7 +13,7 @@ But still: Your coding style is not restricted in any way! Similar to LaTeX: Foc
 
 # Core Advantages
 
-When using the Processing() class the system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
+When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
 There is no low- or high-level code. Just **one essential looped function**: `process()` .. everywhere
 
