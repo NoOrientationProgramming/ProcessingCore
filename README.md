@@ -80,7 +80,7 @@ What is happening. But much more important: **Who** is doing what and when
 You want to trigger something? Just register a command **anywhere** in you application.
 
 ```cpp
-void yourCommand(const char *pArgs, char *pBuf, char *pBufEnd)
+void yourCommand(char *pArgs, char *pBuf, char *pBufEnd)
 {
   dInfo("Executed with '%s'", pArgs);
 }
