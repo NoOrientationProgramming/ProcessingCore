@@ -13,7 +13,7 @@ But still: Your coding style is not restricted! Similar to LaTeX: Focus on your 
 
 # Core Advantages
 
-When using the Processing() class the system structure is recursive. This has a big and very beneficial impact during development and runtime. There is no low- or high-level code. Just **one essential looped function**: ```process()``` .. everywhere
+When using the Processing() class the system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members. There is no low- or high-level code. Just **one essential looped function**: ```process()``` .. everywhere
 
 ```cpp
 Success Supervising::process()
