@@ -2,7 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
 ![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic&type=Cpp)
 
-This class provides a coarse / basic structure for your applications
+These files provide a coarse / basic structure for your applications
 as well as a powerful debugging system!
 
 # Status
