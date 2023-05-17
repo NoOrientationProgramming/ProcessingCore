@@ -276,7 +276,7 @@ Success SystemCommanding::commandReceive()
 
 void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 {
-	size_t lenBuf = strlen(pBuf);
+	size_t lenBuf = strlen(pBuf) + 1;
 	char *pBufLineStart, *pBufIter;
 	int8_t lastLine;
 
@@ -295,7 +295,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 		if (pBufIter >= pBuf + lenBuf)
 			break;
 
-		if (*pBufIter != '\n')
+		if (*pBufIter and *pBufIter != '\n')
 		{
 			++pBufIter;
 			continue;
