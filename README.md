@@ -15,7 +15,7 @@ But still: Your coding style is not restricted! Similar to LaTeX: Focus on your 
 
 When using the Processing() class the system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
-There is no low- or high-level code. Just **one essential looped function**: ```process()``` .. everywhere
+There is no low- or high-level code. Just **one essential looped function**: `process()` .. everywhere
 
 ```cpp
 Success Supervising::process()
@@ -27,7 +27,7 @@ Success Supervising::process()
 
 # Debugging
 
-Only a few lines of code are necessary to get a powerful debugging service integrated directly into your application. In this case we use the **optional** function ```initialize()```
+Only a few lines of code are necessary to get a powerful debugging service integrated directly into your application. In this case we use the **optional** function `initialize()`
 
 ```cpp
 Success Supervising::initialize()
@@ -46,7 +46,7 @@ Success Supervising::initialize()
 
 After that you can connect to three different TCP channels.
 
-**Optionally**: Each process can show some useful stuff by creating a processInfo() function. The rest of your code is unaffected.
+**Optionally**: Each process can show some useful stuff by creating a `processInfo()` function. The rest of your code is unaffected.
 
 ```cpp
 void Supervising::processInfo(char *pBuf, char *pBufEnd)
