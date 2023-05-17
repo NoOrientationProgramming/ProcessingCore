@@ -1,8 +1,14 @@
 
+![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic&type=Cpp)
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
 
 This class provides a coarse / basic structure for your applications
 as well as a powerful debugging system!
+
+# Status
+
+- Mature code created in 2018
+- Finished
 
 # How to add to your project
 
