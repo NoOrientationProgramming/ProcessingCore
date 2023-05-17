@@ -20,8 +20,8 @@ There is no low- or high-level code. Just **one essential looped function**: `pr
 ```cpp
 Success Supervising::process()
 {
-  ++mCounter; // do something wild
-  return Pending;
+    ++mCounter; // do something wild
+    return Pending;
 }
 ```
 
@@ -32,15 +32,15 @@ Only a few lines of code are necessary to get a powerful debugging service integ
 ```cpp
 Success Supervising::initialize()
 {
-  SystemDebugging *pDbg;
+    SystemDebugging *pDbg;
 
-  pDbg = SystemDebugging::create(this);
-  if (!pDbg)
-      return procErrLog(-1, "could not create process");
+    pDbg = SystemDebugging::create(this);
+    if (!pDbg)
+        return procErrLog(-1, "could not create process");
 
-  start(pDbg);
+    start(pDbg);
 
-  return Positive;
+    return Positive;
 }
 ```
 
@@ -51,7 +51,7 @@ After that you can connect to three different TCP channels.
 ```cpp
 void Supervising::processInfo(char *pBuf, char *pBufEnd)
 {
-  dInfo("Counter\t\t%d", mCounter);
+    dInfo("Counter\t\t%d", mCounter);
 }
 ```
 
@@ -82,16 +82,16 @@ You want to trigger something? Just register a command **anywhere** in you appli
 ```cpp
 void yourCommand(char *pArgs, char *pBuf, char *pBufEnd)
 {
-  dInfo("Executed with '%s'", pArgs);
+    dInfo("Executed with '%s'", pArgs);
 }
 
 Success Supervising::initialize()
 {
-  ...
+    ...
 
-  cmdReg("test", yourCommand);
+    cmdReg("test", yourCommand);
 
-  return Positive;
+    return Positive;
 }
 ```
 
