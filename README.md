@@ -10,13 +10,74 @@ as well as a powerful debugging system!
 - Mature code created in 2018
 - Finished
 
-# How to add to your project
+# Debugging
 
-`git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
+Only a few lines of code are necessary to get a powerful debugging service integrated directly into your application.
+
+```cpp
+Success Supervising::initialize()
+{
+  SystemDebugging *pDbg;
+
+  pDbg = SystemDebugging::create(this);
+  if (!pDbg)
+      return procErrLog(-1, "could not create process");
+
+  start(pDbg);
+
+  return Positive;
+}
+```
+
+After that you can connect to three different TCP channels.
+
+### Channel 1 - Process Tree
+
+Just one quick look is needed to see how your **entire** system is doing.
+
+<p align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-1_tree-proc.png"/>
+  </kbd>
+</p>
+
+### Channel 2 - Process Log
+
+What is happening. But much more important: **Who** is doing what and when
+
+<p align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-2_log.png"/>
+  </kbd>
+</p>
+
+### Channel 3 - Command interface
+
+You want to trigger something? Just register a command **anywhere** in you application.
+
+```cpp
+void yourCommand(const char *pArgs, char *pBuf, char *pBufEnd)
+{
+  dInfo("Executed with '%s'", pArgs);
+}
+
+Success Supervising::initialize()
+{
+  ...
+
+  cmdReg("test", yourCommand);
+
+  return Positive;
+}
+```
+
+<p align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-3_cmd.png"/>
+  </kbd>
+</p>
 
 # Supported targets
-
-### Tested
 
 - STM32G030
   - Bare Metal
@@ -27,7 +88,6 @@ as well as a powerful debugging system!
   - MinGW
   - MSVC
 
-### UnTested
+# How to add to your project
 
-- Arduino
-- RTOS
+`git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
