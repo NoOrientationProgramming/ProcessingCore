@@ -99,7 +99,7 @@ Success Supervising::initialize()
   </kbd>
 </p>
 
-# Supported targets
+# Supported Targets
 
 - STM32G030
   - Bare Metal
