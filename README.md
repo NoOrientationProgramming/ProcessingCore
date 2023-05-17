@@ -2,8 +2,7 @@
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
 ![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic&type=Cpp)
 
-These files provide a coarse / basic structure for your applications
-as well as a powerful debugging system!
+These files provide a basic structure for almost all applications as well as a powerful debugging system. But still: Your coding style is not restricted! Similar to LaTeX: Focus on your content, spend less time on structural topics.
 
 # Status
 
