@@ -112,6 +112,10 @@ Success Supervising::initialize()
   - MinGW
   - MSVC
 
+# Learn how to use it
+
+The [Processing() Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to enter this wonderful (recursive) world ..
+
 # How to add to your project
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
