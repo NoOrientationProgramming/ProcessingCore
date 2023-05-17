@@ -4,7 +4,7 @@
 
 These files provide a basic structure for almost all applications as well as a powerful debugging system.
 
-But still: Your coding style is not restricted! Similar to LaTeX: Focus on your content, spend less time on structural topics and debugging.
+But still: Your coding style is not restricted in any way! Similar to LaTeX: Focus on your content, spend less time on structural topics and debugging.
 
 # Status
 
