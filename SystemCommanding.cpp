@@ -256,7 +256,7 @@ Success SystemCommanding::commandReceive()
 #endif
 	snprintf(buf, lenReq, "%s", cmd.c_str());
 
-	const char *pCmd, *pArgs;
+	char *pCmd, *pArgs;
 	char *pFound;
 
 	pCmd = buf;
@@ -322,7 +322,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 	}
 }
 
-void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
+void SystemCommanding::commandExecute(const char *pCmd, char *pArgs)
 {
 	string id, msg;
 
@@ -358,7 +358,7 @@ void SystemCommanding::commandExecute(const char *pCmd, const char *pArgs)
 
 		mpTrans->send(msg.c_str(), msg.size());
 
-		mpCmdLast->func(mArgLast.c_str(), bufOut, bufOut + lenBuf);
+		mpCmdLast->func(pArgs, bufOut, bufOut + lenBuf);
 		bufOut[lenBuf] = 0;
 
 		lfToCrLf(bufOut, msg);
@@ -478,7 +478,7 @@ void intCmdReg(const string &id, FuncCommand cmdFunc, const string &shortcut, co
 	cmdReg(id, cmdFunc, cInternalCmdCls, shortcut, desc);
 }
 
-void SystemCommanding::dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::dummyExecute(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
 	(void)pBuf;
@@ -488,7 +488,7 @@ void SystemCommanding::dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd
 	dInfo("dummy with '%s'\n", pArgs);
 }
 
-void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	SystemCommand cmd;
 	string group = "";
@@ -528,7 +528,7 @@ void SystemCommanding::helpPrint(const char *pArgs, char *pBuf, char *pBufEnd)
 	dInfo("\n");
 }
 
-void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::messageBroadcast(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
 	(void)pBuf;
@@ -537,7 +537,7 @@ void SystemCommanding::messageBroadcast(const char *pArgs, char *pBuf, char *pBu
 	dInfo("error: not implemented\n");
 }
 
-void SystemCommanding::memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::memoryWrite(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
 	(void)pBuf;

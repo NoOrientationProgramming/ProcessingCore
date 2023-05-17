@@ -132,8 +132,8 @@ private:
 	clock_t mEnvironmentChangedTime;
 
 	/* static functions */
-	static void procTreeDetailedToggle(const char *pArgs, char *pBuf, char *pBufEnd);
-	static void procTreeColoredToggle(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd);
+	static void procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufEnd);
 	static void logEntryCreated(
 			const int severity,
 			const char *filename,

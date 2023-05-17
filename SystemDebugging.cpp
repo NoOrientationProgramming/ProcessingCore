@@ -439,7 +439,7 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
-void SystemDebugging::procTreeDetailedToggle(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemDebugging::procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
 	(void)pBuf;
@@ -448,7 +448,7 @@ void SystemDebugging::procTreeDetailedToggle(const char *pArgs, char *pBuf, char
 	procTreeDetailed = not procTreeDetailed;
 }
 
-void SystemDebugging::procTreeColoredToggle(const char *pArgs, char *pBuf, char *pBufEnd)
+void SystemDebugging::procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
 	(void)pBuf;

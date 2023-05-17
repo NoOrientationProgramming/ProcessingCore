@@ -37,7 +37,7 @@
 #include "Processing.h"
 #include "TcpTransfering.h"
 
-typedef void (*FuncCommand)(const char *pArgs, char *pBuf, char *pBufEnd);
+typedef void (*FuncCommand)(char *pArgs, char *pBuf, char *pBufEnd);
 
 struct SystemCommand
 {
@@ -98,7 +98,7 @@ private:
 
 	Success commandReceive();
 	void lfToCrLf(char *pBuf, std::string &str);
-	void commandExecute(const char *pCmd, const char *pArg);
+	void commandExecute(const char *pCmd, char *pArg);
 
 	void inputsProcess();
 	void inputAdd();
@@ -115,10 +115,10 @@ private:
 	std::string mBufFragment;
 
 	/* static functions */
-	static void dummyExecute(const char *pArgs, char *pBuf, char *pBufEnd);
-	static void helpPrint(const char *pArgs, char *pBuf, char *pBufEnd);
-	static void messageBroadcast(const char *pArgs, char *pBuf, char *pBufEnd);
-	static void memoryWrite(const char *pArgs, char *pBuf, char *pBufEnd);
+	static void dummyExecute(char *pArgs, char *pBuf, char *pBufEnd);
+	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	static void messageBroadcast(char *pArgs, char *pBuf, char *pBufEnd);
+	static void memoryWrite(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
 	static std::mutex mtxGlobalInit;
