@@ -6,12 +6,12 @@ These files provide a basic structure for almost all applications as well as a p
 
 But still: Your coding style is not restricted in any way! Similar to LaTeX: Focus on your content, spend less time on structural topics and debugging.
 
-# Status
+## Status
 
 - Mature code created in 2018
 - Finished
 
-# Core Advantages
+## Core Advantages
 
 When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
@@ -25,7 +25,7 @@ Success Supervising::process()
 }
 ```
 
-# Debugging
+## Debugging
 
 Only a few lines of code are necessary to get a powerful debugging service integrated directly into your application. In this case we use the **optional** function `initialize()`
 
@@ -101,7 +101,7 @@ Success Supervising::initialize()
   </kbd>
 </p>
 
-# Supported Targets
+## Supported Targets
 
 - STM32G030
   - Bare Metal
@@ -112,10 +112,10 @@ Success Supervising::initialize()
   - MinGW
   - MSVC
 
-# Learn how to use it
+## Learn how to use it
 
 The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to enter this wonderful (recursive) world ..
 
-# How to add to your project
+## How to add to your project
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
