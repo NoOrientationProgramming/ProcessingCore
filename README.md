@@ -1,29 +1,27 @@
-# Processing() <!-- omit in toc -->
+
+![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
 
 This class provides a coarse / basic structure for your applications
 as well as a powerful debugging system!
 
-## License
-
-MIT see file LICENSE
-
-## How to add to your project
+# How to add to your project
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
 
-## Supported targets
+# Supported targets
 
 ### Tested
 
 - STM32G030
   - Bare Metal
 - ESP32
-- Raspberry Pi
-- Linux
+- Linux / Raspberry Pi
+  - GCC
 - Windows
+  - MinGW
+  - MSVC
 
 ### UnTested
 
 - Arduino
 - RTOS
-
