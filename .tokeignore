@@ -1,0 +1,8 @@
+
+*.cxx
+*.md
+*.sh
+*.py
+
+tools/
+
