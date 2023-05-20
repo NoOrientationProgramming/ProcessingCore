@@ -61,7 +61,7 @@ Just one quick look is needed to see how your **entire** system is doing.
 
 <p align="center">
   <kbd>
-    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-1_tree-proc.png" width="60%"/>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-1_tree-proc.png" style="max-width:100%"/>
   </kbd>
 </p>
 
@@ -97,7 +97,7 @@ Success Supervising::initialize()
 
 <p align="center">
   <kbd>
-    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-3_cmd.png"/>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/channel-dbg-3_cmd.png" style="max-width:100%"/>
   </kbd>
 </p>
 
