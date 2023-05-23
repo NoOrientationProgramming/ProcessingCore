@@ -36,6 +36,7 @@
 #include <list>
 #include <queue>
 #include <chrono>
+#include <mutex>
 #if DEBUG_PIPE
 #include <iostream>
 #endif
