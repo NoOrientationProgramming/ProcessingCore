@@ -38,7 +38,11 @@
 #endif
 
 #ifndef CONFIG_PROC_HAVE_DRIVERS
+#if defined(__STDCPP_THREADS__)
+#define CONFIG_PROC_HAVE_DRIVERS				1
+#else
 #define CONFIG_PROC_HAVE_DRIVERS				0
+#endif
 #endif
 
 #ifndef CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
@@ -50,7 +54,11 @@
 #endif
 
 #ifndef CONFIG_PROC_USE_STD_LISTS
+#if defined(__unix__) || defined(_WIN32)
+#define CONFIG_PROC_USE_STD_LISTS				1
+#else
 #define CONFIG_PROC_USE_STD_LISTS				0
+#endif
 #endif
 
 #ifndef CONFIG_PROC_USE_DRIVER_COLOR
