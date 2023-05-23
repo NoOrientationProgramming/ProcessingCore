@@ -38,8 +38,10 @@ using namespace std;
 
 #define LOG_LVL	0
 
+#ifdef _WIN32
 mutex TcpListening::mtxGlobalInit;
 bool TcpListening::globalInitDone = false;
+#endif
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
@@ -82,6 +84,7 @@ Success TcpListening::initialize()
 	if (!mPort)
 		return procErrLog(-1, "Port not set");
 
+#ifdef _WIN32
 	{
 		lock_guard<mutex> lock(mtxGlobalInit);
 
@@ -89,7 +92,6 @@ Success TcpListening::initialize()
 		{
 			procDbgLog(LOG_LVL, "global WSA initialization");
 
-#ifdef _WIN32
 			int verLow = 2;
 			int verHigh = 2;
 			WORD wVersionRequested;
@@ -107,13 +109,13 @@ Success TcpListening::initialize()
 				WSACleanup();
 				return procErrLog(-3, "could not find a usable version of Winsock.dll");
 			}
-#endif
 
 			Processing::globalDestructorRegister(TcpListening::globalWsaDestruct);
 
 			globalInitDone = true;
 		}
 	}
+#endif
 
 	procDbgLog(LOG_LVL, "creating listening socket");
 
@@ -273,10 +275,11 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	dInfo("Connections created:\t%d\n", mConnCreated);
 }
 
+#ifdef _WIN32
 void TcpListening::globalWsaDestruct()
 {
-#ifdef _WIN32
 	WSACleanup();
-#endif
 	dbgLog(LOG_LVL, "TcpListening(): done");
 }
+#endif
+
