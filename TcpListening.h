@@ -109,11 +109,7 @@ private:
 
 	SOCKET mListeningFd;
 	struct sockaddr_in mAddress;
-#ifdef _WIN32
-	static std::mutex mtxGlobalInit;
-	static bool globalInitDone;
-	static void globalWsaDestruct();
-#endif
+
 	// statistics
 	uint32_t mConnCreated;
 };

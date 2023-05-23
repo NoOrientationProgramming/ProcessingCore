@@ -84,6 +84,9 @@ public:
 	ssize_t read(void *pBuf, size_t lenReq);
 	ssize_t readFlush();
 	ssize_t send(const void *pData, size_t lenReq);
+#ifdef _WIN32
+	static bool wsaInit();
+#endif
 
 protected:
 
@@ -136,8 +139,13 @@ private:
 	/* static functions */
 	static uint32_t millis();
 	static bool fileNonBlockingSet(SOCKET fd);
+#ifdef _WIN32
+	static void globalWsaDestruct();
 
 	/* static variables */
+	static std::mutex mtxGlobalInit;
+	static bool globalInitDone;
+#endif
 
 	/* constants */
 

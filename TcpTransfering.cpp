@@ -62,6 +62,11 @@ using namespace chrono;
 
 #define LOG_LVL	0
 
+#ifdef _WIN32
+mutex TcpTransfering::mtxGlobalInit;
+bool TcpTransfering::globalInitDone = false;
+#endif
+
 #define dTmoDefaultConnDoneMs			2000
 
 /*
@@ -116,6 +121,7 @@ Success TcpTransfering::process()
 	Success success;
 	int res, numErr;
 	ssize_t connCheck;
+	bool ok;
 #if 0
 	procWrnLog("mState = %s", ProcStateString[mState]);
 #endif
@@ -140,6 +146,13 @@ Success TcpTransfering::process()
 		break;
 	case StCltStart:
 
+#ifdef _WIN32
+		ok = wsaInit();
+		if (!ok)
+			return procErrLog(-2, "could not init WSA");
+#else
+		(void)ok;
+#endif
 		mState = StCltArgCheck;
 
 		break;
@@ -542,4 +555,50 @@ bool TcpTransfering::fileNonBlockingSet(SOCKET fd)
 #endif
 	return true;
 }
+
+#ifdef _WIN32
+bool TcpTransfering::wsaInit()
+{
+	lock_guard<mutex> lock(mtxGlobalInit);
+
+	if (globalInitDone)
+		return true;
+
+	dbgLog(LOG_LVL, "global WSA initialization");
+
+	int verLow = 2;
+	int verHigh = 2;
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+
+	wVersionRequested = MAKEWORD(verLow, verHigh);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err)
+	{
+		errLog(-2, "WSAStartup() failed");
+		return false;
+	}
+
+	if (LOBYTE(wsaData.wVersion) != verLow or HIBYTE(wsaData.wVersion) != verHigh)
+	{
+		errLog(-3, "could not find a usable version of Winsock.dll");
+		WSACleanup();
+		return false;
+	}
+
+	Processing::globalDestructorRegister(globalWsaDestruct);
+
+	globalInitDone = true;
+
+	return true;
+}
+
+void TcpTransfering::globalWsaDestruct()
+{
+	WSACleanup();
+	dbgLog(LOG_LVL, "TcpTransfering(): done");
+}
+#endif
 

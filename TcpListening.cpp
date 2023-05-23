@@ -30,18 +30,14 @@
 
 #ifndef _WIN32
 #include <unistd.h>
+#else
+#include "TcpTransfering.h"
 #endif
-
 #include "TcpListening.h"
 
 using namespace std;
 
 #define LOG_LVL	0
-
-#ifdef _WIN32
-mutex TcpListening::mtxGlobalInit;
-bool TcpListening::globalInitDone = false;
-#endif
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
@@ -80,43 +76,16 @@ Literature socket programming:
 Success TcpListening::initialize()
 {
 	int opt = 1;
+	bool ok;
 
 	if (!mPort)
-		return procErrLog(-1, "Port not set");
+		return procErrLog(-1, "port not set");
 
 #ifdef _WIN32
-	{
-		lock_guard<mutex> lock(mtxGlobalInit);
-
-		if (!globalInitDone)
-		{
-			procDbgLog(LOG_LVL, "global WSA initialization");
-
-			int verLow = 2;
-			int verHigh = 2;
-			WORD wVersionRequested;
-			WSADATA wsaData;
-			int err;
-
-			wVersionRequested = MAKEWORD(verLow, verHigh);
-
-			err = WSAStartup(wVersionRequested, &wsaData);
-			if (err)
-				return procErrLog(-2, "WSAStartup() failed");
-
-			if (LOBYTE(wsaData.wVersion) != verLow or HIBYTE(wsaData.wVersion) != verHigh)
-			{
-				WSACleanup();
-				return procErrLog(-3, "could not find a usable version of Winsock.dll");
-			}
-
-			Processing::globalDestructorRegister(TcpListening::globalWsaDestruct);
-
-			globalInitDone = true;
-		}
-	}
+	ok = TcpTransfering::wsaInit();
+	if (!ok)
+		return procErrLog(-2, "could not init WSA");
 #endif
-
 	procDbgLog(LOG_LVL, "creating listening socket");
 
 	mListeningFd = ::socket(mAddress.sin_family, SOCK_STREAM, 0);
@@ -274,12 +243,4 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
 	dInfo("Connections created:\t%d\n", mConnCreated);
 }
-
-#ifdef _WIN32
-void TcpListening::globalWsaDestruct()
-{
-	WSACleanup();
-	dbgLog(LOG_LVL, "TcpListening(): done");
-}
-#endif
 
