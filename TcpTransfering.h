@@ -134,8 +134,8 @@ private:
 	size_t mBytesSent;
 
 	/* static functions */
-	uint32_t millis();
-	bool fileNonBlockingSet(SOCKET fd);
+	static uint32_t millis();
+	static bool fileNonBlockingSet(SOCKET fd);
 
 	/* static variables */
 
