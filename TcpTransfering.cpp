@@ -34,10 +34,6 @@
 #include <unistd.h>
 #endif
 
-#ifdef _MSC_VER
-#pragma comment(lib, "ws2_32")
-#endif
-
 #include "TcpTransfering.h"
 
 #define dForEach_ProcState(gen) \
