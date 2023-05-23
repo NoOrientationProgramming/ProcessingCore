@@ -107,9 +107,7 @@ enum SuccessState
 	Positive = 1
 };
 
-#if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 typedef void (*GlobDestructorFunc)();
-#endif
 
 class Processing
 {
@@ -128,9 +126,7 @@ public:
 	static void undrivenSet(Processing *pChild);
 	static void destroy(Processing *pChild);
 	static void applicationClose();
-#if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	static void globalDestructorRegister(GlobDestructorFunc globDestr);
-#endif
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 

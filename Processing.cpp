@@ -571,6 +571,7 @@ void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
 	errLog(-2, "could not register global destructor. no free slot available");
 #endif
 #else
+	(void)globDestr;
 	errLog(-1, "can't register global destructor. function disabled");
 #endif
 }
