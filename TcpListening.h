@@ -32,7 +32,6 @@
 #define TCP_LISTENING_H
 
 #include <list>
-#include <mutex>
 
 #ifdef _WIN32
 // https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-170

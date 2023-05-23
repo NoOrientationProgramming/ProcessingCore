@@ -85,6 +85,8 @@ Success TcpListening::initialize()
 	ok = TcpTransfering::wsaInit();
 	if (!ok)
 		return procErrLog(-2, "could not init WSA");
+#else
+	(void)ok;
 #endif
 	procDbgLog(LOG_LVL, "creating listening socket");
 
