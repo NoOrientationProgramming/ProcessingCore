@@ -77,7 +77,7 @@ What is happening. But much more important: **Who** is doing what and when
 
 ### Channel 3 - Command interface
 
-You want to trigger something? Just register a command **anywhere** in you application.
+You want to trigger something? Just register a command **anywhere** in your application.
 
 ```cpp
 void yourCommand(char *pArgs, char *pBuf, char *pBufEnd)
