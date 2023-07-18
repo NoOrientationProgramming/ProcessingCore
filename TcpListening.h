@@ -100,11 +100,15 @@ private:
 	Success process();
 	Success shutdown();
 
+	Success connectionsCheck();
+
 	std::string intStrErr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	uint16_t mPort;
 	size_t mMaxConn;
+	bool mInterrupted;
+	uint32_t mCntSkip;
 
 	SOCKET mListeningFd;
 	struct sockaddr_in mAddress;

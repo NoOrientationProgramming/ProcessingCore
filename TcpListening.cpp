@@ -39,10 +39,14 @@ using namespace std;
 
 #define LOG_LVL	0
 
+#define dCntSkipMax 150
+
 TcpListening::TcpListening()
 	: Processing("TcpListening")
 	, mPort(0)
 	, mMaxConn(20)
+	, mInterrupted(false)
+	, mCntSkip(0)
 	, mListeningFd(INVALID_SOCKET)
 	, mConnCreated(0)
 {
@@ -119,11 +123,28 @@ Literature socket programming:
 */
 Success TcpListening::process()
 {
-	ppPeerFd.toPushTry();
-
-	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
+	++mCntSkip;
+	if (mCntSkip < dCntSkipMax)
 		return Pending;
+	mCntSkip = 0;
 
+	Success success;
+
+	while (1)
+	{
+		success = connectionsCheck();
+		if (success != Positive)
+			break;
+	}
+
+	if (mInterrupted)
+		return Positive;
+
+	return success;
+}
+
+Success TcpListening::connectionsCheck()
+{
 	fd_set rfds;
 	struct timeval tv;
 	int res;
@@ -132,7 +153,7 @@ Success TcpListening::process()
 	FD_SET(mListeningFd, &rfds);
 
 	tv.tv_sec = 0;
-	tv.tv_usec = 1000;
+	tv.tv_usec = 10;
 #ifdef _WIN32
 	res = ::select(0, &rfds, NULL, NULL, &tv);
 #else
@@ -143,13 +164,17 @@ Success TcpListening::process()
 		if (errno == EINTR)
 		{
 			procDbgLog(LOG_LVL, "select() failed: %s", intStrErr(errno).c_str());
-			return Positive;
+			mInterrupted = true;
+			return -1;
 		}
 
 		return procErrLog(-1, "select() failed: %s", intStrErr(errno).c_str());
 	}
 
 	if (!res) // timeout ok
+		return Pending;
+
+	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
 		return Pending;
 
 	procDbgLog(LOG_LVL, "listening socket has data");
@@ -162,7 +187,6 @@ Success TcpListening::process()
 	if (peerSocketFd == INVALID_SOCKET)
 	{
 		procWrnLog("accept() failed: %s", intStrErr(errno).c_str());
-
 		return Pending;
 	}
 
@@ -171,7 +195,7 @@ Success TcpListening::process()
 	ppPeerFd.commit(peerSocketFd, nowMs());
 	++mConnCreated;
 
-	return Pending;
+	return Positive;
 }
 
 Success TcpListening::shutdown()
