@@ -109,6 +109,7 @@ private:
 	size_t mMaxConn;
 	bool mInterrupted;
 	uint32_t mCntSkip;
+	bool mConnPending;
 
 	SOCKET mListeningFd;
 	struct sockaddr_in mAddress;

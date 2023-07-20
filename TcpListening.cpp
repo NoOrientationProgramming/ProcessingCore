@@ -47,6 +47,7 @@ TcpListening::TcpListening()
 	, mMaxConn(20)
 	, mInterrupted(false)
 	, mCntSkip(0)
+	, mConnPending(false)
 	, mListeningFd(INVALID_SOCKET)
 	, mConnCreated(0)
 {
@@ -174,8 +175,12 @@ Success TcpListening::connectionsCheck()
 	if (!res) // timeout ok
 		return Pending;
 
+	mConnPending = true;
+
 	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
 		return Pending;
+
+	mConnPending = false;
 
 	procDbgLog(LOG_LVL, "listening socket has data");
 
@@ -267,6 +272,8 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	::inet_ntop(mAddress.sin_family, &mAddress.sin_addr, buf, len);
 
 	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
-	dInfo("Connections created:\t%d\n", mConnCreated);
+	dInfo("Connections created\t%d\n", mConnCreated);
+	dInfo("Connections pending\t%s\n", mConnPending ? "Yes" : "No");
+	dInfo("Queue\t\t\t%zu\n", ppPeerFd.size());
 }
 
