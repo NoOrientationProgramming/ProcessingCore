@@ -130,7 +130,6 @@ private:
 	struct sockaddr_in mHostAddr;
 	uint16_t mHostPort;
 	int mErrno;
-	bool mUsable;
 	bool mInfoSet;
 
 	// statistics

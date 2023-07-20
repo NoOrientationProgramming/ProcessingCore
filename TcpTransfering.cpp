@@ -119,7 +119,7 @@ Success TcpTransfering::process()
 	uint32_t curTimeMs = millis();
 	uint32_t diffMs = curTimeMs - mStartMs;
 	Success success;
-	int res, numErr;
+	int res, numErr = 0;
 	ssize_t connCheck;
 	bool ok;
 #if 0
@@ -197,14 +197,17 @@ Success TcpTransfering::process()
 			if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
 				break;
 #else
-			if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+			if (numErr == EWOULDBLOCK or
+				numErr == EALREADY or
+				numErr == EINPROGRESS or
+				numErr == EAGAIN)
 				break;
 #endif
 		}
 
 		if (res < 0)
-			return procErrLog(-1, "could not connect to host: %s",
-							intStrErr(numErr).c_str());
+			return procErrLog(-1, "could not connect to host: %s (%d)",
+							intStrErr(numErr).c_str(), numErr);
 
 		success = socketOptionsSet();
 		if (success != Positive)
