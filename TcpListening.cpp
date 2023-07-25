@@ -39,7 +39,7 @@ using namespace std;
 
 #define LOG_LVL	0
 
-#define dCntSkipMax 150
+#define dCntSkipMax 30
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
