@@ -47,7 +47,6 @@ TcpListening::TcpListening()
 	, mMaxConn(20)
 	, mInterrupted(false)
 	, mCntSkip(0)
-	, mConnPending(false)
 	, mListeningFd(INVALID_SOCKET)
 	, mConnCreated(0)
 {
@@ -90,14 +89,12 @@ Success TcpListening::initialize()
 	ok = TcpTransfering::wsaInit();
 	if (!ok)
 		return procErrLog(-2, "could not init WSA");
-#else
-	(void)ok;
 #endif
 	procDbgLog(LOG_LVL, "creating listening socket");
 
 	mListeningFd = ::socket(mAddress.sin_family, SOCK_STREAM, 0);
 	if (mListeningFd == INVALID_SOCKET)
-		return procErrLog(-4, "socket() failed: %s", intStrErr(errno).c_str());
+		return procErrLog(-3, "socket() failed: %s", intStrErr(errGet()).c_str());
 
 	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
 
@@ -106,13 +103,18 @@ Success TcpListening::initialize()
 	// This is done in function shutdown()
 
 	if (::setsockopt(mListeningFd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-5, "setsockopt(SO_REUSEADDR) failed: %s", intStrErr(errno).c_str());
+		return procErrLog(-4, "setsockopt(SO_REUSEADDR) failed: %s", intStrErr(errGet()).c_str());
 
 	if (::bind(mListeningFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
-		return procErrLog(-6, "bind() failed: %s", intStrErr(errno).c_str());
+		return procErrLog(-5, "bind() failed: %s", intStrErr(errGet()).c_str());
 
-	if (::listen(mListeningFd, 3) < 0)
-		return procErrLog(-7, "listen() failed: %s", intStrErr(errno).c_str());
+	if (::listen(mListeningFd, 8192) < 0)
+		return procErrLog(-6, "listen() failed: %s", intStrErr(errGet()).c_str());
+
+	ok = fileNonBlockingSet(mListeningFd);
+	if (!ok)
+		return procErrLog(-7, "could not set non blocking mode: %s",
+							intStrErr(errGet()).c_str());
 
 	return Positive;
 }
@@ -133,7 +135,7 @@ Success TcpListening::process()
 
 	while (1)
 	{
-		success = connectionsCheck();
+		success = connectionsAccept();
 		if (success != Positive)
 			break;
 	}
@@ -144,58 +146,55 @@ Success TcpListening::process()
 	return success;
 }
 
-Success TcpListening::connectionsCheck()
+Success TcpListening::connectionsAccept()
 {
-	fd_set rfds;
-	struct timeval tv;
-	int res;
-
-	FD_ZERO(&rfds);
-	FD_SET(mListeningFd, &rfds);
-
-	tv.tv_sec = 0;
-	tv.tv_usec = 10;
-#ifdef _WIN32
-	res = ::select(0, &rfds, NULL, NULL, &tv);
-#else
-	res = ::select(mListeningFd + 1, &rfds, NULL, NULL, &tv);
-#endif
-	if (res < 0)
-	{
-		if (errno == EINTR)
-		{
-			procDbgLog(LOG_LVL, "select() failed: %s", intStrErr(errno).c_str());
-			mInterrupted = true;
-			return -1;
-		}
-
-		return procErrLog(-1, "select() failed: %s", intStrErr(errno).c_str());
-	}
-
-	if (!res) // timeout ok
-		return Pending;
-
-	mConnPending = true;
-
-	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
-		return Pending;
-
-	mConnPending = false;
-
-	procDbgLog(LOG_LVL, "listening socket has data");
-
 	SOCKET peerSocketFd;
-	struct sockaddr_in address = mAddress;
-	socklen_t addrLen = sizeof(address);
+	struct sockaddr_in addr = mAddress;
+	socklen_t addrLen = sizeof(addr);
+	int numErr = 0;
 
-	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&address, &addrLen);
+	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&addr, &addrLen);
 	if (peerSocketFd == INVALID_SOCKET)
 	{
-		procWrnLog("accept() failed: %s", intStrErr(errno).c_str());
+		numErr = errGet();
+#ifdef _WIN32
+		if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+			return Pending;
+#else
+		if (numErr == EWOULDBLOCK or
+			numErr == EALREADY or
+			numErr == EINPROGRESS or
+			numErr == EAGAIN)
+			return Pending;
+#endif
+		procWrnLog("accept() failed: %s (%d)", intStrErr(numErr).c_str(), numErr);
 		return Pending;
 	}
 
-	procDbgLog(LOG_LVL, "got socket fd -> %d", peerSocketFd);
+	{
+		char buf[128];
+		size_t len = sizeof(buf) - 1;
+		uint16_t mPortRemote;
+
+		::getpeername(peerSocketFd, (struct sockaddr*)&addr, &addrLen);
+		::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
+		mPortRemote = ::ntohs(addr.sin_port);
+
+		procDbgLog(LOG_LVL, "got peer %s:%u", buf, mPortRemote);
+	}
+
+	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
+	{
+		procWrnLog("dropping connection. Output queue full");
+#ifdef _WIN32
+		::closesocket(peerSocketFd);
+#else
+		::close(peerSocketFd);
+#endif
+		// give internal side of system time
+		// to consume queue -> Pending
+		return Pending;
+	}
 
 	ppPeerFd.commit(peerSocketFd, nowMs());
 	++mConnCreated;
@@ -237,6 +236,15 @@ Success TcpListening::shutdown()
 	return Positive;
 }
 
+int TcpListening::errGet()
+{
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
+}
+
 string TcpListening::intStrErr(int num)
 {
 	char buf[64];
@@ -251,6 +259,29 @@ string TcpListening::intStrErr(int num)
 	::strerror_r(num, buf, len);
 #endif
 	return string(buf);
+}
+
+bool TcpListening::fileNonBlockingSet(SOCKET fd)
+{
+	int opt = 1;
+#ifdef _WIN32
+	unsigned long nonBlockMode = 1;
+
+	opt = ioctlsocket(fd, FIONBIO, &nonBlockMode);
+	if (opt == SOCKET_ERROR)
+		return false;
+#else
+	opt = fcntl(fd, F_GETFL, 0);
+	if (opt == -1)
+		return false;
+
+	opt |= O_NONBLOCK;
+
+	opt = fcntl(fd, F_SETFL, opt);
+	if (opt == -1)
+		return false;
+#endif
+	return true;
 }
 
 /* Literature
@@ -273,7 +304,6 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 
 	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
 	dInfo("Connections created\t%d\n", mConnCreated);
-	dInfo("Connections pending\t%s\n", mConnPending ? "Yes" : "No");
 	dInfo("Queue\t\t\t%zu\n", ppPeerFd.size());
 }
 

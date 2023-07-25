@@ -100,16 +100,17 @@ private:
 	Success process();
 	Success shutdown();
 
-	Success connectionsCheck();
+	Success connectionsAccept();
 
+	int errGet();
 	std::string intStrErr(int num);
+	bool fileNonBlockingSet(SOCKET fd);
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	uint16_t mPort;
 	size_t mMaxConn;
 	bool mInterrupted;
 	uint32_t mCntSkip;
-	bool mConnPending;
 
 	SOCKET mListeningFd;
 	struct sockaddr_in mAddress;
