@@ -44,7 +44,7 @@ using namespace std;
 TcpListening::TcpListening()
 	: Processing("TcpListening")
 	, mPort(0)
-	, mMaxConn(20)
+	, mMaxConn(200)
 	, mInterrupted(false)
 	, mCntSkip(0)
 	, mListeningFd(INVALID_SOCKET)
