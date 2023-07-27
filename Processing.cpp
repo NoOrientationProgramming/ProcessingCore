@@ -154,6 +154,8 @@ void Processing::treeTick()
 #if CONFIG_PROC_HAVE_DRIVERS
 // cpp -dM /dev/null
 #if __unix__
+		// Only for worker threads
+		if (mDriver == DrivenByNewInternalDriver)
 		{
 			char buf[32];
 			int res;
