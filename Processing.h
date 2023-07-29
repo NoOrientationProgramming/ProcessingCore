@@ -202,7 +202,7 @@ private:
 	DriverMode mDriver;
 	uint8_t mStatParent;
 	uint8_t mStatDrv;
-	uint8_t mLevel;
+	uint8_t mLevelTree;
 	uint8_t mLevelDriver;
 
 	static void parentalDrive(Processing *pChild);

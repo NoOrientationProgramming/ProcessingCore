@@ -325,7 +325,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 	if (!pBuf or !(pBufEnd - pBuf))
 		return 0;
 
-	for (n = 0; n < 2 * mLevel; ++n)
+	for (n = 0; n < 2 * mLevelTree; ++n)
 		dInfo(" ");
 
 	if (mSuccess == Pending)
@@ -401,7 +401,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 				lastChildInfoLine = 1;
 			}
 
-			for (n = 0; n < 2 * mLevel + 2; ++n)
+			for (n = 0; n < 2 * mLevelTree + 2; ++n)
 				dInfo(" ");
 
 			*pBufIter = 0; // terminate current line starting at pBufLineStart
@@ -440,7 +440,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 			if (cntChildDrawn < 11)
 				continue;
 
-			for (n = 0; n < 2 * mLevel + 2; ++n)
+			for (n = 0; n < 2 * mLevelTree + 2; ++n)
 				dInfo(" ");
 
 			dInfo("..\r\n");
@@ -596,7 +596,7 @@ Processing::Processing(const char *name)
 	, mProcState(PsExistent)
 	, mDriver(DrivenByExternalDriver)
 	, mStatParent(0)
-	, mLevel(0)
+	, mLevelTree(0)
 	, mLevelDriver(0)
 {
 	procDbgLog(LOG_LVL, "Processing()");
@@ -655,7 +655,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	procDbgLog(LOG_LVL, "starting %s", childId);
 
 	pChild->mDriver = driver;
-	pChild->mLevel = mLevel + 1;
+	pChild->mLevelTree = mLevelTree + 1;
 	pChild->mLevelDriver = mLevelDriver;
 	pChild->mStatParent |= PsbParStarted;
 
