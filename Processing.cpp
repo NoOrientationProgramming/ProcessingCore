@@ -348,7 +348,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 	}
 
 #if CONFIG_PROC_USE_DRIVER_COLOR
-	if (colored and !mDriverLevel)
+	if (colored and !mLevelDriver)
 		dInfo("\033[32m");
 #endif
 
@@ -597,7 +597,7 @@ Processing::Processing(const char *name)
 	, mDriver(DrivenByExternalDriver)
 	, mStatParent(0)
 	, mLevel(0)
-	, mDriverLevel(0)
+	, mLevelDriver(0)
 {
 	procDbgLog(LOG_LVL, "Processing()");
 
@@ -656,7 +656,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 
 	pChild->mDriver = driver;
 	pChild->mLevel = mLevel + 1;
-	pChild->mDriverLevel = mDriverLevel;
+	pChild->mLevelDriver = mLevelDriver;
 	pChild->mStatParent |= PsbParStarted;
 
 	procDbgLog(LOG_LVL, "adding %s to child list", childId);
@@ -679,7 +679,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	{
 		procDbgLog(LOG_LVL, "creating new internal driver for %s", childId);
 #if CONFIG_PROC_HAVE_DRIVERS
-		++pChild->mDriverLevel;
+		++pChild->mLevelDriver;
 
 		pChild->mpThread = new (std::nothrow) std::thread(&Processing::internalDrive, pChild);
 		if (!pChild->mpThread)
@@ -696,7 +696,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	else if (driver == DrivenByExternalDriver)
 	{
 		procDbgLog(0, "external driver is used for %s", childId);
-		++pChild->mDriverLevel;
+		++pChild->mLevelDriver;
 	} else
 		procDbgLog(LOG_LVL, "using parent as driver for %s", childId);
 
