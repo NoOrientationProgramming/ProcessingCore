@@ -508,9 +508,11 @@ string TcpTransfering::intStrErr(int num)
 	buf[len] = 0;
 
 #ifdef _WIN32
-	::strerror_s(buf, len, num);
+	errno_t numErr = ::strerror_s(buf, len, num);
+	(void)numErr;
 #else
-	::strerror_r(num, buf, len);
+	char *pBuf = ::strerror_r(num, buf, len);
+	(void)pBuf;
 #endif
 	return string(buf);
 }
