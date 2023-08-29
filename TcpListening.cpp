@@ -94,7 +94,7 @@ Success TcpListening::initialize()
 
 	mListeningFd = ::socket(mAddress.sin_family, SOCK_STREAM, 0);
 	if (mListeningFd == INVALID_SOCKET)
-		return procErrLog(-3, "socket() failed: %s", intStrErr(errGet()).c_str());
+		return procErrLog(-3, "socket() failed: %s", errnoToStr(errGet()).c_str());
 
 	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
 
@@ -103,18 +103,18 @@ Success TcpListening::initialize()
 	// This is done in function shutdown()
 
 	if (::setsockopt(mListeningFd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-4, "setsockopt(SO_REUSEADDR) failed: %s", intStrErr(errGet()).c_str());
+		return procErrLog(-4, "setsockopt(SO_REUSEADDR) failed: %s", errnoToStr(errGet()).c_str());
 
 	if (::bind(mListeningFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
-		return procErrLog(-5, "bind() failed: %s", intStrErr(errGet()).c_str());
+		return procErrLog(-5, "bind() failed: %s", errnoToStr(errGet()).c_str());
 
 	if (::listen(mListeningFd, 8192) < 0)
-		return procErrLog(-6, "listen() failed: %s", intStrErr(errGet()).c_str());
+		return procErrLog(-6, "listen() failed: %s", errnoToStr(errGet()).c_str());
 
 	ok = fileNonBlockingSet(mListeningFd);
 	if (!ok)
 		return procErrLog(-7, "could not set non blocking mode: %s",
-							intStrErr(errGet()).c_str());
+							errnoToStr(errGet()).c_str());
 
 	return Positive;
 }
@@ -167,7 +167,7 @@ Success TcpListening::connectionsAccept()
 			numErr == EAGAIN)
 			return Pending;
 #endif
-		procWrnLog("accept() failed: %s (%d)", intStrErr(numErr).c_str(), numErr);
+		procWrnLog("accept() failed: %s (%d)", errnoToStr(numErr).c_str(), numErr);
 		return Pending;
 	}
 
@@ -245,7 +245,7 @@ int TcpListening::errGet()
 #endif
 }
 
-string TcpListening::intStrErr(int num)
+string TcpListening::errnoToStr(int num)
 {
 	char buf[64];
 	size_t len = sizeof(buf) - 1;

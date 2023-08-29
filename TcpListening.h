@@ -103,7 +103,7 @@ private:
 	Success connectionsAccept();
 
 	int errGet();
-	std::string intStrErr(int num);
+	std::string errnoToStr(int num);
 	bool fileNonBlockingSet(SOCKET fd);
 	void processInfo(char *pBuf, char *pBufEnd);
 
