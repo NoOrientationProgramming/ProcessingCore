@@ -260,7 +260,7 @@ string TcpListening::errnoToStr(int num)
 	char *pBuf = ::strerror_r(num, buf, len);
 	(void)pBuf;
 #endif
-	return string(buf);
+	return string(pBuf);
 }
 
 bool TcpListening::fileNonBlockingSet(SOCKET fd)
