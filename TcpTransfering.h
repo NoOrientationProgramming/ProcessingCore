@@ -118,7 +118,7 @@ private:
 	void addrInfoSet();
 
 	int errGet();
-	std::string intStrErr(int num);
+	std::string errnoToStr(int num);
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */

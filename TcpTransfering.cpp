@@ -171,7 +171,7 @@ Success TcpTransfering::process()
 		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (mSocketFd == INVALID_SOCKET)
 			return procErrLog(-1, "could not create socket: %s",
-							intStrErr(errGet()).c_str());
+							errnoToStr(errGet()).c_str());
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -207,7 +207,7 @@ Success TcpTransfering::process()
 
 		if (res < 0)
 			return procErrLog(-1, "could not connect to host: %s (%d)",
-							intStrErr(numErr).c_str(), numErr);
+							errnoToStr(numErr).c_str(), numErr);
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -229,7 +229,7 @@ Success TcpTransfering::process()
 
 		if (mErrno)
 			return procErrLog(-1, "connection error occured: %s",
-							intStrErr(mErrno).c_str());
+							errnoToStr(mErrno).c_str());
 
 		return Positive;
 
@@ -311,7 +311,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 		disconnect(numErr);
 
 		return procErrLog(-2, "recv() failed: %s",
-							intStrErr(mErrno).c_str());
+							errnoToStr(mErrno).c_str());
 	}
 
 	if (!numBytes)
@@ -386,7 +386,7 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 
 			disconnect(numErr);
 			return procErrLog(-1, "connection down: %s",
-							intStrErr(mErrno).c_str());
+							errnoToStr(mErrno).c_str());
 		}
 
 		if (!res)
@@ -438,12 +438,12 @@ Success TcpTransfering::socketOptionsSet()
 
 	if (::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt)))
 		return procErrLog(-2, "setsockopt(SO_KEEPALIVE) failed: %s",
-							intStrErr(mErrno).c_str());
+							errnoToStr(mErrno).c_str());
 
 	ok = fileNonBlockingSet(mSocketFd);
 	if (!ok)
 		return procErrLog(-3, "could not set non blocking mode: %s",
-							intStrErr(mErrno).c_str());
+							errnoToStr(mErrno).c_str());
 
 	mReadReady = true;
 
@@ -499,10 +499,11 @@ int TcpTransfering::errGet()
 #endif
 }
 
-string TcpTransfering::intStrErr(int num)
+string TcpTransfering::errnoToStr(int num)
 {
 	char buf[64];
 	size_t len = sizeof(buf) - 1;
+	char *pBuf = buf;
 
 	buf[0] = 0;
 	buf[len] = 0;
@@ -511,10 +512,9 @@ string TcpTransfering::intStrErr(int num)
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
 #else
-	char *pBuf = ::strerror_r(num, buf, len);
-	(void)pBuf;
+	pBuf = ::strerror_r(num, buf, len);
 #endif
-	return string(buf);
+	return string(pBuf);
 }
 
 void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
