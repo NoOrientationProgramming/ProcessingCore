@@ -249,6 +249,7 @@ string TcpListening::errnoToStr(int num)
 {
 	char buf[64];
 	size_t len = sizeof(buf) - 1;
+	char *pBuf = buf;
 
 	buf[0] = 0;
 	buf[len] = 0;
@@ -257,8 +258,7 @@ string TcpListening::errnoToStr(int num)
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
 #else
-	char *pBuf = ::strerror_r(num, buf, len);
-	(void)pBuf;
+	pBuf = ::strerror_r(num, buf, len);
 #endif
 	return string(pBuf);
 }
