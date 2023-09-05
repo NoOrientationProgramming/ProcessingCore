@@ -106,7 +106,7 @@ Success TcpListening::initialize()
 		return procErrLog(-4, "setsockopt(SO_REUSEADDR) failed: %s", errnoToStr(errGet()).c_str());
 
 	if (::bind(mListeningFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
-		return procErrLog(-5, "bind() failed: %s", errnoToStr(errGet()).c_str());
+		return procErrLog(-5, "bind(%u) failed: %s", mPort, errnoToStr(errGet()).c_str());
 
 	if (::listen(mListeningFd, 8192) < 0)
 		return procErrLog(-6, "listen() failed: %s", errnoToStr(errGet()).c_str());
