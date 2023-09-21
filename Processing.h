@@ -229,7 +229,7 @@ private:
 		return Pending; \
 }
 
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __FILENAME__ (Processing::strrchr(__FILE__, '/') ? Processing::strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
 typedef void (*LogEntryCreatedFct)(
