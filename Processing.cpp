@@ -578,6 +578,31 @@ void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
 #endif
 }
 
+const char *Processing::strrchr(const char *x, char y)
+{
+	if (!x)
+		return NULL;
+
+	for (; *x; ++x)
+	{
+		if (*x == y)
+			return x;
+	}
+
+	return NULL;
+}
+
+void *Processing::memcpy(void *to, const void *from, size_t cnt)
+{
+	const char *pFrom = (const char *)from;
+	char *pTo = (char *)to;
+
+	for (; cnt; --cnt)
+		*pTo++ = *pFrom++;
+
+	return to;
+}
+
 // This area is used by the concrete processes
 
 Processing::Processing(const char *name)

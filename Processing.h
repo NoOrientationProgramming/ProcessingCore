@@ -135,6 +135,8 @@ public:
 	static void destroy(Processing *pChild);
 	static void applicationClose();
 	static void globalDestructorRegister(GlobDestructorFunc globDestr);
+	static const char *strrchr(const char *x, char y);
+	static void *memcpy(void *to, const void *from, size_t cnt);
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 
