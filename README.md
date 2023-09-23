@@ -1,6 +1,6 @@
 
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
-![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic)
+<!-- ![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic) -->
 
 These files provide a basic structure for almost all applications as well as a powerful debugging system.
 
