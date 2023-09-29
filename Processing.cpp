@@ -924,7 +924,12 @@ size_t Processing::progressStr(char *pBuf, char *pBufEnd, const int val, const i
 
 	dInfo(" %3d%%", percent);
 
-	int maxValLen = snprintf(NULL, 0, "%d", maxVal);
+	int maxValLen = 0;
+	int maxValCpy = maxVal;
+
+	for (; maxValCpy; ++maxValLen)
+		maxValCpy *= 0.1;
+
 	dInfo(" %*d / %d", maxValLen, val, maxVal);
 
 	return pBuf - pBufStart;
