@@ -107,7 +107,6 @@
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 #include <new>
 #include <list>
-#include <algorithm>
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
