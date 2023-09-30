@@ -28,6 +28,7 @@
   SOFTWARE.
 */
 
+#include <string.h>
 #include <chrono>
 #include <mutex>
 #ifndef _WIN32
