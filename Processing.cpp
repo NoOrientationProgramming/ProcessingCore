@@ -744,7 +744,7 @@ Processing *Processing::repel(Processing *pChild)
 
 	if (pChild == this)
 	{
-		procErrLog(-1, "could not start child. pointer to child is me");
+		procErrLog(-1, "could not repel child. pointer to child is me");
 		return NULL;
 	}
 
