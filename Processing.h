@@ -101,6 +101,7 @@
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 #endif
 
@@ -238,7 +239,12 @@ private:
 #endif
 };
 
-#define __FILENAME__ (Processing::strrchr(__FILE__, '/') ? Processing::strrchr(__FILE__, '/') + 1 : __FILE__)
+#if CONFIG_PROC_HAVE_LIB_STD_C
+#define procStrrChr(s, c)		strrchr(s, c)
+#else
+#define procStrrChr(s, c)		Processing::strrchr(s, c)
+#endif
+#define __FILENAME__ (procStrrChr(__FILE__, '/') ? procStrrChr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
 typedef void (*LogEntryCreatedFct)(
