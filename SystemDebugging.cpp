@@ -308,7 +308,11 @@ void SystemDebugging::processTreeSend()
 
 	*buffProcTree = 0;
 
-	mpTreeRoot->processTreeStr(buffProcTree, buffProcTree + sizeof(buffProcTree), procTreeDetailed, procTreeColored);
+	mpTreeRoot->processTreeStr(
+			buffProcTree,
+			buffProcTree + sizeof(buffProcTree),
+			procTreeDetailed,
+			procTreeColored);
 
 	string procTree(buffProcTree);
 
