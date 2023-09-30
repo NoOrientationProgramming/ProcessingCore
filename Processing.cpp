@@ -767,31 +767,14 @@ Processing *Processing::cancel(Processing *pChild)
 
 Processing *Processing::repel(Processing *pChild)
 {
-	if (!pChild)
-	{
-		procErrLog(-1, "could not repel child. NULL pointer");
+	procDbgLog(LOG_LVL, "trying to repel child");
+
+	if (!cancel(pChild))
 		return NULL;
-	}
 
-	if (pChild == this)
-	{
-		procErrLog(-1, "could not repel child. pointer to child is me");
-		return NULL;
-	}
-
-	if (!(pChild->mStatParent & PsbParStarted))
-	{
-		procErrLog(-2, "tried to repel orphan");
-		return NULL;
-	}
-
-	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
-	procId(childId, childId + sizeof(childId), pChild);
-
-	procDbgLog(LOG_LVL, "repelling %s", childId);
-	mStatParent |= PsbParCanceled;
+	procDbgLog(LOG_LVL, "setting child unused");
 	pChild->unusedSet();
-	procDbgLog(LOG_LVL, "repelling %s: done", childId);
+	procDbgLog(LOG_LVL, "setting child unused: done");
 
 	return NULL;
 }
