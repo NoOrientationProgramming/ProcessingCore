@@ -151,8 +151,10 @@ public:
 	static void destroy(Processing *pChild);
 	static void applicationClose();
 	static void globalDestructorRegister(GlobDestructorFunc globDestr);
+#if !CONFIG_PROC_HAVE_LIB_STD_C
 	static const char *strrchr(const char *x, char y);
 	static void *memcpy(void *to, const void *from, size_t cnt);
+#endif
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 

@@ -580,6 +580,7 @@ void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
 #endif
 }
 
+#if !CONFIG_PROC_HAVE_LIB_STD_C
 const char *Processing::strrchr(const char *x, char y)
 {
 	if (!x)
@@ -604,6 +605,7 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 
 	return to;
 }
+#endif
 
 // This area is used by the concrete processes
 
