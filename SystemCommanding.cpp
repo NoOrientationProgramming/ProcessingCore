@@ -28,6 +28,8 @@
   SOFTWARE.
 */
 
+#include <string.h>
+
 #include "SystemCommanding.h"
 //#include "LibDspc.h"
 
