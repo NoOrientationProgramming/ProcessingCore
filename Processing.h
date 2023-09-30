@@ -300,10 +300,17 @@ inline int16_t logEntryCreateDummy(
 #define dInfoDebugPrefix
 #define dInfo(m, ...)					dInfoDebugPrefix pBuf = (pBuf += snprintf(pBuf, pBufEnd - pBuf, m, ##__VA_ARGS__), pBuf > pBufEnd ? pBufEnd : pBuf)
 #else
-inline void dInfo(const char *msg, ...)
+inline void dInfoDummy(char *pBuf, char *pBufEnd, const char *msg, ...)
 {
+	if (!pBuf)
+		return;
+
+	*pBuf = 0;
+
+	(void)pBufEnd;
 	(void)msg;
 }
+#define dInfo(m, ...)					dInfoDummy(pBuf, pBufEnd, m, ##__VA_ARGS__)
 #endif
 #define dTrace(x)						pBuf += mncpy(pBuf, pBufEnd - pBuf, (char *)&x, sizeof(x))
 
