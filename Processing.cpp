@@ -759,6 +759,7 @@ Processing *Processing::repel(Processing *pChild)
 	procId(childId, childId + sizeof(childId), pChild);
 
 	procDbgLog(LOG_LVL, "repelling %s", childId);
+	mStatParent |= PsbParCanceled;
 	pChild->unusedSet();
 	procDbgLog(LOG_LVL, "repelling %s: done", childId);
 
