@@ -163,6 +163,7 @@ protected:
 	const char *procName() const { return mName; }
 
 	Processing *start(Processing *pChild, DriverMode driver = DrivenByParent);
+	Processing *cancel(Processing *pChild);
 	Processing *repel(Processing *pChild);
 	Processing *whenFinishedRepel(Processing *pChild);
 

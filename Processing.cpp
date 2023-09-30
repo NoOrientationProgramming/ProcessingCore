@@ -735,6 +735,36 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	return pChild;
 }
 
+Processing *Processing::cancel(Processing *pChild)
+{
+	if (!pChild)
+	{
+		procErrLog(-1, "could not cancel child. NULL pointer");
+		return NULL;
+	}
+
+	if (pChild == this)
+	{
+		procErrLog(-1, "could not cancel child. pointer to child is me");
+		return NULL;
+	}
+
+	if (!(pChild->mStatParent & PsbParStarted))
+	{
+		procErrLog(-2, "tried to cancel orphan");
+		return NULL;
+	}
+
+	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
+	procId(childId, childId + sizeof(childId), pChild);
+
+	procDbgLog(LOG_LVL, "canceling %s", childId);
+	mStatParent |= PsbParCanceled;
+	procDbgLog(LOG_LVL, "canceling %s: done", childId);
+
+	return pChild;
+}
+
 Processing *Processing::repel(Processing *pChild)
 {
 	if (!pChild)
