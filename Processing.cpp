@@ -172,9 +172,9 @@ void Processing::treeTick()
 #endif
 #endif
 
-		if (mStatParent & PsbParUnused)
+		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "set process as unused during state existent");
+			procDbgLog(LOG_LVL, "process canceled during state existent");
 			mProcState = PsFinishedPrepare;
 			break;
 		}
@@ -185,9 +185,9 @@ void Processing::treeTick()
 		break;
 	case PsInitializing:
 
-		if (mStatParent & PsbParUnused)
+		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "set process as unused during initializing");
+			procDbgLog(LOG_LVL, "process canceled during initializing");
 			procDbgLog(LOG_LVL, "downShutting()");
 			mProcState = PsDownShutting;
 			break;
@@ -216,9 +216,9 @@ void Processing::treeTick()
 		break;
 	case PsProcessing:
 
-		if (mStatParent & PsbParUnused)
+		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "set process as unused during processing");
+			procDbgLog(LOG_LVL, "process canceled during processing");
 			procDbgLog(LOG_LVL, "downShutting()");
 			mProcState = PsDownShutting;
 			break;
