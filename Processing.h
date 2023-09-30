@@ -28,8 +28,6 @@
   SOFTWARE.
 */
 
-#include <new>
-
 #ifndef PROCESSING_H
 #define PROCESSING_H
 
@@ -53,11 +51,19 @@
 #define CONFIG_PROC_NUM_MAX_GLOBAL_DESTRUCTORS	20
 #endif
 
-#ifndef CONFIG_PROC_USE_STD_LISTS
+#ifndef CONFIG_PROC_HAVE_LIB_STD_C
 #if defined(__unix__) || defined(_WIN32)
-#define CONFIG_PROC_USE_STD_LISTS				1
+#define CONFIG_PROC_HAVE_LIB_STD_C				1
 #else
-#define CONFIG_PROC_USE_STD_LISTS				0
+#define CONFIG_PROC_HAVE_LIB_STD_C				0
+#endif
+#endif
+
+#ifndef CONFIG_PROC_HAVE_LIB_STD_CPP
+#if defined(__unix__) || defined(_WIN32)
+#define CONFIG_PROC_HAVE_LIB_STD_CPP			1
+#else
+#define CONFIG_PROC_HAVE_LIB_STD_CPP			0
 #endif
 #endif
 
@@ -85,10 +91,21 @@
 #define CONFIG_PROC_DISABLE_TREE_DEFAULT		0
 #endif
 
-#include <stdio.h>
-#include <stdint.h>
+#ifndef CONFIG_PROC_HAVE_LIB_C_CUSTOM
+#define CONFIG_PROC_HAVE_LIB_C_CUSTOM			0
+#endif
 
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_C_CUSTOM
+#include "LibcCustom.h"
+#endif
+
+#if CONFIG_PROC_HAVE_LIB_STD_C
+#include <stdint.h>
+#include <stdio.h>
+#endif
+
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
+#include <new>
 #include <list>
 #include <algorithm>
 #endif
@@ -160,7 +177,7 @@ protected:
 
 	Success childrenSuccess();
 	size_t mncpy(void *dest, size_t destSize, const void *src, size_t srcSize);
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	void maxChildrenSet(uint16_t cnt);
 #endif
 	bool initDone() const;
@@ -181,7 +198,7 @@ private:
 
 	const char *mName;
 
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	std::list<Processing *> mChildList;
 #else
 	Processing **childElemAdd(Processing *pChild);
@@ -196,7 +213,7 @@ private:
 
 	Success mSuccess;
 	uint16_t mNumChildren;
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	uint16_t mNumChildrenMax;
 #endif
 	uint8_t mProcState;
@@ -214,19 +231,13 @@ private:
 	static uint8_t disableTreeDefault;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	static std::list<GlobDestructorFunc> globalDestructors;
 #else
 	static GlobDestructorFunc *pGlobalDestructors;
 #endif
 #endif
 };
-
-#define blockUntilNotified(x) \
-{ \
-	if (!haveNotificationsOrBlock(x)) \
-		return Pending; \
-}
 
 #define __FILENAME__ (Processing::strrchr(__FILE__, '/') ? Processing::strrchr(__FILE__, '/') + 1 : __FILE__)
 
@@ -282,9 +293,15 @@ inline int16_t logEntryCreateDummy(
 #define procInfLog(m, ...)				(infLog("%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
 #define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
 
-//#define dInfoDebugPrefix				printf("%-20s (%3d): %p %p '%c'%s\n", __FILENAME__, __LINE__, pBuf, pBufEnd, *(pBuf - 1), pBuf > pBufEnd ? " -> FAIL" : ""),
+#if CONFIG_PROC_HAVE_LIB_STD_C
 #define dInfoDebugPrefix
 #define dInfo(m, ...)					dInfoDebugPrefix pBuf = (pBuf += snprintf(pBuf, pBufEnd - pBuf, m, ##__VA_ARGS__), pBuf > pBufEnd ? pBufEnd : pBuf)
+#else
+inline void dInfo(const char *msg, ...)
+{
+	(void)msg;
+}
+#endif
 #define dTrace(x)						pBuf += mncpy(pBuf, pBufEnd - pBuf, (char *)&x, sizeof(x))
 
 #define dProcessStateEnum(StateName) \

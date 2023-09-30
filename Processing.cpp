@@ -60,13 +60,13 @@ enum ProcStatBitDriver
 	PsbDrvPrTreeDisable = 4,
 };
 
-#if CONFIG_PROC_USE_STD_LISTS || CONFIG_PROC_HAVE_DRIVERS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP || CONFIG_PROC_HAVE_DRIVERS
 using namespace std;
 #endif
 
 #define LOG_LVL	1
 
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 typedef list<Processing *>::iterator ChildIter;
 #endif
 
@@ -74,7 +74,7 @@ uint8_t Processing::showAddressInId = CONFIG_PROC_SHOW_ADDRESS_IN_ID;
 uint8_t Processing::disableTreeDefault = CONFIG_PROC_DISABLE_TREE_DEFAULT;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 list<GlobDestructorFunc> Processing::globalDestructors;
 #else
 GlobDestructorFunc *Processing::pGlobalDestructors = NULL;
@@ -96,7 +96,7 @@ void Processing::treeTick()
 	Success success;
 	bool childCanBeRemoved;
 
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	ChildIter iter = mChildList.begin();
 	while (iter != mChildList.end())
 	{
@@ -114,7 +114,7 @@ void Processing::treeTick()
 
 		if (!childCanBeRemoved)
 		{
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 			++iter;
 #else
 			++pChildListElem;
@@ -132,7 +132,7 @@ void Processing::treeTick()
 			Guard lock(mChildListMtx);
 			procDbgLog(LOG_LVL, "Locking mChildListMtx: done");
 #endif
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 			iter = mChildList.erase(iter);
 			--mNumChildren;
 #else
@@ -248,7 +248,7 @@ void Processing::treeTick()
 	case PsChildrenUnusedSet:
 
 		procDbgLog(LOG_LVL, "marking children as unused");
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 		iter = mChildList.begin();
 		while (iter != mChildList.end())
 		{
@@ -424,7 +424,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mChildListMtx);
 #endif
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 		ChildIter iter = mChildList.begin();
 		while (iter != mChildList.end())
 		{
@@ -469,7 +469,7 @@ void Processing::destroy(Processing *pChild)
 	if (pChild->mNumChildren)
 		errLog(-1, "destroying child with grand children");
 
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	if (pChild->mpChildList)
 	{
 		dbgLog(LOG_LVL, "child %s deleting child list", childId);
@@ -507,7 +507,7 @@ void Processing::applicationClose()
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	dbgLog(LOG_LVL, "executing global destructors");
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	list<GlobDestructorFunc>::iterator iter = globalDestructors.begin();
 
 	while (iter != globalDestructors.end())
@@ -535,7 +535,7 @@ void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
 {
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	dbgLog(LOG_LVL, "");
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	globalDestructors.push_front(globDestr);
 	globalDestructors.unique();
 	dbgLog(LOG_LVL, ": done");
@@ -609,7 +609,7 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 
 Processing::Processing(const char *name)
 	: mName(name)
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	, mpChildList(NULL)
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -617,7 +617,7 @@ Processing::Processing(const char *name)
 #endif
 	, mSuccess(Pending)
 	, mNumChildren(0)
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	, mNumChildrenMax(CONFIG_PROC_NUM_MAX_CHILDREN_DEFAULT)
 #endif
 	, mProcState(PsExistent)
@@ -668,7 +668,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 		procErrLog(-1, "could not start child. pointer to child is me");
 		return NULL;
 	}
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	if (mNumChildren >= mNumChildrenMax)
 	{
 		procErrLog(-2, "can't add child. maximum number of children reached");
@@ -693,7 +693,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 		Guard lock(mChildListMtx);
 		procDbgLog(LOG_LVL, "Locking mChildListMtx: done");
 #endif
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 		mChildList.push_back(pChild);
 		++mNumChildren;
 #else
@@ -824,7 +824,7 @@ Success Processing::childrenSuccess()
 	Success success;
 	bool oneIsPending = false;
 
-#if CONFIG_PROC_USE_STD_LISTS
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
 	ChildIter iter = mChildList.begin();
 	while (iter != mChildList.end())
 	{
@@ -863,7 +863,7 @@ size_t Processing::mncpy(void *dest, size_t destSize, const void *src, size_t sr
 	return srcSize;
 }
 
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 void Processing::maxChildrenSet(uint16_t cnt)
 {
 	if (mpChildList)
@@ -939,7 +939,7 @@ size_t Processing::progressStr(char *pBuf, char *pBufEnd, const int val, const i
 
 // This area is used by the abstract process
 
-#if !CONFIG_PROC_USE_STD_LISTS
+#if !CONFIG_PROC_HAVE_LIB_STD_CPP
 Processing **Processing::childElemAdd(Processing *pChild)
 {
 	if (mNumChildren >= mNumChildrenMax)
