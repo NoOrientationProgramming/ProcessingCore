@@ -49,8 +49,9 @@ enum ProcessState
 enum ProcStatBitParent
 {
 	PsbParStarted = 1,
-	PsbParUnused = 2,
-	PsbParWhenFinishedUnused = 4,
+	PsbParCanceled = 2,
+	PsbParUnused = 4,
+	PsbParWhenFinishedUnused = 8,
 };
 
 enum ProcStatBitDriver
