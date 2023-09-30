@@ -28,11 +28,13 @@
   SOFTWARE.
 */
 
+#include <string.h>
+#include <iostream>
+
 #include "SystemDebugging.h"
 #if CONFIG_DBG_HAVE_ENVIRONMENT
 #include "env.h"
 #endif
-#include <iostream>
 
 using namespace std;
 
