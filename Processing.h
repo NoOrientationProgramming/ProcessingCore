@@ -52,11 +52,7 @@
 #endif
 
 #ifndef CONFIG_PROC_HAVE_LIB_STD_C
-#if defined(__unix__) || defined(_WIN32)
 #define CONFIG_PROC_HAVE_LIB_STD_C				1
-#else
-#define CONFIG_PROC_HAVE_LIB_STD_C				0
-#endif
 #endif
 
 #ifndef CONFIG_PROC_HAVE_LIB_STD_CPP
