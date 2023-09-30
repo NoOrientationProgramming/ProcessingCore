@@ -158,9 +158,11 @@ void Processing::treeTick()
 		if (mDriver == DrivenByNewInternalDriver)
 		{
 			char buf[32];
+			char *pBuf = buf;
+			char *pBufEnd = pBuf + sizeof(buf);
 			int res;
 
-			(void)snprintf(buf, sizeof(buf), "%p", (void *)this);
+			dInfo("%p", (const void *)this);
 
 			res = prctl(PR_SET_NAME, buf, 0, 0, 0);
 			if (res < 0)
