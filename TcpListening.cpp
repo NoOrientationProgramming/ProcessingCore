@@ -28,6 +28,7 @@
   SOFTWARE.
 */
 
+#include <string.h>
 #ifndef _WIN32
 #include <unistd.h>
 #else
