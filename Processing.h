@@ -87,7 +87,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
 
 #if CONFIG_PROC_USE_STD_LISTS
 #include <list>
