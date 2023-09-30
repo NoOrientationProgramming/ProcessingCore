@@ -292,7 +292,7 @@ void Processing::treeTick()
 
 bool Processing::progress() const
 {
-	return mProcState < PsFinished or mNumChildren;
+	return mProcState != PsFinished or mNumChildren;
 }
 
 Success Processing::success() const
@@ -373,7 +373,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 		dInfo("\033[37m");
 #endif
 
-	if (detailed and mProcState < PsFinished)
+	if (detailed and mProcState != PsFinished)
 	{
 		bufInfo[0] = 0;
 		processInfo(bufInfo, bufInfo + sizeof(bufInfo));
