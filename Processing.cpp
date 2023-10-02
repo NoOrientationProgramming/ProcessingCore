@@ -760,7 +760,7 @@ Processing *Processing::cancel(Processing *pChild)
 	procId(childId, childId + sizeof(childId), pChild);
 
 	procDbgLog(LOG_LVL, "canceling %s", childId);
-	mStatParent |= PsbParCanceled;
+	pChild->mStatParent |= PsbParCanceled;
 	procDbgLog(LOG_LVL, "canceling %s: done", childId);
 
 	return pChild;
