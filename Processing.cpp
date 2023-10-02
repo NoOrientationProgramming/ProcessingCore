@@ -302,7 +302,8 @@ Success Processing::success() const
 
 void Processing::unusedSet()
 {
-	mStatParent |= PsbParUnused;
+	uint8_t flags = PsbParCanceled | PsbParUnused;
+	mStatParent |= flags;
 }
 
 void Processing::procTreeDisplaySet(bool display)
