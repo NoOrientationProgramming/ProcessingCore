@@ -30,7 +30,7 @@
 
 #include "Processing.h"
 #if CONFIG_PROC_HAVE_DRIVERS
-#if __unix__
+#if __linux__
 #include <sys/prctl.h>
 #endif
 #endif
@@ -154,7 +154,7 @@ void Processing::treeTick()
 
 #if CONFIG_PROC_HAVE_DRIVERS
 // cpp -dM /dev/null
-#if __unix__
+#if __linux__
 		// Only for worker threads
 		if (mDriver == DrivenByNewInternalDriver)
 		{
