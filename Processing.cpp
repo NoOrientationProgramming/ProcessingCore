@@ -29,9 +29,16 @@
 */
 
 #include "Processing.h"
+
 #if CONFIG_PROC_HAVE_DRIVERS
-#if __linux__
+#define CONFIG_PROC_TITLE_NEW_DRIVER
+#if defined(__linux__)
 #include <sys/prctl.h>
+#elif defined(__FreeBSD__)
+#include <unistd.h>
+#else
+/* not implemented */
+#undef CONFIG_PROC_TITLE_NEW_DRIVER
 #endif
 #endif
 
@@ -154,7 +161,7 @@ void Processing::treeTick()
 
 #if CONFIG_PROC_HAVE_DRIVERS
 // cpp -dM /dev/null
-#if __linux__
+#if defined(CONFIG_PROC_TITLE_NEW_DRIVER)
 		// Only for worker threads
 		if (mDriver == DrivenByNewInternalDriver)
 		{
@@ -165,9 +172,13 @@ void Processing::treeTick()
 
 			dInfo("%p", (const void *)this);
 
+#if defined(__linux__)
 			res = prctl(PR_SET_NAME, buf, 0, 0, 0);
 			if (res < 0)
 				procWrnLog("could not set driver name via prctl()");
+#elif defined(__FreeBSD__)
+			setproctitle("%s", buf);
+#endif
 		}
 #endif
 #endif
