@@ -51,6 +51,8 @@ const size_t SystemDebugging::maxPeers = 100;
 const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
+static char buffProcTree[8192];
+
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
@@ -305,8 +307,6 @@ void SystemDebugging::processTreeSend()
 
 		mProcTreeChanged = false;
 	}
-
-	char buffProcTree[1024];
 
 	*buffProcTree = 0;
 
