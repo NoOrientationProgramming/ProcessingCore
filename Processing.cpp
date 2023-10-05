@@ -168,11 +168,10 @@ void Processing::treeTick()
 			char buf[32];
 			char *pBuf = buf;
 			char *pBufEnd = pBuf + sizeof(buf);
-			int res;
 
 			dInfo("%p", (const void *)this);
-
 #if defined(__linux__)
+			int res;
 			res = prctl(PR_SET_NAME, buf, 0, 0, 0);
 			if (res < 0)
 				procWrnLog("could not set driver name via prctl()");
