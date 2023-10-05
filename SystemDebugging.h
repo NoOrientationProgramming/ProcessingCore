@@ -123,6 +123,7 @@ private:
 	TcpListening *mpLstEnv;
 	std::string mEnvironment;
 	bool mEnvironmentChanged;
+	clock_t mEnvironmentChangedTime;
 #endif
 
 	std::string mProcTree;
@@ -131,7 +132,6 @@ private:
 	bool mProcTreePeerAdded;
 
 	uint16_t mPortStart;
-	clock_t mEnvironmentChangedTime;
 
 	/* static functions */
 	static void procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd);
