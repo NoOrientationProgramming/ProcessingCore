@@ -480,13 +480,13 @@ void TcpTransfering::addrInfoSet()
 	::getsockname(mSocketFd, (struct sockaddr*)&addr, &addrLen);
 	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
 	mAddrLocal = string(buf);
-	mPortLocal = ::ntohs(addr.sin_port);
+	mPortLocal = ntohs(addr.sin_port);
 
 	addrLen = sizeof(addr);
 	::getpeername(mSocketFd, (struct sockaddr*)&addr, &addrLen);
 	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
 	mAddrRemote = string(buf);
-	mPortRemote = ::ntohs(addr.sin_port);
+	mPortRemote = ntohs(addr.sin_port);
 
 	mInfoSet = true;
 }
@@ -509,9 +509,14 @@ string TcpTransfering::errnoToStr(int num)
 	buf[0] = 0;
 	buf[len] = 0;
 
-#ifdef _WIN32
+#if defined(_WIN32)
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
+#elif defined(__FreeBSD__)
+	int res;
+	res = ::strerror_r(num, buf, len);
+	if (res)
+		*pBuf = 0;
 #else
 	pBuf = ::strerror_r(num, buf, len);
 #endif
