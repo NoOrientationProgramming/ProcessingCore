@@ -179,7 +179,7 @@ Success TcpListening::connectionsAccept()
 
 		::getpeername(peerSocketFd, (struct sockaddr*)&addr, &addrLen);
 		::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
-		mPortRemote = ::ntohs(addr.sin_port);
+		mPortRemote = ntohs(addr.sin_port);
 
 		procDbgLog(LOG_LVL, "got peer %s:%u", buf, mPortRemote);
 	}
@@ -255,9 +255,14 @@ string TcpListening::errnoToStr(int num)
 	buf[0] = 0;
 	buf[len] = 0;
 
-#ifdef _WIN32
+#if defined(_WIN32)
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
+#elif defined(__FreeBSD__)
+	int res;
+	res = ::strerror_r(num, buf, len);
+	if (res)
+		*pBuf = 0;
 #else
 	pBuf = ::strerror_r(num, buf, len);
 #endif
@@ -305,7 +310,7 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 
 	::inet_ntop(mAddress.sin_family, &mAddress.sin_addr, buf, len);
 
-	dInfo("%s:%d\n", buf, ::ntohs(mAddress.sin_port));
+	dInfo("%s:%d\n", buf, ntohs(mAddress.sin_port));
 	dInfo("Connections created\t%d\n", mConnCreated);
 	dInfo("Queue\t\t\t%zu\n", ppPeerFd.size());
 }
