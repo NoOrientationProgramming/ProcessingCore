@@ -61,12 +61,14 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpLstProc(NULL)
 	, mpLstLog(NULL)
 	, mpLstCmd(NULL)
+#if CONFIG_DBG_HAVE_ENVIRONMENT
 	, mpLstEnv(NULL)
+	, mEnvironment("")
+	, mEnvironmentChanged(false)
+#endif
 	, mProcTree("")
 	, mProcTreeChanged(false)
 	, mProcTreePeerAdded(false)
-	, mEnvironment("")
-	, mEnvironmentChanged(false)
 	, mPortStart(3000)
 {
 }

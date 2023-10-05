@@ -119,15 +119,17 @@ private:
 	TcpListening *mpLstProc;
 	TcpListening *mpLstLog;
 	TcpListening *mpLstCmd;
+#if CONFIG_DBG_HAVE_ENVIRONMENT
 	TcpListening *mpLstEnv;
+	std::string mEnvironment;
+	bool mEnvironmentChanged;
+#endif
 
 	std::string mProcTree;
 	bool mProcTreeChanged;
 	uint32_t mProcTreeChangedTime;
 	bool mProcTreePeerAdded;
 
-	std::string mEnvironment;
-	bool mEnvironmentChanged;
 	uint16_t mPortStart;
 	clock_t mEnvironmentChangedTime;
 
