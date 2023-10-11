@@ -76,7 +76,6 @@ bool TcpTransfering::globalInitDone = false;
  */
 TcpTransfering::TcpTransfering(SOCKET fd)
 	: Transfering("TcpTransfering")
-	, mState(StSrvStart)
 	, mStartMs(0)
 	, mSocketFd(fd)
 	, mHostAddrStr("")
@@ -85,6 +84,7 @@ TcpTransfering::TcpTransfering(SOCKET fd)
 	, mBytesReceived(0)
 	, mBytesSent(0)
 {
+	mState = StSrvStart;
 	addrInfoSet();
 	mSendReady = true;
 }
@@ -95,7 +95,6 @@ TcpTransfering::TcpTransfering(SOCKET fd)
 // - Domain (TODO)
 TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
 	: Transfering("TcpTransfering")
-	, mState(StCltStart)
 	, mStartMs(0)
 	, mSocketFd(INVALID_SOCKET)
 	, mHostAddrStr(hostAddr)
@@ -105,6 +104,7 @@ TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
 	, mBytesReceived(0)
 	, mBytesSent(0)
 {
+	mState = StCltStart;
 	mSendReady = false;
 }
 
@@ -124,7 +124,7 @@ Success TcpTransfering::process()
 	ssize_t connCheck;
 	bool ok;
 #if 0
-	procWrnLog("mState = %s", ProcStateString[mState]);
+	dStateTrace;
 #endif
 	switch (mState)
 	{

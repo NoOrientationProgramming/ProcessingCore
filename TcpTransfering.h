@@ -122,7 +122,6 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
-	uint32_t mState;
 	uint32_t mStartMs;
 	std::mutex mSocketFdMtx;
 	SOCKET mSocketFd;
