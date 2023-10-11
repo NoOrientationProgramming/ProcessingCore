@@ -215,7 +215,7 @@ private:
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	uint16_t mNumChildrenMax;
 #endif
-	uint8_t mProcState;
+	uint8_t mStateAbstract;
 	DriverMode mDriver;
 	uint8_t mStatParent;
 	uint8_t mStatDrv;

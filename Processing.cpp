@@ -155,7 +155,7 @@ void Processing::treeTick()
 	// Only after this point children can be created or destroyed
 	// and therefore added or removed from the child list
 
-	switch (mProcState)
+	switch (mStateAbstract)
 	{
 	case PsExistent:
 
@@ -185,12 +185,12 @@ void Processing::treeTick()
 		if (mStatParent & PsbParCanceled)
 		{
 			procDbgLog(LOG_LVL, "process canceled during state existent");
-			mProcState = PsFinishedPrepare;
+			mStateAbstract = PsFinishedPrepare;
 			break;
 		}
 
 		procDbgLog(LOG_LVL, "initializing()");
-		mProcState = PsInitializing;
+		mStateAbstract = PsInitializing;
 
 		break;
 	case PsInitializing:
@@ -199,7 +199,7 @@ void Processing::treeTick()
 		{
 			procDbgLog(LOG_LVL, "process canceled during initializing");
 			procDbgLog(LOG_LVL, "downShutting()");
-			mProcState = PsDownShutting;
+			mStateAbstract = PsDownShutting;
 			break;
 		}
 
@@ -213,7 +213,7 @@ void Processing::treeTick()
 			mSuccess = success;
 			procDbgLog(LOG_LVL, "initializing(): failed. success = %d", (int)mSuccess);
 			procDbgLog(LOG_LVL, "downShutting()");
-			mProcState = PsDownShutting;
+			mStateAbstract = PsDownShutting;
 			break;
 		}
 
@@ -221,7 +221,7 @@ void Processing::treeTick()
 		mStatDrv |= PsbDrvInitDone;
 
 		procDbgLog(LOG_LVL, "processing()");
-		mProcState = PsProcessing;
+		mStateAbstract = PsProcessing;
 
 		break;
 	case PsProcessing:
@@ -230,7 +230,7 @@ void Processing::treeTick()
 		{
 			procDbgLog(LOG_LVL, "process canceled during processing");
 			procDbgLog(LOG_LVL, "downShutting()");
-			mProcState = PsDownShutting;
+			mStateAbstract = PsDownShutting;
 			break;
 		}
 
@@ -242,7 +242,7 @@ void Processing::treeTick()
 		mSuccess = success;
 		procDbgLog(LOG_LVL, "processing(): done. success = %d", (int)mSuccess);
 		procDbgLog(LOG_LVL, "downShutting()");
-		mProcState = PsDownShutting;
+		mStateAbstract = PsDownShutting;
 
 		break;
 	case PsDownShutting:
@@ -253,7 +253,7 @@ void Processing::treeTick()
 			break;
 
 		procDbgLog(LOG_LVL, "downShutting(): done");
-		mProcState = PsChildrenUnusedSet;
+		mStateAbstract = PsChildrenUnusedSet;
 
 		break;
 	case PsChildrenUnusedSet:
@@ -274,7 +274,7 @@ void Processing::treeTick()
 		}
 		procDbgLog(LOG_LVL, "marking children as unused: done");
 
-		mProcState = PsFinishedPrepare;
+		mStateAbstract = PsFinishedPrepare;
 
 		break;
 	case PsFinishedPrepare:
@@ -289,7 +289,7 @@ void Processing::treeTick()
 
 		procDbgLog(LOG_LVL, "preparing finish: done -> finished");
 
-		mProcState = PsFinished;
+		mStateAbstract = PsFinished;
 
 		break;
 	case PsFinished:
@@ -302,7 +302,7 @@ void Processing::treeTick()
 
 bool Processing::progress() const
 {
-	return mProcState != PsFinished or mNumChildren;
+	return mStateAbstract != PsFinished or mNumChildren;
 }
 
 Success Processing::success() const
@@ -384,7 +384,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 		dInfo("\033[37m");
 #endif
 
-	if (detailed and mProcState != PsFinished)
+	if (detailed and mStateAbstract != PsFinished)
 	{
 		bufInfo[0] = 0;
 		processInfo(bufInfo, bufInfo + sizeof(bufInfo));
@@ -634,7 +634,7 @@ Processing::Processing(const char *name)
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	, mNumChildrenMax(CONFIG_PROC_NUM_MAX_CHILDREN_DEFAULT)
 #endif
-	, mProcState(PsExistent)
+	, mStateAbstract(PsExistent)
 	, mDriver(DrivenByExternalDriver)
 	, mStatParent(0)
 	, mLevelTree(0)
