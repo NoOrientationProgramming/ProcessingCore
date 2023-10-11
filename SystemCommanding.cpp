@@ -79,7 +79,6 @@ static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond);
 
 SystemCommanding::SystemCommanding(SOCKET fd)
 	: Processing("SystemCommanding")
-	, mState(StStart)
 	, mStartMs(0)
 	, mSocketFd(fd)
 	, mpTrans(NULL)
@@ -87,6 +86,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mArgLast("")
 	, mBufFragment("")
 {
+	mState = StStart;
 }
 
 /* member functions */
@@ -125,7 +125,7 @@ Success SystemCommanding::process()
 	//bool ok;
 	//int res;
 #if 0
-	procWrnLog("mState = %s", ProcStateString[mState]);
+	dStateTrace;
 #endif
 	success = mpTrans->success();
 
