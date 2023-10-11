@@ -622,7 +622,9 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 // This area is used by the concrete processes
 
 Processing::Processing(const char *name)
-	: mName(name)
+	: mState(0)
+	, mStateOld(0)
+	, mName(name)
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	, mpChildList(NULL)
 #endif

@@ -185,6 +185,9 @@ protected:
 	static size_t procId(char *pBuf, char *pBufEnd, const Processing *pProc);
 	static size_t progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal);
 
+	uint8_t mState;
+	uint8_t mStateOld;
+
 private:
 	// This area is used by the abstract process
 
@@ -325,6 +328,16 @@ enum StateName \
 static const char *StateName ## String[] = \
 { \
 	dForEach_ ## StateName(dGen ## StateName ## String) \
+}
+
+// pst .. process state transition
+#define dStateTrace \
+if (mState != mStateOld) \
+{ \
+	procDbgLog(LOG_LVL, "pst: %s > %s", \
+			ProcStateString[mStateOld], \
+			ProcStateString[mState]); \
+	mStateOld = mState; \
 }
 
 template <typename T>
