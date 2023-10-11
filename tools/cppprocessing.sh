@@ -86,9 +86,10 @@ using namespace std;
 
 ${classname}::${classname}()
 	: Processing("${classname}")
-	, mState(StStart)
 	, mStartMs(0)
-{}
+{
+	mState = StStart;
+}
 
 /* member functions */
 
@@ -98,7 +99,7 @@ Success ${classname}::process()
 	//uint32_t diffMs = curTimeMs - mStartMs;
 	//Success success;
 #if 0
-	procWrnLog("mState = %s", ProcStateString[mState]);
+	dStateTrace;
 #endif
 	switch (mState)
 	{
