@@ -443,7 +443,7 @@ void SystemDebugging::environmentSend()
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 {
-	dInfo("Update period [ms]\t\t%d\n", mUpdateMs);
+	dInfo("Update period [ms]\t\t%d\n", (int)mUpdateMs);
 }
 
 /* static functions */
