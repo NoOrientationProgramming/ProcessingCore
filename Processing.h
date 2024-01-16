@@ -246,7 +246,7 @@ private:
 #else
 #define procStrrChr(s, c)		Processing::strrchr(s, c)
 #endif
-#define __FILENAME__ (procStrrChr(__FILE__, '/') ? procStrrChr(__FILE__, '/') + 1 : __FILE__)
+#define __PROC_FILENAME__ (procStrrChr(__FILE__, '/') ? procStrrChr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
 typedef void (*LogEntryCreatedFct)(
@@ -267,7 +267,7 @@ int16_t logEntryCreate(
 				const int line,
 				const int16_t code,
 				const char *msg, ...);
-#define genericLog(l, c, m, ...)			(logEntryCreate(l, __FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
+#define genericLog(l, c, m, ...)			(logEntryCreate(l, __PROC_FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #else
 #define levelLogSet(lvl)
 #define pFctLogEntryCreatedSet(pFct)
@@ -286,7 +286,7 @@ inline int16_t logEntryCreateDummy(
 	(void)msg;
 	return code;
 }
-#define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
+#define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __PROC_FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #endif
 
 #define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, m, ##__VA_ARGS__) : c)
