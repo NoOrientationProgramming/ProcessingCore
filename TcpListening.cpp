@@ -311,7 +311,7 @@ void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 	::inet_ntop(mAddress.sin_family, &mAddress.sin_addr, buf, len);
 
 	dInfo("%s:%d\n", buf, ntohs(mAddress.sin_port));
-	dInfo("Connections created\t%d\n", mConnCreated);
+	dInfo("Connections created\t%d\n", (int)mConnCreated);
 	dInfo("Queue\t\t\t%zu\n", ppPeerFd.size());
 }
 
