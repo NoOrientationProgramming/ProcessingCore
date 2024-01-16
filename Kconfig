@@ -1,0 +1,22 @@
+menu "DSP-Crowd Electronics GmbH"
+
+config PROC_HAVE_DRIVERS
+	bool "Enable process driver system"
+	default "n"
+	help
+		Processes can be started in a new driver context if enabled
+
+config PROC_HAVE_LOG
+	bool "Enable process log system"
+	default "n"
+	help
+		Log file available for target
+
+config PROC_USE_DRIVER_COLOR
+	bool "Use process tree colors"
+	default "y"
+	help
+		Different process drivers are distinguished by color in the
+		process tree
+
+endmenu
