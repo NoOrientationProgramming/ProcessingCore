@@ -370,7 +370,7 @@ void SystemCommanding::commandExecute(const char *pCmd, char *pArgs)
 
 		msg += "# ";
 		mpTrans->send(msg.c_str(), msg.size());
-		
+
 		return;
 	}
 
