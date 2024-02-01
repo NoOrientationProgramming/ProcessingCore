@@ -217,7 +217,7 @@ void EspWifiConnecting::processInfo(char *pBuf, char *pBufEnd)
 {
 #if 1
 	//dInfo("State\t\t\t%s\n", ProcStateString[mState]);
-	dInfo("RSSI\t\t\t%d\n", (int)mRssi);
+	dInfo("RSSI\t\t\t%ddBm\n", (int)mRssi);
 #endif
 }
 
