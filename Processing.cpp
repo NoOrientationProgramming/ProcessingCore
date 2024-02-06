@@ -181,7 +181,6 @@ void Processing::treeTick()
 		}
 #endif
 #endif
-
 		if (mStatParent & PsbParCanceled)
 		{
 			procDbgLog(LOG_LVL, "process canceled during state existent");
