@@ -360,6 +360,7 @@ void SystemCommanding::commandExecute(const char *pCmd, char *pArgs)
 
 		mpTrans->send(msg.c_str(), msg.size());
 
+		sprintf(pArgs, "%s", mArgLast.c_str());
 		mpCmdLast->func(pArgs, bufOut, bufOut + lenBuf);
 		bufOut[lenBuf] = 0;
 
