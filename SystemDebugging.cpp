@@ -30,6 +30,9 @@
 
 #include <string.h>
 #include <iostream>
+#if CONFIG_PROC_HAVE_DRIVERS
+#include <mutex>
+#endif
 
 #include "SystemDebugging.h"
 #if CONFIG_DBG_HAVE_ENVIRONMENT
@@ -44,7 +47,11 @@ typedef list<struct SystemDebuggingPeer>::iterator PeerIter;
 
 bool SystemDebugging::procTreeDetailed = true;
 bool SystemDebugging::procTreeColored = true;
+
 queue<string> SystemDebugging::qLogEntries;
+#if CONFIG_PROC_HAVE_DRIVERS
+static mutex mtxLogEntries;
+#endif
 
 const size_t SystemDebugging::maxPeers = 100;
 
@@ -367,11 +374,16 @@ void SystemDebugging::logEntriesSend()
 
 	while (1)
 	{
-		if (!qLogEntries.size())
-			break;
+		{
+#if CONFIG_PROC_HAVE_DRIVERS
+			lock_guard<mutex> lock(mtxLogEntries);
+#endif
+			if (!qLogEntries.size())
+				break;
 
-		msg = qLogEntries.front();
-		qLogEntries.pop();
+			msg = qLogEntries.front();
+			qLogEntries.pop();
+		}
 
 		if (!msg.size())
 			break;
@@ -476,6 +488,9 @@ void SystemDebugging::logEntryCreated(
 		const char *msg,
 		const size_t len)
 {
+#if CONFIG_PROC_HAVE_DRIVERS
+	lock_guard<mutex> lock(mtxLogEntries);
+#endif
 	(void)severity;
 	(void)filename;
 	(void)function;
