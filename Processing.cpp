@@ -64,8 +64,10 @@ enum ProcStatBitParent
 enum ProcStatBitDriver
 {
 	PsbDrvInitDone = 1,
-	PsbDrvUndriven = 2,
-	PsbDrvPrTreeDisable = 4,
+	PsbDrvProcessDone = 2,
+	PsbDrvShutdownDone = 4,
+	PsbDrvUndriven = 8,
+	PsbDrvPrTreeDisable = 16,
 };
 
 #if CONFIG_PROC_HAVE_LIB_STD_CPP || CONFIG_PROC_HAVE_DRIVERS
@@ -239,7 +241,10 @@ void Processing::treeTick()
 			break;
 
 		mSuccess = success;
+
 		procDbgLog(LOG_LVL, "processing(): done. success = %d", (int)mSuccess);
+		mStatDrv |= PsbDrvProcessDone;
+
 		procDbgLog(LOG_LVL, "downShutting()");
 		mStateAbstract = PsDownShutting;
 
@@ -252,6 +257,8 @@ void Processing::treeTick()
 			break;
 
 		procDbgLog(LOG_LVL, "downShutting(): done");
+		mStatDrv |= PsbDrvShutdownDone;
+
 		mStateAbstract = PsChildrenUnusedSet;
 
 		break;
@@ -322,6 +329,10 @@ void Processing::procTreeDisplaySet(bool display)
 	else
 		mStatDrv |= PsbDrvPrTreeDisable;
 }
+
+bool Processing::initDone() const		{ return mStatDrv & PsbDrvInitDone;	}
+bool Processing::processDone() const	{ return mStatDrv & PsbDrvProcessDone;	}
+bool Processing::shutdownDone() const	{ return mStatDrv & PsbDrvShutdownDone;	}
 
 size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool colored)
 {
@@ -905,15 +916,7 @@ void Processing::maxChildrenSet(uint16_t cnt)
 }
 #endif
 
-bool Processing::initDone() const
-{
-	return mStatDrv & PsbDrvInitDone;
-}
-
-DriverMode Processing::driver() const
-{
-	return mDriver;
-}
+DriverMode Processing::driver() const	{ return mDriver; }
 
 size_t Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 {

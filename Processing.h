@@ -141,6 +141,10 @@ public:
 	void unusedSet();
 	void procTreeDisplaySet(bool display);
 
+	bool initDone() const;
+	bool processDone() const;
+	bool shutdownDone() const;
+
 	size_t processTreeStr(char *pBuf, char *pBufEnd, bool detailed = true, bool colored = false);
 
 	static void undrivenSet(Processing *pChild);
@@ -179,7 +183,6 @@ protected:
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	void maxChildrenSet(uint16_t cnt);
 #endif
-	bool initDone() const;
 	DriverMode driver() const;
 
 	static size_t procId(char *pBuf, char *pBufEnd, const Processing *pProc);
