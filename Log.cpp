@@ -136,7 +136,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 			cerr << pBuf << "\r\n" << flush;
 		}
 		else
-			cout << pBuf << "\r\n" << std::flush;
+			cout << pBuf << "\r\n" << flush;
 
 		SetConsoleTextAttribute(hConsole, 7);
 #else
@@ -146,7 +146,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 		if (severity == 2)
 			cerr << "\033[33m" << pBuf << "\033[37m" << "\r\n" << flush;
 		else
-			cout << pBuf << "\r\n" << std::flush;
+			cout << pBuf << "\r\n" << flush;
 #endif
 	}
 
