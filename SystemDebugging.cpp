@@ -52,6 +52,7 @@ queue<string> SystemDebugging::qLogEntries;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxLogEntries;
 #endif
+int SystemDebugging::levelLog = 3;
 
 const size_t SystemDebugging::maxPeers = 100;
 
@@ -89,6 +90,11 @@ void SystemDebugging::listenLocalSet()
 void SystemDebugging::portStartSet(uint16_t port)
 {
 	mPortStart = port;
+}
+
+void SystemDebugging::levelLogSet(int lvl)
+{
+	levelLog = lvl;
 }
 
 Success SystemDebugging::initialize()
@@ -491,11 +497,13 @@ void SystemDebugging::logEntryCreated(
 #if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mtxLogEntries);
 #endif
-	(void)severity;
 	(void)filename;
 	(void)function;
 	(void)line;
 	(void)code;
+
+	if (severity > levelLog)
+		return;
 
 	qLogEntries.emplace(msg, len);
 }

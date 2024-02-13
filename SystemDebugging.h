@@ -71,6 +71,7 @@ public:
 
 	void listenLocalSet();
 	void portStartSet(uint16_t port);
+	static void levelLogSet(int lvl);
 
 protected:
 
@@ -149,6 +150,7 @@ private:
 	static bool procTreeDetailed;
 	static bool procTreeColored;
 	static std::queue<std::string> qLogEntries;
+	static int levelLog;
 
 	/* constants */
 	static const size_t maxPeers;
