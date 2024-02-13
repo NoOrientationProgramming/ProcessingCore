@@ -256,18 +256,19 @@ Success TcpTransfering::shutdown()
 }
 
 /*
-Literature socket programming:
-- http://man7.org/linux/man-pages/man2/poll.2.html
-- http://man7.org/linux/man-pages/man2/recvmsg.2.html
-- http://man7.org/linux/man-pages/man2/select.2.html
-- http://man7.org/linux/man-pages/man2/read.2.html
-- https://linux.die.net/man/2/send
+Literature socket programming
+- https://man7.org/linux/man-pages/man2/poll.2.html
+- https://man7.org/linux/man-pages/man2/recvmsg.2.html
+- https://man7.org/linux/man-pages/man2/select.2.html
+- https://man7.org/linux/man-pages/man2/read.2.html
+- https://man7.org/linux/man-pages/man2/send.2.html
   - Important: MSG_NOSIGNAL
+- https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-send
 - https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_74/rzab6/poll.htm
 - https://docs.microsoft.com/en-us/windows/desktop/winsock/complete-server-code
 - https://stackoverflow.com/questions/28027937/cross-platform-sockets
 - https://daniel.haxx.se/docs/poll-vs-select.html
-- http://deepix.github.io/2016/10/21/tcprst.html
+- https://deepix.github.io/2016/10/21/tcprst.html
 - https://stackoverflow.com/questions/11436013/writing-to-a-closed-local-tcp-socket-not-failing
 - https://www.usenix.org/legacy/publications/library/proceedings/usenix99/full_papers/banga/banga_html/node3.html
 - https://www.linuxtoday.com/blog/multiplexed-i0-with-poll.html
@@ -384,8 +385,15 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 		if (res < 0)
 		{
 			int numErr = errGet();
-
+#ifdef _WIN32
+			if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+				return 0; // std case and ok
+#else
+			if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+				return 0; // std case and ok
+#endif
 			disconnect(numErr);
+
 			return procErrLog(-1, "connection down: %s",
 							errnoToStr(mErrno).c_str());
 		}
