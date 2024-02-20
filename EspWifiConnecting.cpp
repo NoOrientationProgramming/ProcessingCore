@@ -28,6 +28,7 @@
   SOFTWARE.
 */
 
+#include <chrono>
 #include <esp_err.h>
 #include <nvs_flash.h>
 
@@ -36,7 +37,13 @@
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
 		gen(StDependenciesInit) \
+		gen(StConfigure) \
+		gen(StConnect) \
+		gen(StConnectedWait) \
+		gen(StIfUpWait) \
 		gen(StMain) \
+		gen(StDisconnect) \
+		gen(StDisconnectedWait) \
 
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
@@ -47,19 +54,23 @@ dProcessStateStr(ProcState);
 #endif
 
 using namespace std;
+using namespace chrono;
 
 #define LOG_LVL	0
 
-const uint16_t cCntDelayMax = 1000;
+const uint32_t cUpdateDelayMs = 200;
+const uint32_t cIfUpWaitTmoMs = 5000;
 
 EspWifiConnecting::EspWifiConnecting()
 	: Processing("EspWifiConnecting")
+	, mStartMs(0)
 	, mpNetInterface(NULL)
 	, mpHostname("DSPC_ESP_WIFI")
 	, mpSsid(NULL)
 	, mpPassword(NULL)
-	, mCntDelay(0)
+	, mWifiConnected(false)
 	, mRssi(0)
+	, mConnected(false)
 {
 	mState = StStart;
 	mIpInfo.ip.addr = 0;
@@ -69,10 +80,11 @@ EspWifiConnecting::EspWifiConnecting()
 
 Success EspWifiConnecting::process()
 {
-	//uint32_t curTimeMs = millis();
-	//uint32_t diffMs = curTimeMs - mStartMs;
+	uint32_t curTimeMs = millis();
+	uint32_t diffMs = curTimeMs - mStartMs;
 	Success success;
 	esp_err_t res;
+	bool ok;
 #if 0
 	dStateTrace;
 #endif
@@ -139,6 +151,11 @@ Success EspWifiConnecting::process()
 			return procErrLog(-1, "could not init WiFi: %s (0x%04x)",
 								esp_err_to_name(res), res);
 
+		mState = StConfigure;
+
+		break;
+	case StConfigure:
+
 		res = esp_wifi_set_mode(WIFI_MODE_STA);
 		if (res != ESP_OK)
 			return procErrLog(-1, "could not set WiFi mode: %s (0x%04x)",
@@ -153,33 +170,99 @@ Success EspWifiConnecting::process()
 		if (success != Positive)
 			return procErrLog(-1, "could not configure WiFi");
 
+		mState = StConnect;
+
+		break;
+	case StConnect:
+
 		res = esp_wifi_connect();
 		if (res != ESP_OK)
 			return procErrLog(-1, "could not connect WiFi: %s (0x%04x)",
 								esp_err_to_name(res), res);
 
+		mStartMs = curTimeMs;
+		mState = StConnectedWait;
+
+		break;
+	case StConnectedWait:
+#if 0 // Do not spam logs. Use network interface up as connected indicator
+		infoWifiUpdate();
+		if (!mWifiConnected)
+			break;
+
+		procDbgLog(LOG_LVL, "WiFi connected");
+#endif
+		mState = StIfUpWait;
+
+		break;
+	case StIfUpWait:
+
+		if (diffMs > cIfUpWaitTmoMs)
+		{
+			//procDbgLog(LOG_LVL, "Timeout reached for interface up");
+			mState = StConnect;
+			break;
+		}
+
+		ok = esp_netif_is_netif_up(mpNetInterface);
+		if (!ok)
+			break;
+
+		// Interface must be up in order to get current IP info
+		res = esp_netif_get_ip_info(mpNetInterface, &mIpInfo);
+		if (res != ESP_OK)
+			break;
+
+		if (!mIpInfo.ip.addr)
+			break;
+
+		procDbgLog(LOG_LVL, "Interface up. IP: " IPSTR, IP2STR(&mIpInfo.ip));
+
+		mConnected = true;
+
+		mStartMs = curTimeMs;
 		mState = StMain;
 
 		break;
 	case StMain:
 
-		++mCntDelay;
-		if (mCntDelay < cCntDelayMax)
+		if (diffMs < cUpdateDelayMs)
 			break;
-		mCntDelay = 0;
+		mStartMs = curTimeMs;
 
-		res = esp_netif_get_ip_info(mpNetInterface, &mIpInfo);
+		infoWifiUpdate();
+		if (mWifiConnected)
+			break;
+
+		mState = StDisconnect;
+
+		break;
+	case StDisconnect:
+
+		res = esp_wifi_disconnect();
 		if (res != ESP_OK)
+			procErrLog(-1, "could not disconnect WiFi: %s (0x%04x)",
+								esp_err_to_name(res), res);
+
+		res = esp_wifi_stop();
+		if (res != ESP_OK)
+			procErrLog(-1, "could not stop WiFi: %s (0x%04x)",
+								esp_err_to_name(res), res);
+
+		mConnected = false;
+
+		mState = StDisconnectedWait;
+
+		break;
+	case StDisconnectedWait:
+
+		infoWifiUpdate();
+		if (mWifiConnected)
 			break;
 
-		{
-			wifi_ap_record_t apRemoteInfo;
-			res = esp_wifi_sta_get_ap_info(&apRemoteInfo);
-			if (res != ESP_OK)
-				break;
+		procDbgLog(LOG_LVL, "WiFi disconnected");
 
-			mRssi = apRemoteInfo.rssi;
-		}
+		mState = StConfigure;
 
 		break;
 	default:
@@ -187,6 +270,25 @@ Success EspWifiConnecting::process()
 	}
 
 	return Pending;
+}
+
+void EspWifiConnecting::infoWifiUpdate()
+{
+	wifi_ap_record_t apRemoteInfo;
+	esp_err_t res;
+
+	res = esp_wifi_sta_get_ap_info(&apRemoteInfo);
+	if (res == ESP_ERR_WIFI_CONN) // not initialized
+		return;
+
+	if (res == ESP_ERR_WIFI_NOT_CONNECT)
+	{
+		mWifiConnected = false;
+		return;
+	}
+
+	mWifiConnected = true;
+	mRssi = apRemoteInfo.rssi;
 }
 
 Success EspWifiConnecting::wifiConfigure()
@@ -202,7 +304,7 @@ Success EspWifiConnecting::wifiConfigure()
 	strncpy((char *)cfgWifi.sta.ssid, mpSsid, sizeof(cfgWifi.sta.ssid));
 	strncpy((char *)cfgWifi.sta.password, mpPassword, sizeof(cfgWifi.sta.password));
 
-	cfgWifi.sta.failure_retry_cnt = 10;
+	cfgWifi.sta.failure_retry_cnt = 0;
 	cfgWifi.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
 
 	res = esp_wifi_set_config(WIFI_IF_STA, &cfgWifi);
@@ -222,4 +324,11 @@ void EspWifiConnecting::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+uint32_t EspWifiConnecting::millis()
+{
+	auto now = steady_clock::now();
+	auto nowMs = time_point_cast<milliseconds>(now);
+	return (uint32_t)nowMs.time_since_epoch().count();
+}
 

@@ -53,7 +53,7 @@ public:
 
 	// output
 
-	bool connected() const { return mIpInfo.ip.addr; }
+	bool connected() const { return mConnected; }
 
 protected:
 
@@ -74,18 +74,22 @@ private:
 	Success process();
 	void processInfo(char *pBuf, char *pBufEnd);
 
+	void infoWifiUpdate();
 	Success wifiConfigure();
 
 	/* member variables */
+	uint32_t mStartMs;
 	esp_netif_t *mpNetInterface;
 	esp_netif_ip_info_t mIpInfo;
 	const char *mpHostname;
 	const char *mpSsid;
 	const char *mpPassword;
-	uint16_t mCntDelay;
+	bool mWifiConnected;
 	int8_t mRssi;
+	bool mConnected;
 
 	/* static functions */
+	static uint32_t millis();
 
 	/* static variables */
 
