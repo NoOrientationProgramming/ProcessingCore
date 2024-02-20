@@ -306,13 +306,27 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 #ifdef _WIN32
 		if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
 			return 0; // std case and ok
+
+		if (numErr == WSAECONNRESET)
+		{
+			procDbgLog(LOG_LVL, "connection reset by peer");
+			disconnect();
+			return -2;
+		}
 #else
 		if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
 			return 0; // std case and ok
+
+		if (numErr == ECONNRESET)
+		{
+			procDbgLog(LOG_LVL, "connection reset by peer");
+			disconnect();
+			return -2;
+		}
 #endif
 		disconnect(numErr);
 
-		return procErrLog(-2, "recv() failed: %s",
+		return procErrLog(-3, "recv() failed: %s",
 							errnoToStr(mErrno).c_str());
 	}
 
@@ -320,7 +334,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 	{
 		procDbgLog(LOG_LVL, "connection reset by peer");
 		disconnect();
-		return -3;
+		return -4;
 	}
 
 	if (peek)
