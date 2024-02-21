@@ -272,7 +272,10 @@ int16_t logEntryCreate(
 				const char *msg, ...);
 #define genericLog(l, c, m, ...)			(logEntryCreate(l, __PROC_FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #else
-#define levelLogSet(lvl)
+inline void levelLogSet(int lvl)
+{
+	(void)lvl;
+}
 #define pFctLogEntryCreatedSet(pFct)
 inline int16_t logEntryCreateDummy(
 				const int severity,
