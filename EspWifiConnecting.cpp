@@ -61,6 +61,8 @@ using namespace chrono;
 const uint32_t cUpdateDelayMs = 200;
 const uint32_t cIfUpWaitTmoMs = 5000;
 
+bool EspWifiConnecting::mConnected = false;
+
 EspWifiConnecting::EspWifiConnecting()
 	: Processing("EspWifiConnecting")
 	, mStartMs(0)
@@ -70,7 +72,6 @@ EspWifiConnecting::EspWifiConnecting()
 	, mpPassword(NULL)
 	, mWifiConnected(false)
 	, mRssi(0)
-	, mConnected(false)
 {
 	mState = StStart;
 	mIpInfo.ip.addr = 0;
@@ -324,6 +325,11 @@ void EspWifiConnecting::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+bool EspWifiConnecting::ok()
+{
+	return mConnected;
+}
 
 uint32_t EspWifiConnecting::millis()
 {

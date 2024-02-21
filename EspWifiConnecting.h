@@ -53,7 +53,7 @@ public:
 
 	// output
 
-	bool connected() const { return mConnected; }
+	static bool ok();
 
 protected:
 
@@ -86,12 +86,12 @@ private:
 	const char *mpPassword;
 	bool mWifiConnected;
 	int8_t mRssi;
-	bool mConnected;
 
 	/* static functions */
 	static uint32_t millis();
 
 	/* static variables */
+	static bool mConnected;
 
 	/* constants */
 
