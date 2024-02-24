@@ -108,6 +108,7 @@ Success Supervising::initialize()
 - ESP32
 - Linux / Raspberry Pi
   - GCC
+- FreeBSD
 - Windows
   - MinGW
   - MSVC
