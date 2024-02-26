@@ -50,6 +50,8 @@ struct SystemCommand
 	std::string group;
 };
 
+const std::string cInternalCmdCls = "dbg";
+
 void cmdReg(
 		const std::string &id,
 		FuncCommand cmdFunc,
@@ -58,12 +60,6 @@ void cmdReg(
 		const std::string &group = "");
 
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
-
-void intCmdReg(
-		const std::string &id,
-		FuncCommand cmdFunc,
-		const std::string &shortcut = "",
-		const std::string &desc = "");
 
 class SystemCommanding : public Processing
 {
@@ -99,34 +95,23 @@ private:
 	Success shutdown();
 
 	void dataReceive();
-	Success ansiFilter(uint8_t key, uint16_t *pKeyOut);
 	void keyProcess(uint16_t key);
-
-	Success commandReceive();
-	void lfToCrLf(char *pBuf, std::string &str);
-	void commandExecute(const char *pCmd, char *pArg);
-
-	void inputsProcess();
-	void inputAdd();
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
+	void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	void globalInit();
+	Success ansiFilter(uint8_t key, uint16_t *pKeyOut);
+
 	/* member variables */
-	uint32_t mStateKey;
-	uint32_t mStartMs;
 	SOCKET mSocketFd;
 	TcpTransfering *mpTrans;
+	uint32_t mStateKey;
+	uint32_t mStartMs;
+	const char *mpLineLast;
 	bool mDone;
-	const SystemCommand *mpCmdLast;
-	std::string mArgLast;
-	std::string mBufFragment;
 
 	/* static functions */
-	static void globalInit();
-	static void dummyExecute(char *pArgs, char *pBuf, char *pBufEnd);
-	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
-	static void messageBroadcast(char *pArgs, char *pBuf, char *pBufEnd);
-	static void memoryWrite(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
 	static bool globalInitDone;
