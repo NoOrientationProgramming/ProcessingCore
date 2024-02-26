@@ -155,7 +155,6 @@ const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
 const int cSizeCmdIdMax = 16;
 const size_t cSizeBufCmdIn = 63;
-const size_t cSizeBufFragmentMax = cSizeBufCmdIn - 5;
 const size_t cSizeBufCmdOut = 512;
 
 // --------------------
@@ -341,7 +340,6 @@ void SystemCommanding::dataReceive()
 
 void SystemCommanding::keyProcess(uint16_t key)
 {
-	dKeyIgnore('\r');
 	dKeyIgnore('\0');
 
 	procInfLog("key received: %u, 0x%02X", key, key);
