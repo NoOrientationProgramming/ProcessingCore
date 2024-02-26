@@ -737,12 +737,6 @@ void cmdReg(
 			wrnLog("shortcut '%s' already registered. skipping", cmd.shortcut.c_str());
 			return;
 		}
-
-		if (newCmd.func == cmd.func)
-		{
-			wrnLog("function pointer 0x%08X already registered. skipping", cmd.func);
-			return;
-		}
 	}
 
 	cmds.push_back(newCmd);
