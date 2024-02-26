@@ -403,6 +403,7 @@ void SystemCommanding::globalInit()
 
 	if (globalInitDone)
 		return;
+	globalInitDone = true;
 
 	/* register standard commands here */
 	cmdReg("help",
@@ -420,7 +421,6 @@ void SystemCommanding::globalInit()
 		"w", "write memory",
 		cInternalCmdCls);
 #endif
-	globalInitDone = true;
 }
 
 Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
