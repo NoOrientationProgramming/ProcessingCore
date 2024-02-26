@@ -137,14 +137,14 @@ protected:
 	virtual ~PipeBase()
 	{}
 
+#if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mParentListMtx;
 	std::mutex mChildListMtx;
-
-	std::size_t mSize;
-	std::size_t mSizeMax;
-#if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mEntryMtx;
 #endif
+	std::size_t mSize;
+	std::size_t mSizeMax;
+
 	bool mLastEntries;
 	bool mDataBlocking;
 
