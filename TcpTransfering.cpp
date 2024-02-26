@@ -30,7 +30,6 @@
 
 #include <string.h>
 #include <chrono>
-#include <mutex>
 #ifndef _WIN32
 #include <unistd.h>
 #endif
