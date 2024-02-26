@@ -43,17 +43,17 @@ struct SystemCommand
 {
 	std::string id;
 	FuncCommand func;
-	std::string group;
 	std::string shortcut;
 	std::string desc;
+	std::string group;
 };
 
 void cmdReg(
 		const std::string &id,
 		FuncCommand cmdFunc,
-		const std::string &group = "",
 		const std::string &shortcut = "",
-		const std::string &desc = "");
+		const std::string &desc = "",
+		const std::string &group = "");
 
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 

@@ -436,14 +436,14 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 void cmdReg(
 		const string &id,
 		FuncCommand cmdFunc,
-		const string &group,
 		const string &shortcut,
-		const string &desc)
+		const string &desc,
+		const string &group)
 {
 	dbgLog(LOG_LVL, "registering command %s", id.c_str());
 	lock_guard<mutex> lock(mtxCmds);
 
-	SystemCommand cmd, newCmd = {id, cmdFunc, group, shortcut, desc};
+	SystemCommand cmd, newCmd = {id, cmdFunc, shortcut, desc, group};
 	list<SystemCommand>::iterator iter;
 
 	iter = cmds.begin();
@@ -478,7 +478,7 @@ void cmdReg(
 
 void intCmdReg(const string &id, FuncCommand cmdFunc, const string &shortcut, const string &desc)
 {
-	cmdReg(id, cmdFunc, cInternalCmdCls, shortcut, desc);
+	cmdReg(id, cmdFunc, shortcut, desc, cInternalCmdCls);
 }
 
 void SystemCommanding::dummyExecute(char *pArgs, char *pBuf, char *pBufEnd)
