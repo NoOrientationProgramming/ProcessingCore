@@ -30,9 +30,6 @@
 
 #include <string.h>
 #include <iostream>
-#if CONFIG_PROC_HAVE_DRIVERS
-#include <mutex>
-#endif
 
 #include "SystemDebugging.h"
 #if CONFIG_DBG_HAVE_ENVIRONMENT
