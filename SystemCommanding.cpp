@@ -326,7 +326,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 void SystemCommanding::commandExecute(const char *pCmd, char *pArgs)
 {
-	string id, msg;
+	string msg;
 
 	char bufOut[cSizeBufCmdOut];
 	size_t lenBuf = sizeof(bufOut) - 1;
@@ -378,11 +378,7 @@ void SystemCommanding::commandExecute(const char *pCmd, char *pArgs)
 	iter = cmds.begin();
 	for (; iter != cmds.end(); ++iter)
 	{
-		id = iter->id;
-
-		//procWrnLog("Checking command: %s", id.c_str());
-
-		if (strcmp(pCmd, id.c_str()))
+		if (strcmp(pCmd, iter->id.c_str()) && strcmp(pCmd, iter->shortcut.c_str()))
 			continue;
 #if 0
 		procWrnLog("Command executed   '%s'", pCmd);
