@@ -154,8 +154,6 @@ const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
 const int cSizeCmdIdMax = 16;
-const size_t cSizeBufCmdIn = 63;
-const size_t cSizeBufCmdOut = 512;
 
 // --------------------
 
@@ -209,6 +207,9 @@ Success SystemCommanding::process()
 		start(mpTrans);
 
 		globalInit();
+
+		for (size_t i = 0; i < cNumCmdInBuffer; ++i)
+			mCmdInBuf[i][0] = 0;
 
 		mState = StSendReadyWait;
 
