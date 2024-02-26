@@ -29,13 +29,17 @@
 */
 
 #include <string.h>
+#include <cstdint>
 
 #include "SystemCommanding.h"
-//#include "LibDspc.h"
+
+// --------------------
 
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
 		gen(StSendReadyWait) \
+		gen(StTelnetInit) \
+		gen(StWelcomeSend) \
 		gen(StMain) \
 		gen(StTmp) \
 
@@ -47,13 +51,93 @@ dProcessStateEnum(ProcState);
 dProcessStateStr(ProcState);
 #endif
 
+// --------------------
+
+#define dForEach_KeyState(gen) \
+		gen(StKeyMain) \
+		gen(StKeyEscMain) \
+		gen(StKeyEscBracket) \
+		gen(StKeyEsc1) \
+		gen(StKeyEsc2) \
+		gen(StKeyEsc3) \
+		gen(StKeyEscTilde) \
+		gen(StKeyIac) \
+		gen(StKeyIacDo) \
+		gen(StKeyIacWont) \
+		gen(StKeyTmp) \
+
+#define dGenKeyStateEnum(s) s,
+dProcessStateEnum(KeyState);
+
+#if 1
+#define dGenKeyStateString(s) #s,
+dProcessStateStr(KeyState);
+#endif
+
+#define dByteCheckKeyCommit(b, k)	\
+if (key == b) \
+{ \
+	mStateKey = StKeyMain; \
+	\
+	*pKeyOut = k; \
+	return Positive; \
+}
+
+// --------------------
+
 using namespace std;
 
 #define LOG_LVL	0
 
+// http://www.iana.org/assignments/telnet-options/telnet-options.xhtml#telnet-options-1
+#define keyIac			0xFF // RFC854
+#define keyIacDo		0xFD // RFC854
+#define keyIacWont		0xFC // RFC854
+#define keyEcho		0x01 // RFC857
+#define keySuppGoAhd	0x03 // RFC858
+#define keyStatus		0x05 // RFC859
+#define keyLineMode		0x22 // RFC1184
+
 #ifndef dPackageName
 #define dPackageName "<unknown package>"
 #endif
+
+// --------------------
+
+typedef uint16_t KeyUser;
+
+const KeyUser keyBackspace    = 0x7F;
+const KeyUser keyBackspaceWin = 0x08;
+const KeyUser keyEnter        = 0x0D;
+const KeyUser keyEsc          = 0x1B;
+const KeyUser keyCtrlC        = 0x03;
+const KeyUser keyCtrlD        = 0x04;
+const KeyUser keyTab          = 0x09;
+const KeyUser keyHelp         = '?';
+const KeyUser keyOpt          = '=';
+
+enum KeyExtensions
+{
+	keyUp = 1000,
+	keyDown,
+	keyLeft,
+	keyRight,
+	keyHome,
+	keyInsert,
+	keyDelete,
+	keyEnd,
+	keyPgUp,
+	keyPgDn,
+	keyF0,	keyF1,	keyF2,	keyF3,
+	keyF4,	keyF5,	keyF6,	keyF7,
+	keyF8,	keyF9,	keyF10,	keyF11,
+	keyF12,	keyF13,	keyF14,	keyF15,
+	keyF16,	keyF17,	keyF18,	keyF19,
+	keyF20,
+	keyShiftTab,
+};
+
+// --------------------
 
 const string cWelcomeMsg = "\r\n" dPackageName "\r\n" \
 			"System Terminal\r\n\r\n" \
@@ -67,6 +151,8 @@ const int cSizeCmdIdMax = 16;
 const size_t cSizeBufCmdIn = 63;
 const size_t cSizeBufFragmentMax = cSizeBufCmdIn - 5;
 const size_t cSizeBufCmdOut = 512;
+
+// --------------------
 
 bool SystemCommanding::globalInitDone = false;
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -83,9 +169,11 @@ static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond);
 
 SystemCommanding::SystemCommanding(SOCKET fd)
 	: Processing("SystemCommanding")
+	, mStateKey(StKeyMain)
 	, mStartMs(0)
 	, mSocketFd(fd)
 	, mpTrans(NULL)
+	, mDone(false)
 	, mpCmdLast(NULL)
 	, mArgLast("")
 	, mBufFragment("")
@@ -94,33 +182,6 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 }
 
 /* member functions */
-Success SystemCommanding::initialize()
-{
-#if CONFIG_PROC_HAVE_DRIVERS
-	Guard lock(mtxGlobalInit);
-#endif
-	if (mSocketFd == INVALID_SOCKET)
-		return procErrLog(-1, "socket file descriptor not set");
-
-	if (!globalInitDone)
-	{
-		/* register standard commands here */
-		//intCmdReg("dummy",		dummyExecute,		"",		"dummy command");
-		intCmdReg("help",		helpPrint,		"h",		"this help screen");
-		//intCmdReg("broadcast",	messageBroadcast,	"b",		"broadcast message to other command terminals");
-		//intCmdReg("memWrite",	memoryWrite,		"w",		"write memory");
-
-		globalInitDone = true;
-	}
-
-	mpTrans = TcpTransfering::create(mSocketFd);
-	if (!mpTrans)
-		return procErrLog(-1, "could not create process");
-
-	start(mpTrans);
-
-	return Positive;
-}
 
 Success SystemCommanding::process()
 {
@@ -129,25 +190,63 @@ Success SystemCommanding::process()
 	Success success;
 	//bool ok;
 	//int res;
+	string msg;
 #if 0
 	dStateTrace;
 #endif
-	success = mpTrans->success();
-
-	if (success != Pending)
-		return success;
-
 	switch (mState)
 	{
 	case StStart:
+
+		if (mSocketFd == INVALID_SOCKET)
+			return procErrLog(-1, "socket file descriptor not set");
+
+		mpTrans = TcpTransfering::create(mSocketFd);
+		if (!mpTrans)
+			return procErrLog(-1, "could not create process");
+
+		start(mpTrans);
+
+		globalInit();
 
 		mState = StSendReadyWait;
 
 		break;
 	case StSendReadyWait:
 
+		success = mpTrans->success();
+		if (success != Pending)
+			return success;
+
 		if (!mpTrans->mSendReady)
 			break;
+
+		mState = StTelnetInit;
+
+		break;
+	case StTelnetInit:
+
+		// IAC WILL ECHO
+		msg += "\xFF\xFB\x01";
+
+		// IAC WILL SUPPRESS_GO_AHEAD
+		msg += "\xFF\xFB\x03";
+
+		// IAC WONT LINEMODE
+		msg += "\xFF\xFC\x22";
+
+		// Hide cursor
+		msg += "\033[?25l";
+
+		// Set terminal title
+		msg += "\033]2;SystemCommanding()\a";
+
+		mpTrans->send(msg.c_str(), msg.size());
+
+		mState = StWelcomeSend;
+
+		break;
+	case StWelcomeSend:
 
 		mpTrans->send(cWelcomeMsg.c_str(), cWelcomeMsg.size());
 
@@ -156,11 +255,13 @@ Success SystemCommanding::process()
 		break;
 	case StMain:
 
-		success = commandReceive();
-		if (success == Pending)
-			break;
+		success = mpTrans->success();
+		if (success != Pending)
+			return success;
 
-		if (success == Positive)
+		dataReceive();
+
+		if (!mDone)
 			break;
 
 		return Positive;
@@ -174,6 +275,65 @@ Success SystemCommanding::process()
 	}
 
 	return Pending;
+}
+
+Success SystemCommanding::shutdown()
+{
+	if (!mpTrans)
+		return Positive;
+
+	string msg = "\033[?25h"; // Show cursor
+
+	mpTrans->send(msg.c_str(), msg.size());
+	mpTrans->doneSet();
+	mpTrans = NULL;
+
+	return Positive;
+}
+
+void SystemCommanding::dataReceive()
+{
+	ssize_t lenReq, lenPlanned, lenDone;
+	Success success;
+	char buf[8];
+	uint16_t key;
+
+	buf[0] = 0;
+
+	lenReq = sizeof(buf) - 1;
+	lenPlanned = lenReq;
+
+	lenDone = mpTrans->read(buf, lenPlanned);
+	if (!lenDone)
+		return;
+
+	if (lenDone < 0)
+	{
+		mDone = true;
+		return;
+	}
+
+	buf[lenDone] = 0;
+
+	for (ssize_t i = 0; i < lenDone; ++i)
+	{
+		success = ansiFilter(buf[i], &key);
+		if (success == Pending)
+			continue;
+
+		if (success != Positive)
+		{
+			mDone = true;
+			break;
+		}
+
+		keyProcess(key);
+	}
+}
+
+void SystemCommanding::keyProcess(uint16_t key)
+{
+	procInfLog("key received: %u, 0x%02X", key, key);
 }
 
 Success SystemCommanding::commandReceive()
@@ -432,7 +592,280 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 #endif
 }
 
+Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
+{
+	uint8_t key = ch;
+#if 0
+	procWrnLog("mState = %s", KeyStateString[mStateKey]);
+#endif
+#if 1
+	procInfLog("char received: 0x%02X '%c'", ch, ch);
+#endif
+	switch (mStateKey)
+	{
+	case StKeyMain:
+
+		if (key == keyIac)
+		{
+			//procWrnLog("Telnet command received");
+			mStateKey = StKeyIac;
+			break;
+		}
+
+		if (key == keyEsc)
+		{
+			mStateKey = StKeyEscMain;
+			break;
+		}
+
+		// user disconnect
+		if (key == keyCtrlC or key == keyCtrlD)
+			return -1;
+
+		*pKeyOut = key;
+		return Positive;
+
+		break;
+	case StKeyEscMain:
+
+		if (key == '[')
+		{
+			mStateKey = StKeyEscBracket;
+			break;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEscBracket:
+
+		dByteCheckKeyCommit('A', keyUp);
+		dByteCheckKeyCommit('B', keyDown);
+		dByteCheckKeyCommit('C', keyRight);
+		dByteCheckKeyCommit('D', keyLeft);
+
+		dByteCheckKeyCommit('F', keyEnd);
+		dByteCheckKeyCommit('H', keyHome);
+
+		dByteCheckKeyCommit('Z', keyShiftTab);
+
+		if (key == '1')
+		{
+			mStateKey = StKeyEsc1;
+			break;
+		}
+
+		if (key == '2')
+		{
+			mStateKey = StKeyEsc2;
+			break;
+		}
+
+		if (key == '3')
+		{
+			mStateKey = StKeyEsc3;
+			break;
+		}
+
+		if (key == '4' or key == '8')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyEnd;
+			return Positive;
+		}
+
+		if (key == '5')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyPgUp;
+			return Positive;
+		}
+
+		if (key == '6')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyPgDn;
+			return Positive;
+		}
+
+		if (key == '7')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyHome;
+			return Positive;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEsc1:
+
+		dByteCheckKeyCommit('~', keyHome);
+
+		if (key >= '0' and key <= '5')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF0 + key;
+			return Positive;
+		}
+
+		if (key >= '7' and key <= '9')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF6 + (key - 7);
+			return Positive;
+		}
+
+		if (key >= 'P' and key <= 'S')
+		{
+			mStateKey = StKeyMain;
+
+			*pKeyOut = keyF1 + (key - 'P');
+			return Positive;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEsc2:
+
+		dByteCheckKeyCommit('~', keyInsert);
+
+		if (key >= '0' and key <= '1')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF9 + key;
+			return Positive;
+		}
+
+		if (key >= '3' and key <= '6')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF11 + (key - 3);
+			return Positive;
+		}
+
+		if (key >= '8' and key <= '9')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF15 + (key - 8);
+			return Positive;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEsc3:
+
+		dByteCheckKeyCommit('~', keyDelete);
+
+		if (key >= '1' and key <= '4')
+		{
+			mStateKey = StKeyEscTilde;
+
+			*pKeyOut = keyF17 + (key - 1);
+			return Positive;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEscTilde:
+
+		if (key == '~')
+		{
+			mStateKey = StKeyMain;
+			break;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyIac:
+
+		if (key == keyIacDo)
+		{
+			mStateKey = StKeyIacDo;
+			break;
+		}
+
+		break;
+	case StKeyIacDo:
+
+		if (key == keyEcho)
+		{
+			mStateKey = StKeyMain;
+			break;
+		}
+
+		if (key == keySuppGoAhd)
+		{
+			mStateKey = StKeyMain;
+			break;
+		}
+
+		if (key == keyStatus)
+		{
+			mStateKey = StKeyMain;
+			break;
+		}
+
+		return procErrLog(-1, "Unknown DO option: 0x%02X", key);
+
+		break;
+	case StKeyIacWont:
+
+		if (key == keyLineMode)
+		{
+			mStateKey = StKeyMain;
+			break;
+		}
+
+		return procErrLog(-1, "Unknown WONT option: 0x%02X", key);
+
+		break;
+	case StKeyTmp:
+
+		break;
+	default:
+		break;
+	}
+
+	return Pending;
+}
+
 /* static functions */
+
+void SystemCommanding::globalInit()
+{
+	lock_guard<mutex> lock(mtxGlobalInit);
+
+	if (globalInitDone)
+		return;
+
+	/* register standard commands here */
+	//intCmdReg("dummy",		dummyExecute,		"",		"dummy command");
+	intCmdReg("help",		helpPrint,		"h",		"this help screen");
+	//intCmdReg("broadcast",	messageBroadcast,	"b",		"broadcast message to other command terminals");
+	//intCmdReg("memWrite",	memoryWrite,		"w",		"write memory");
+
+	globalInitDone = true;
+}
 
 void cmdReg(
 		const string &id,

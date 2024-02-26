@@ -95,8 +95,12 @@ private:
 	 */
 
 	/* member functions */
-	Success initialize();
 	Success process();
+	Success shutdown();
+
+	void dataReceive();
+	Success ansiFilter(uint8_t key, uint16_t *pKeyOut);
+	void keyProcess(uint16_t key);
 
 	Success commandReceive();
 	void lfToCrLf(char *pBuf, std::string &str);
@@ -108,14 +112,17 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
+	uint32_t mStateKey;
 	uint32_t mStartMs;
 	SOCKET mSocketFd;
 	TcpTransfering *mpTrans;
+	bool mDone;
 	const SystemCommand *mpCmdLast;
 	std::string mArgLast;
 	std::string mBufFragment;
 
 	/* static functions */
+	static void globalInit();
 	static void dummyExecute(char *pArgs, char *pBuf, char *pBufEnd);
 	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
 	static void messageBroadcast(char *pArgs, char *pBuf, char *pBufEnd);
