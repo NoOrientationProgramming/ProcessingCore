@@ -34,10 +34,13 @@
 #include <string>
 #include <list>
 #include <mutex>
+#include <functional>
 #include "Processing.h"
 #include "TcpTransfering.h"
 
-typedef void (*FuncCommand)(char *pArgs, char *pBuf, char *pBufEnd);
+// Banana optimization
+using FuncCommand = std::function<void (char *pArgs, char *pBuf, char *pBufEnd)>;
+#define BIND_MEMBER_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 
 struct SystemCommand
 {
