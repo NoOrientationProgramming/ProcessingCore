@@ -682,7 +682,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 
 /* static functions */
 
-bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
+static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
 {
 	if (cmdFirst.group == cInternalCmdCls and cmdSecond.group != cInternalCmdCls)
 		return true;
