@@ -165,7 +165,6 @@ mutex SystemCommanding::mtxGlobalInit;
 static list<SystemCommand> cmds;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxCmds;
-static mutex mtxCmdExec;
 #endif
 
 SystemCommanding::SystemCommanding(SOCKET fd)
