@@ -315,6 +315,12 @@ void SystemCommanding::dataReceive()
 
 	buf[lenDone] = 0;
 
+	if (lenDone == 1 and buf[0] == keyEsc)
+	{
+		keyProcess(keyEsc);
+		return;
+	}
+
 	for (ssize_t i = 0; i < lenDone; ++i)
 	{
 		success = ansiFilter(buf[i], &key);
