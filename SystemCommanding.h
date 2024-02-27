@@ -107,7 +107,6 @@ private:
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
 	void globalInit();
 	Success ansiFilter(uint8_t key, uint16_t *pKeyOut);
 
@@ -121,6 +120,7 @@ private:
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
 
 	/* static functions */
+	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
 	static bool globalInitDone;

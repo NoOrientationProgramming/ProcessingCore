@@ -353,48 +353,6 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 #endif
 }
 
-void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
-{
-	list<SystemCommand>::iterator iter;
-	SystemCommand cmd;
-	string group = "";
-
-	(void)pArgs;
-
-	dInfo("\nAvailable commands\n");
-
-	iter = cmds.begin();
-	for (; iter != cmds.end(); ++iter)
-	{
-		cmd = *iter;
-
-		if (cmd.group != group)
-		{
-			dInfo("\n");
-
-			if (cmd.group.size() and cmd.group != cInternalCmdCls)
-				dInfo("%s\n", cmd.group.c_str());
-			group = cmd.group;
-		}
-
-		dInfo("  ");
-
-		if (cmd.shortcut != "")
-			dInfo("%s, ", cmd.shortcut.c_str());
-		else
-			dInfo("   ");
-
-		dInfo("%-*s", cSizeCmdIdMax + 2, cmd.id.c_str());
-
-		if (cmd.desc.size())
-			dInfo(".. %s", cmd.desc.c_str());
-
-		dInfo("\n");
-	}
-
-	dInfo("\n");
-}
-
 void SystemCommanding::globalInit()
 {
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -406,17 +364,17 @@ void SystemCommanding::globalInit()
 
 	/* register standard commands here */
 	cmdReg("help",
-		BIND_MEMBER_FN(helpPrint),
+		helpPrint,
 		"h", "this help screen",
 		cInternalCmdCls);
 #if 0
 	cmdReg("broadcast",
-		BIND_MEMBER_FN(messageBroadcast),
+		messageBroadcast,
 		"b", "broadcast message to other command terminals",
 		cInternalCmdCls);
 
 	cmdReg("memWrite",
-		BIND_MEMBER_FN(memoryWrite),
+		memoryWrite,
 		"w", "write memory",
 		cInternalCmdCls);
 #endif
@@ -680,6 +638,48 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 }
 
 /* static functions */
+
+void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	list<SystemCommand>::iterator iter;
+	SystemCommand cmd;
+	string group = "";
+
+	(void)pArgs;
+
+	dInfo("\nAvailable commands\n");
+
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
+	{
+		cmd = *iter;
+
+		if (cmd.group != group)
+		{
+			dInfo("\n");
+
+			if (cmd.group.size() and cmd.group != cInternalCmdCls)
+				dInfo("%s\n", cmd.group.c_str());
+			group = cmd.group;
+		}
+
+		dInfo("  ");
+
+		if (cmd.shortcut != "")
+			dInfo("%s, ", cmd.shortcut.c_str());
+		else
+			dInfo("   ");
+
+		dInfo("%-*s", cSizeCmdIdMax + 2, cmd.id.c_str());
+
+		if (cmd.desc.size())
+			dInfo(".. %s", cmd.desc.c_str());
+
+		dInfo("\n");
+	}
+
+	dInfo("\n");
+}
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
 {
