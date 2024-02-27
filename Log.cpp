@@ -56,7 +56,6 @@ static LogEntryCreatedFct pFctLogEntryCreated = NULL;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxPrint;
 #endif
-
 static system_clock::time_point tOld;
 
 const string red("\033[0;31m");
@@ -81,7 +80,6 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mtxPrint);
 #endif
-
 	(void)filename;
 
 	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
