@@ -36,7 +36,9 @@
 #include <list>
 #include <queue>
 #include <chrono>
+#if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
+#endif
 #if DEBUG_PIPE
 #include <iostream>
 #endif
