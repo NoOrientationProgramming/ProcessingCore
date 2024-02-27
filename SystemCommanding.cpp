@@ -68,12 +68,16 @@ const size_t cSizeBufCmdIn = 63;
 const size_t cSizeBufFragmentMax = cSizeBufCmdIn - 5;
 const size_t cSizeBufCmdOut = 512;
 
-mutex SystemCommanding::mtxGlobalInit;
 bool SystemCommanding::globalInitDone = false;
+#if CONFIG_PROC_HAVE_DRIVERS
+mutex SystemCommanding::mtxGlobalInit;
+#endif
 
 static list<SystemCommand> cmds;
+#if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxCmds;
 static mutex mtxCmdExec;
+#endif
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond);
 

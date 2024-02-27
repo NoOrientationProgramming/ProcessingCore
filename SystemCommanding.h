@@ -122,9 +122,10 @@ private:
 	static void memoryWrite(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
-	static std::mutex mtxGlobalInit;
 	static bool globalInitDone;
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	static std::mutex mtxGlobalInit;
+#endif
 	/* constants */
 
 };
