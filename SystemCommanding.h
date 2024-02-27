@@ -62,12 +62,21 @@ void cmdReg(
 
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 
-// TODO: Make customizeable
-const size_t cNumHistory = 5;
-const size_t cSizeBufCmdIn = 63;
-const size_t cSizeBufCmdOut = 507;
+#ifndef CONFIG_CMD_SIZE_HISTORY
+#define CONFIG_CMD_SIZE_HISTORY		5
+#endif
 
-const size_t cNumCmdInBuffer = 1 + cNumHistory;
+#ifndef CONFIG_CMD_SIZE_BUFFER_IN
+#define CONFIG_CMD_SIZE_BUFFER_IN		63
+#endif
+
+#ifndef CONFIG_CMD_SIZE_BUFFER_OUT
+#define CONFIG_CMD_SIZE_BUFFER_OUT		507
+#endif
+
+const size_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
+const size_t cSizeBufCmdIn = CONFIG_CMD_SIZE_BUFFER_IN;
+const size_t cSizeBufCmdOut = CONFIG_CMD_SIZE_BUFFER_OUT;
 
 class SystemCommanding : public Processing
 {
