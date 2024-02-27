@@ -379,7 +379,7 @@ void SystemDebugging::logEntriesSend()
 	{
 		{
 #if CONFIG_PROC_HAVE_DRIVERS
-			lock_guard<mutex> lock(mtxLogEntries);
+			Guard lock(mtxLogEntries);
 #endif
 			if (!qLogEntries.size())
 				break;
@@ -421,9 +421,9 @@ void SystemDebugging::environmentSend()
 
 		mEnvironmentChanged = false;
 	}
-
-	lock_guard<mutex> lock(envMtx);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	Guard lock(envMtx);
+#endif
 	StreamWriterBuilder envBuilder;
 	envBuilder["indentation"] = "    ";
 	string environment = writeString(envBuilder, env);
@@ -492,7 +492,7 @@ void SystemDebugging::logEntryCreated(
 		const size_t len)
 {
 #if CONFIG_PROC_HAVE_DRIVERS
-	lock_guard<mutex> lock(mtxLogEntries);
+	Guard lock(mtxLogEntries);
 #endif
 	(void)filename;
 	(void)function;
