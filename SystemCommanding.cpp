@@ -397,8 +397,9 @@ void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 
 void SystemCommanding::globalInit()
 {
-	lock_guard<mutex> lock(mtxGlobalInit);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	Guard lock(mtxGlobalInit);
+#endif
 	if (globalInitDone)
 		return;
 	globalInitDone = true;
