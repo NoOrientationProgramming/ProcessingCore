@@ -92,8 +92,9 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 /* member functions */
 Success SystemCommanding::initialize()
 {
-	lock_guard<mutex> lock(mtxGlobalInit);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	Guard lock(mtxGlobalInit);
+#endif
 	if (mSocketFd == INVALID_SOCKET)
 		return procErrLog(-1, "socket file descriptor not set");
 
@@ -437,8 +438,9 @@ void cmdReg(
 		const string &group)
 {
 	dbgLog(LOG_LVL, "registering command %s", id.c_str());
-	lock_guard<mutex> lock(mtxCmds);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	Guard lock(mtxCmds);
+#endif
 	SystemCommand cmd, newCmd = {id, cmdFunc, shortcut, desc, group};
 	list<SystemCommand>::iterator iter;
 
