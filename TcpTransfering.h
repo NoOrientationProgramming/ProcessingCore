@@ -122,7 +122,9 @@ private:
 
 	/* member variables */
 	uint32_t mStartMs;
+#if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mSocketFdMtx;
+#endif
 	SOCKET mSocketFd;
 	std::string mHostAddrStr;
 	struct sockaddr_in mHostAddr;
@@ -141,7 +143,9 @@ private:
 	static void globalWsaDestruct();
 
 	/* static variables */
+#if CONFIG_PROC_HAVE_DRIVERS
 	static std::mutex mtxGlobalInit;
+#endif
 	static bool globalInitDone;
 #endif
 

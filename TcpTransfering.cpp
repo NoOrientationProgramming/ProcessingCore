@@ -63,7 +63,9 @@ using namespace chrono;
 #define LOG_LVL	0
 
 #ifdef _WIN32
+#if CONFIG_PROC_HAVE_DRIVERS
 mutex TcpTransfering::mtxGlobalInit;
+#endif
 bool TcpTransfering::globalInitDone = false;
 #endif
 
@@ -247,8 +249,9 @@ Success TcpTransfering::process()
 Success TcpTransfering::shutdown()
 {
 	procDbgLog(LOG_LVL, "shutdown");
-
+#if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mSocketFdMtx);
+#endif
 	disconnect();
 
 	return Positive;
@@ -276,8 +279,9 @@ Literature socket programming
 */
 ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 {
+#if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mSocketFdMtx);
-
+#endif
 	if (!mReadReady)
 		return 0;
 
@@ -368,9 +372,9 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 {
 	if (!mSendReady)
 		return procErrLog(-1, "unable to send data. Not ready");
-
+#if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mSocketFdMtx);
-
+#endif
 	// DO NOT SEND AN ERROR MESSAGE AT THIS POINT!
 	// Reason:
 	// Otherwise we have an endless loop for the
@@ -430,8 +434,9 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 
 void TcpTransfering::disconnect(int err)
 {
+#if CONFIG_PROC_HAVE_DRIVERS
 	//lock_guard<mutex> lock(mSocketFdMtx); // every caller must lock in advance!
-
+#endif
 	if (mSocketFd == INVALID_SOCKET)
 	{
 		procDbgLog(LOG_LVL, "socket closed already");
@@ -451,8 +456,9 @@ void TcpTransfering::disconnect(int err)
 
 Success TcpTransfering::socketOptionsSet()
 {
+#if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mSocketFdMtx);
-
+#endif
 	int opt = 1;
 	bool ok;
 
@@ -591,8 +597,9 @@ bool TcpTransfering::fileNonBlockingSet(SOCKET fd)
 #ifdef _WIN32
 bool TcpTransfering::wsaInit()
 {
+#if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mtxGlobalInit);
-
+#endif
 	if (globalInitDone)
 		return true;
 
