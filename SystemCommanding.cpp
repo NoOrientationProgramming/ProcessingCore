@@ -335,7 +335,11 @@ void SystemCommanding::dataReceive()
 		}
 
 		keyProcess(key);
+
+		// Update buffer
 	}
+
+	// Send result
 }
 
 void SystemCommanding::keyProcess(uint16_t key)
