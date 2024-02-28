@@ -551,7 +551,7 @@ void SystemCommanding::promptSend()
 			msg += "\033[0m";
 	}
 
-	numPad = mIdxColMax < cIdxColMax;
+	numPad = cIdxColMax - mIdxColMax;
 
 	if (numPad)
 		msg.append(numPad, ' ');
