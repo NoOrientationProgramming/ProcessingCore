@@ -458,7 +458,7 @@ bool SystemCommanding::bufferChange(uint16_t key)
 	if (!keyIsInsert(key))
 		return false;
 
-	if (mIdxColMax > cIdxColMax)
+	if (mIdxColMax >= cIdxColMax)
 		return false;
 
 	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];

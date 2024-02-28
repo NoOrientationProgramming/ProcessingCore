@@ -82,7 +82,7 @@ const size_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
 const size_t cSizeBufCmdIn = CONFIG_CMD_SIZE_BUFFER_IN;
 const size_t cSizeBufCmdOut = CONFIG_CMD_SIZE_BUFFER_OUT;
 
-const size_t cIdxColMax = cSizeBufCmdIn - 2;
+const size_t cIdxColMax = cSizeBufCmdIn - 1;
 
 class SystemCommanding : public Processing
 {
