@@ -457,18 +457,27 @@ void SystemCommanding::keyProcess(uint16_t key)
 	if (!keyIsInsert(key))
 		return;
 
-	if (mIdxColCurrent > cIdxColMax)
+	if (mIdxColMax > cIdxColMax)
 		return;
 
 	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
 
-	*pCursor++ = (char)key;
-	*pCursor++ = 0;
+	char chInsert = (char)key;
+	char chSave;
+
+	while (true)
+	{
+		chSave = *pCursor;
+		*pCursor++ = chInsert;
+
+		if (!chInsert)
+			break;
+
+		chInsert = chSave;
+	}
 
 	++mIdxColCurrent;
-
-	if (mIdxColCurrent > mIdxColMax)
-		mIdxColMax = mIdxColCurrent;
+	++mIdxColMax;
 }
 
 bool SystemCommanding::keyIsInsert(uint16_t key)
