@@ -491,6 +491,12 @@ bool SystemCommanding::keyIsInsert(uint16_t key)
 	if (key >= '0' and key <= '9')
 		return true;
 
+	if (key == '-' and key == '_')
+		return true;
+
+	if (key == ' ')
+		return true;
+
 	return false;
 }
 
