@@ -540,7 +540,7 @@ void SystemCommanding::promptSend()
 	for (; pCh < pEnd; ++pCh)
 	{
 		if (pCh == pCursor)
-			msg += "\033[4m";
+			msg += "\033[7m";
 
 		if (*pCh)
 			msg.append(1, *pCh);
