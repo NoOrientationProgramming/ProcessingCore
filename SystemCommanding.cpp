@@ -420,6 +420,36 @@ void SystemCommanding::keyProcess(uint16_t key)
 
 	// Navigation
 
+	if (key == keyHome)
+	{
+		mIdxColCurrent = 0;
+		return;
+	}
+
+	if (key == keyEnd)
+	{
+		mIdxColCurrent = mIdxColMax;
+		return;
+	}
+
+	if (key == keyLeft)
+	{
+		if (!mIdxColCurrent)
+			return;
+
+		--mIdxColCurrent;
+		return;
+	}
+
+	if (key == keyRight)
+	{
+		if (mIdxColCurrent >= mIdxColMax)
+			return;
+
+		++mIdxColCurrent;
+		return;
+	}
+
 	// Removal
 
 	// Insertion
