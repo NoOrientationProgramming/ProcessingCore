@@ -151,8 +151,7 @@ enum KeyExtensions
 
 const string cWelcomeMsg = "\r\n" dPackageName "\r\n" \
 			"System Terminal\r\n\r\n" \
-			"type 'help' or just 'h' for a list of available commands\r\n\r\n" \
-			"# ";
+			"type 'help' or just 'h' for a list of available commands\r\n\r\n";
 const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
@@ -281,6 +280,7 @@ Success SystemCommanding::process()
 	case StWelcomeSend:
 
 		mpTrans->send(cWelcomeMsg.c_str(), cWelcomeMsg.size());
+		promptSend();
 
 		mState = StMain;
 
