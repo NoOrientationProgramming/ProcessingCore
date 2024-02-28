@@ -115,6 +115,7 @@ TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
  * - https://man7.org/linux/man-pages/man3/inet_pton.3.html
  * - https://man7.org/linux/man-pages/man2/socket.2.html
  * - https://man7.org/linux/man-pages/man2/connect.2.html
+ * - https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-connect
  */
 Success TcpTransfering::process()
 {
@@ -192,7 +193,7 @@ Success TcpTransfering::process()
 			return procErrLog(-1, "timeout connecting to host");
 
 		res = connect(mSocketFd, (struct sockaddr *)&mHostAddr, sizeof(mHostAddr));
-		if (res < 0)
+		if (res)
 		{
 			numErr = errGet();
 #ifdef _WIN32
@@ -205,11 +206,9 @@ Success TcpTransfering::process()
 				numErr == EAGAIN)
 				break;
 #endif
-		}
-
-		if (res < 0)
 			return procErrLog(-1, "could not connect to host: %s (%d)",
 							errnoToStr(numErr).c_str(), numErr);
+		}
 
 		success = socketOptionsSet();
 		if (success != Positive)
@@ -330,7 +329,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 		disconnect(numErr);
 
 		return procErrLog(-3, "recv() failed: %s",
-							errnoToStr(mErrno).c_str());
+							errnoToStr(numErr).c_str());
 	}
 
 	if (!numBytes)
@@ -412,7 +411,7 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 			disconnect(numErr);
 
 			return procErrLog(-1, "connection down: %s",
-							errnoToStr(mErrno).c_str());
+							errnoToStr(numErr).c_str());
 		}
 
 		if (!res)
@@ -460,18 +459,20 @@ Success TcpTransfering::socketOptionsSet()
 	Guard lock(mSocketFdMtx);
 #endif
 	int opt = 1;
+	int res;
 	bool ok;
 
 	addrInfoSet();
 
-	if (::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt)))
+	res = ::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt));
+	if (res)
 		return procErrLog(-2, "setsockopt(SO_KEEPALIVE) failed: %s",
-							errnoToStr(mErrno).c_str());
+							errnoToStr(errGet()).c_str());
 
 	ok = fileNonBlockingSet(mSocketFd);
 	if (!ok)
 		return procErrLog(-3, "could not set non blocking mode: %s",
-							errnoToStr(mErrno).c_str());
+							errnoToStr(errGet()).c_str());
 
 	mReadReady = true;
 
