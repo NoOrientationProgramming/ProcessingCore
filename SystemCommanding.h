@@ -137,8 +137,8 @@ private:
 	bool mCursorHidden;
 	bool mDone;
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
-	uint16_t mIdxLineCurrent;
-	uint16_t mIdxLineLast;
+	int16_t mIdxLineCurrent;
+	int16_t mIdxLineLast;
 	uint16_t mIdxColCurrent;
 	uint16_t mIdxColMax;
 

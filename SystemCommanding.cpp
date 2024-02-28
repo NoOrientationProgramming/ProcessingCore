@@ -180,7 +180,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mCursorHidden(false)
 	, mDone(false)
 	, mIdxLineCurrent(0)
-	, mIdxLineLast(0)
+	, mIdxLineLast(-1)
 	, mIdxColCurrent(0)
 	, mIdxColMax(0)
 {
@@ -545,9 +545,12 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 #if 1
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 #endif
-	const char *pLineLast = mCmdInBuf[mIdxLineLast];
+	const char *pLineLast = "<none>";
 
-	dInfo("Last command\t\t%s\n", *pLineLast ? pLineLast : "<none>");
+	if (mIdxLineLast >= 0)
+		pLineLast = mCmdInBuf[mIdxLineLast];
+
+	dInfo("Last command\t\t%s\n", pLineLast);
 
 	bool lineDone = false;
 	const char *pCh;
