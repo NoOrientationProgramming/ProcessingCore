@@ -89,7 +89,7 @@ if (key == b) \
 if (key == k) \
 { \
 	procInfLog("ignoring %u, 0x%02X", key, key); \
-	return; \
+	return false; \
 }
 
 // --------------------
@@ -380,10 +380,9 @@ void SystemCommanding::dataReceive()
 	procInfLog("bytes received: %d", lenDone);
 
 	if (lenDone == 1 and buf[0] == keyEsc)
-	{
-		keyProcess(keyEsc);
 		return;
-	}
+
+	bool changed = false;
 
 	for (ssize_t i = 0; i < lenDone; ++i)
 	{
@@ -399,15 +398,14 @@ void SystemCommanding::dataReceive()
 			break;
 		}
 
-		keyProcess(key);
-
 		// Update buffer
+		changed |= bufferChange(key);
 	}
 
 	// Send result
 }
 
-void SystemCommanding::keyProcess(uint16_t key)
+bool SystemCommanding::bufferChange(uint16_t key)
 {
 	// Filter
 
@@ -423,45 +421,45 @@ void SystemCommanding::keyProcess(uint16_t key)
 	if (key == keyHome)
 	{
 		mIdxColCurrent = 0;
-		return;
+		return true;
 	}
 
 	if (key == keyEnd)
 	{
 		mIdxColCurrent = mIdxColMax;
-		return;
+		return true;
 	}
 
 	if (key == keyLeft)
 	{
 		if (!mIdxColCurrent)
-			return;
+			return false;
 
 		--mIdxColCurrent;
-		return;
+		return true;
 	}
 
 	if (key == keyRight)
 	{
 		if (mIdxColCurrent >= mIdxColMax)
-			return;
+			return false;
 
 		++mIdxColCurrent;
-		return;
+		return true;
 	}
 
 	// Removal
 
 	if (chRemove(key))
-		return;
+		return true;
 
 	// Insertion
 
 	if (!keyIsInsert(key))
-		return;
+		return false;
 
 	if (mIdxColMax > cIdxColMax)
-		return;
+		return false;
 
 	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
 
@@ -481,6 +479,8 @@ void SystemCommanding::keyProcess(uint16_t key)
 
 	++mIdxColCurrent;
 	++mIdxColMax;
+
+	return true;
 }
 
 bool SystemCommanding::chRemove(uint16_t key)
