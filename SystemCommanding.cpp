@@ -30,6 +30,7 @@
 
 #include <string.h>
 #include <cstdint>
+#include <chrono>
 
 #include "SystemCommanding.h"
 
@@ -38,6 +39,7 @@
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
 		gen(StSendReadyWait) \
+		gen(StAutoModeInitWait) \
 		gen(StTelnetInit) \
 		gen(StWelcomeSend) \
 		gen(StMain) \
@@ -93,6 +95,7 @@ if (key == k) \
 // --------------------
 
 using namespace std;
+using namespace chrono;
 
 #define LOG_LVL	0
 
@@ -153,6 +156,7 @@ const string cWelcomeMsg = "\r\n" dPackageName "\r\n" \
 const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
+const uint32_t cTmoAutoModeMs = 40;
 const int cSizeCmdIdMax = 16;
 
 // --------------------
@@ -173,8 +177,12 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mpTrans(NULL)
 	, mStateKey(StKeyMain)
 	, mStartMs(0)
-	, mpLineLast(NULL)
+	, mCursorHidden(false)
 	, mDone(false)
+	, mIdxLineCurrent(0)
+	, mIdxLineLast(0)
+	, mIdxColCurrent(0)
+	, mIdxColMax(0)
 {
 	mState = StStart;
 }
@@ -183,8 +191,8 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 
 Success SystemCommanding::process()
 {
-	//uint32_t curTimeMs = millis();
-	//uint32_t diffMs = curTimeMs - mStartMs;
+	uint32_t curTimeMs = millis();
+	uint32_t diffMs = curTimeMs - mStartMs;
 	Success success;
 	//bool ok;
 	//int res;
@@ -203,6 +211,7 @@ Success SystemCommanding::process()
 		if (!mpTrans)
 			return procErrLog(-1, "could not create process");
 
+		mpTrans->procTreeDisplaySet(false);
 		start(mpTrans);
 
 		globalInit();
@@ -222,7 +231,27 @@ Success SystemCommanding::process()
 		if (!mpTrans->mSendReady)
 			break;
 
-		mState = StTelnetInit;
+		mStartMs = curTimeMs;
+		mState = StAutoModeInitWait;
+
+		break;
+	case StAutoModeInitWait:
+
+		if (diffMs > cTmoAutoModeMs)
+		{
+			mState = StTelnetInit;
+			break;
+		}
+
+		success = autoCommandReceive();
+		if (success == Pending)
+			break;
+
+		msg += "Auto command executed\n";
+
+		mpTrans->send(msg.c_str(), msg.size());
+
+		return success;
 
 		break;
 	case StTelnetInit:
@@ -243,6 +272,8 @@ Success SystemCommanding::process()
 		msg += "\033]2;SystemCommanding()\a";
 
 		mpTrans->send(msg.c_str(), msg.size());
+
+		mCursorHidden = true;
 
 		mState = StWelcomeSend;
 
@@ -283,6 +314,9 @@ Success SystemCommanding::shutdown()
 	if (!mpTrans)
 		return Positive;
 
+	if (!mCursorHidden)
+		return Positive;
+
 	string msg = "\033[?25h"; // Show cursor
 
 	mpTrans->send(msg.c_str(), msg.size());
@@ -292,11 +326,38 @@ Success SystemCommanding::shutdown()
 	return Positive;
 }
 
+Success SystemCommanding::autoCommandReceive()
+{
+	ssize_t lenReq, lenPlanned, lenDone;
+	char buf[8];
+
+	buf[0] = 0;
+
+	lenReq = sizeof(buf) - 1;
+	lenPlanned = lenReq;
+
+	lenDone = mpTrans->read(buf, lenPlanned);
+	if (!lenDone)
+		return Pending;
+
+	if (lenDone < 0)
+		return procErrLog(-1, "could not receive auto command");
+
+	buf[lenDone] = 0;
+
+	procInfLog("auto bytes received: %d", lenDone);
+
+	for (ssize_t i = 0; i < lenDone; ++i)
+		procInfLog("byte: %3u %02x '%c'", buf[i], buf[i], buf[i]);
+
+	return Positive;
+}
+
 void SystemCommanding::dataReceive()
 {
 	ssize_t lenReq, lenPlanned, lenDone;
-	Success success;
 	char buf[8];
+	Success success;
 	uint16_t key;
 
 	buf[0] = 0;
@@ -316,6 +377,8 @@ void SystemCommanding::dataReceive()
 
 	buf[lenDone] = 0;
 
+	procInfLog("bytes received: %d", lenDone);
+
 	if (lenDone == 1 and buf[0] == keyEsc)
 	{
 		keyProcess(keyEsc);
@@ -324,6 +387,8 @@ void SystemCommanding::dataReceive()
 
 	for (ssize_t i = 0; i < lenDone; ++i)
 	{
+		procInfLog("byte: %3u %02x '%c'", buf[i], buf[i], buf[i]);
+
 		success = ansiFilter(buf[i], &key);
 		if (success == Pending)
 			continue;
@@ -344,17 +409,100 @@ void SystemCommanding::dataReceive()
 
 void SystemCommanding::keyProcess(uint16_t key)
 {
+	// Filter
+
 	dKeyIgnore('\0');
 
-	procInfLog("key received: %u, 0x%02X", key, key);
+	if (key < 256)
+		procInfLog("key received: %u, 0x%02X, '%c'", key, key, (char)key);
+	else
+		procInfLog("key received: %u, 0x%02X", key, key);
+
+	// Navigation
+
+	// Removal
+
+	// Insertion
+
+	if (!keyIsInsert(key))
+		return;
+
+	if (mIdxColCurrent > cIdxColMax)
+		return;
+
+	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+
+	*pCursor++ = (char)key;
+	*pCursor++ = 0;
+
+	++mIdxColCurrent;
+
+	if (mIdxColCurrent > mIdxColMax)
+		mIdxColMax = mIdxColCurrent;
+}
+
+bool SystemCommanding::keyIsInsert(uint16_t key)
+{
+	if (key >= 'a' and key <= 'z')
+		return true;
+
+	if (key >= 'A' and key <= 'Z')
+		return true;
+
+	if (key >= '0' and key <= '9')
+		return true;
+
+	return false;
 }
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 {
 #if 1
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
-	dInfo("Last command\t\t%s\n", mpLineLast ? mpLineLast : "<none>");
 #endif
+	const char *pLineLast = mCmdInBuf[mIdxLineLast];
+
+	dInfo("Last command\t\t%s\n", *pLineLast ? pLineLast : "<none>");
+
+	bool lineDone = false;
+	const char *pCh;
+	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	const char *pCursorMax = &mCmdInBuf[mIdxLineCurrent][mIdxColMax];
+
+	dInfo("Buffer\n");
+	for (size_t u = 0; u < cNumCmdInBuffer; ++u)
+	{
+		lineDone = false;
+
+		dInfo("|");
+		for (size_t v = 0; v < cSizeBufCmdIn; ++v)
+		{
+			pCh = &mCmdInBuf[u][v];
+
+			if (lineDone)
+			{
+				dInfo(".");
+				continue;
+			}
+
+			if (pCh == pCursor)
+				dInfo("\033[4m");
+
+			if (pCh == pCursorMax)
+				dInfo("\033[4m");
+
+			if (*pCh)
+				dInfo("%c", *pCh);
+			else
+			{
+				lineDone = true;
+				dInfo(".");
+			}
+
+			dInfo("\033[0m");
+		}
+		dInfo("|\n");
+	}
 }
 
 void SystemCommanding::globalInit()
@@ -642,6 +790,13 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 }
 
 /* static functions */
+
+uint32_t SystemCommanding::millis()
+{
+	auto now = steady_clock::now();
+	auto nowMs = time_point_cast<milliseconds>(now);
+	return (uint32_t)nowMs.time_since_epoch().count();
+}
 
 void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 {

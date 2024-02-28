@@ -60,6 +60,10 @@ void cmdReg(
 		const std::string &desc = "",
 		const std::string &group = "");
 
+// Temp
+#define CONFIG_CMD_SIZE_HISTORY		3
+#define CONFIG_CMD_SIZE_BUFFER_IN		9
+
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 
 #ifndef CONFIG_CMD_SIZE_HISTORY
@@ -77,6 +81,8 @@ void cmdReg(
 const size_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
 const size_t cSizeBufCmdIn = CONFIG_CMD_SIZE_BUFFER_IN;
 const size_t cSizeBufCmdOut = CONFIG_CMD_SIZE_BUFFER_OUT;
+
+const size_t cIdxColMax = cSizeBufCmdIn - 2;
 
 class SystemCommanding : public Processing
 {
@@ -111,8 +117,11 @@ private:
 	Success process();
 	Success shutdown();
 
+	Success autoCommandReceive();
 	void dataReceive();
 	void keyProcess(uint16_t key);
+
+	bool keyIsInsert(uint16_t key);
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
@@ -124,11 +133,16 @@ private:
 	TcpTransfering *mpTrans;
 	uint32_t mStateKey;
 	uint32_t mStartMs;
-	const char *mpLineLast;
+	bool mCursorHidden;
 	bool mDone;
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
+	uint16_t mIdxLineCurrent;
+	uint16_t mIdxLineLast;
+	uint16_t mIdxColCurrent;
+	uint16_t mIdxColMax;
 
 	/* static functions */
+	static uint32_t millis();
 	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
