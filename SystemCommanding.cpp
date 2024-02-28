@@ -246,7 +246,7 @@ Success SystemCommanding::process()
 		if (success == Pending)
 			break;
 
-		msg += "Auto command executed\n";
+		msg += "Auto command executed";
 
 		mpTrans->send(msg.c_str(), msg.size());
 
@@ -314,10 +314,10 @@ Success SystemCommanding::shutdown()
 	if (!mpTrans)
 		return Positive;
 
-	if (!mCursorHidden)
-		return Positive;
+	string msg = "\r\n";
 
-	string msg = "\r\n\033[?25h"; // Show cursor
+	if (mCursorHidden)
+		msg += "\033[?25h"; // Show cursor
 
 	mpTrans->send(msg.c_str(), msg.size());
 	mpTrans->doneSet();
