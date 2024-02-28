@@ -185,6 +185,9 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mIdxColMax(0)
 {
 	mState = StStart;
+
+	for (size_t i = 0; i < cNumCmdInBuffer; ++i)
+		mCmdInBuf[i][0] = 0;
 }
 
 /* member functions */
@@ -215,9 +218,6 @@ Success SystemCommanding::process()
 		start(mpTrans);
 
 		globalInit();
-
-		for (size_t i = 0; i < cNumCmdInBuffer; ++i)
-			mCmdInBuf[i][0] = 0;
 
 		mState = StSendReadyWait;
 
