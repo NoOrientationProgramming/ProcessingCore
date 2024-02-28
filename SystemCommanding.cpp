@@ -452,6 +452,9 @@ void SystemCommanding::keyProcess(uint16_t key)
 
 	// Removal
 
+	if (chRemove(key))
+		return;
+
 	// Insertion
 
 	if (!keyIsInsert(key))
@@ -478,6 +481,43 @@ void SystemCommanding::keyProcess(uint16_t key)
 
 	++mIdxColCurrent;
 	++mIdxColMax;
+}
+
+bool SystemCommanding::chRemove(uint16_t key)
+{
+	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	bool isBackspace = key == keyBackspace or key == keyBackspaceWin;
+	char *pRemove = NULL;
+
+	if (isBackspace and mIdxColCurrent)
+	{
+		--mIdxColCurrent;
+		--pCursor;
+
+		pRemove = pCursor;
+	}
+
+	if (key == keyDelete and *pCursor)
+		pRemove = pCursor;
+
+	if (!pRemove)
+		return false;
+
+	char *pInsert = pRemove + 1;
+
+	while (true)
+	{
+		*pRemove++ = *pInsert;
+
+		if (!*pInsert)
+			break;
+
+		++pInsert;
+	}
+
+	--mIdxColMax;
+
+	return true;
 }
 
 bool SystemCommanding::keyIsInsert(uint16_t key)
