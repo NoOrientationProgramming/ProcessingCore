@@ -403,6 +403,22 @@ void SystemCommanding::dataReceive()
 	}
 
 	// Send result
+
+	if (!changed)
+		return;
+
+	procInfLog("buffer changed");
+
+	const char *pLineCurrent = mCmdInBuf[mIdxLineCurrent];
+	string msg;
+
+	msg += "\r# ";
+	msg += pLineCurrent;
+
+	if (mIdxColMax < cIdxColMax)
+		msg.append(cIdxColMax - mIdxColMax, ' ');
+
+	mpTrans->send(msg.c_str(), msg.size());
 }
 
 bool SystemCommanding::bufferChange(uint16_t key)
