@@ -317,7 +317,7 @@ Success SystemCommanding::shutdown()
 	if (!mCursorHidden)
 		return Positive;
 
-	string msg = "\033[?25h"; // Show cursor
+	string msg = "\r\n\033[?25h"; // Show cursor
 
 	mpTrans->send(msg.c_str(), msg.size());
 	mpTrans->doneSet();
