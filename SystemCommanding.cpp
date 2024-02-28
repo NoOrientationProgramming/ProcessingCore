@@ -409,16 +409,7 @@ void SystemCommanding::dataReceive()
 
 	procInfLog("buffer changed");
 
-	const char *pLineCurrent = mCmdInBuf[mIdxLineCurrent];
-	string msg;
-
-	msg += "\r# ";
-	msg += pLineCurrent;
-
-	if (mIdxColMax < cIdxColMax)
-		msg.append(cIdxColMax - mIdxColMax, ' ');
-
-	mpTrans->send(msg.c_str(), msg.size());
+	promptSend();
 }
 
 bool SystemCommanding::bufferChange(uint16_t key)
@@ -534,6 +525,38 @@ bool SystemCommanding::chRemove(uint16_t key)
 	--mIdxColMax;
 
 	return true;
+}
+
+void SystemCommanding::promptSend()
+{
+	const char *pCh = &mCmdInBuf[mIdxLineCurrent][0];
+	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	const char *pEnd = &mCmdInBuf[mIdxLineCurrent][mIdxColMax + 1];
+	string msg;
+	size_t numPad;
+
+	msg += "\r# ";
+
+	for (; pCh < pEnd; ++pCh)
+	{
+		if (pCh == pCursor)
+			msg += "\033[4m";
+
+		if (*pCh)
+			msg.append(1, *pCh);
+		else
+			msg.append(1, ' ');
+
+		if (pCh == pCursor)
+			msg += "\033[0m";
+	}
+
+	numPad = mIdxColMax < cIdxColMax;
+
+	if (numPad)
+		msg.append(numPad, ' ');
+
+	mpTrans->send(msg.c_str(), msg.size());
 }
 
 bool SystemCommanding::keyIsInsert(uint16_t key)

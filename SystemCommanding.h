@@ -121,6 +121,7 @@ private:
 	void dataReceive();
 	bool bufferChange(uint16_t key);
 	bool chRemove(uint16_t key);
+	void promptSend();
 
 	bool keyIsInsert(uint16_t key);
 
