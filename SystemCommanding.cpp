@@ -747,6 +747,18 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 	{
 		lineDone = false;
 
+		if (u == mIdxLineView)
+			dInfo("> ");
+		else
+			dInfo("  ");
+
+		if (u == mIdxLineEdit)
+			dInfo("+ ");
+		else
+			dInfo("  ");
+
+		dInfo("%u ", u);
+
 		dInfo("|");
 		for (size_t v = 0; v < cSizeBufCmdIn; ++v)
 		{
