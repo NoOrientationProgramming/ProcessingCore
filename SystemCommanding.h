@@ -125,6 +125,7 @@ private:
 	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
 	bool cursorJump(uint16_t key);
+	bool historyNavigate(uint16_t key);
 	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
 
 	bool keyIsInsert(uint16_t key);

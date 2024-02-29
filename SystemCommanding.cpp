@@ -612,6 +612,50 @@ bool SystemCommanding::cursorJump(uint16_t key)
 	return changed;
 }
 
+bool SystemCommanding::historyNavigate(uint16_t key)
+{
+	if (key != keyUp and key != keyDown)
+		return false;
+
+	if (key == keyDown and mIdxLineView == mIdxLineEdit)
+		return false;
+
+	int16_t direction = key == keyDown ? 1 : -1;
+	int16_t mIdxLineViewNew = mIdxLineView + direction;
+
+	if (mIdxLineViewNew < 0)
+		mIdxLineViewNew = cNumCmdInBuffer - 1;
+
+	if (mIdxLineViewNew >= cNumCmdInBuffer)
+		mIdxLineViewNew = 0;
+
+	if (key == keyUp and mIdxLineViewNew == mIdxLineEdit)
+		return false;
+
+	if (!mCmdInBuf[mIdxLineViewNew][0])
+		return false;
+
+	mIdxLineView = mIdxLineViewNew;
+
+	char *pDstBase = mCmdInBuf[mIdxLineEdit];
+	char *pDst = pDstBase;
+
+	if (mIdxLineView != mIdxLineEdit)
+	{
+		const char *pSrc = mCmdInBuf[mIdxLineView];
+
+		while (*pSrc)
+			*pDst++ = *pSrc++;
+	}
+
+	*pDst = 0;
+
+	mIdxColLineEnd = pDst - pDstBase;
+	mIdxColCursor = mIdxColLineEnd;
+
+	return true;
+}
+
 void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine)
 {
 	const char *pCh = &mCmdInBuf[mIdxLineEdit][0];
