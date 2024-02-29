@@ -60,6 +60,8 @@ dProcessStateStr(ProcState);
 		gen(StKeyEscMain) \
 		gen(StKeyEscBracket) \
 		gen(StKeyEsc1) \
+		gen(StKeyEscSemi) \
+		gen(StKeyEscSemi5) \
 		gen(StKeyEsc2) \
 		gen(StKeyEsc3) \
 		gen(StKeyEscTilde) \
@@ -145,6 +147,7 @@ enum KeyExtensions
 	keyF16,	keyF17,	keyF18,	keyF19,
 	keyF20,
 	keyShiftTab,
+	keyJumpLeft, keyJumpRight
 };
 
 // --------------------
@@ -775,6 +778,12 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 
 		dByteCheckKeyCommit('~', keyHome);
 
+		if (key == ';')
+		{
+			mStateKey = StKeyEscSemi;
+			break;
+		}
+
 		if (key >= '0' and key <= '5')
 		{
 			mStateKey = StKeyEscTilde;
@@ -796,6 +805,40 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			mStateKey = StKeyMain;
 
 			*pKeyOut = keyF1 + (key - 'P');
+			return Positive;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEscSemi:
+
+		if (key == '5')
+		{
+			mStateKey = StKeyEscSemi5;
+			break;
+		}
+
+		return procErrLog(-1, "unexpected key 0x%02X '%c' in state %s",
+							key, key, KeyStateString[mStateKey]);
+
+		break;
+	case StKeyEscSemi5:
+
+		if (key == 'C')
+		{
+			mStateKey = StKeyMain;
+
+			*pKeyOut = keyJumpRight;
+			return Positive;
+		}
+
+		if (key == 'D')
+		{
+			mStateKey = StKeyMain;
+
+			*pKeyOut = keyJumpLeft;
 			return Positive;
 		}
 
