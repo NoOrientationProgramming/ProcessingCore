@@ -119,10 +119,13 @@ private:
 
 	Success autoCommandReceive();
 	void dataReceive();
-	bool bufferChange(uint16_t key);
+	void lineAck();
+	void commandExecute();
+	void historyUpdate();
+	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
 	bool cursorJump(uint16_t key);
-	void promptSend();
+	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
 
 	bool keyIsInsert(uint16_t key);
 	bool keyIsAlphaNum(uint16_t key);
@@ -140,10 +143,11 @@ private:
 	bool mCursorHidden;
 	bool mDone;
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
-	int16_t mIdxLineCurrent;
+	int16_t mIdxLineEdit;
+	int16_t mIdxLineView;
 	int16_t mIdxLineLast;
-	uint16_t mIdxColCurrent;
-	uint16_t mIdxColMax;
+	uint16_t mIdxColCursor;
+	uint16_t mIdxColLineEnd;
 
 	/* static functions */
 	static uint32_t millis();

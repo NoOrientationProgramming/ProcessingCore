@@ -181,10 +181,11 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mStartMs(0)
 	, mCursorHidden(false)
 	, mDone(false)
-	, mIdxLineCurrent(0)
+	, mIdxLineEdit(0)
+	, mIdxLineView(0)
 	, mIdxLineLast(-1)
-	, mIdxColCurrent(0)
-	, mIdxColMax(0)
+	, mIdxColCursor(0)
+	, mIdxColLineEnd(0)
 {
 	mState = StStart;
 
@@ -401,8 +402,13 @@ void SystemCommanding::dataReceive()
 			break;
 		}
 
-		// Update buffer
-		changed |= bufferChange(key);
+		if (key == keyEnter)
+		{
+			lineAck();
+			break;
+		}
+
+		changed |= bufferEdit(key);
 	}
 
 	// Send result
@@ -415,7 +421,45 @@ void SystemCommanding::dataReceive()
 	promptSend();
 }
 
-bool SystemCommanding::bufferChange(uint16_t key)
+void SystemCommanding::lineAck()
+{
+	procInfLog("line acknowledged");
+
+	promptSend(false, false, true);
+
+	if (mCmdInBuf[mIdxLineEdit][0])
+	{
+		commandExecute();
+		historyUpdate();
+	}
+
+	mIdxLineView = mIdxLineEdit;
+
+	promptSend();
+}
+
+void SystemCommanding::commandExecute()
+{
+	const char *pLine = mCmdInBuf[mIdxLineEdit];
+	procInfLog("executing line: %s", pLine);
+}
+
+void SystemCommanding::historyUpdate()
+{
+	mIdxLineLast = mIdxLineEdit;
+
+	++mIdxLineEdit;
+
+	if (mIdxLineEdit >= cNumCmdInBuffer)
+		mIdxLineEdit = 0;
+
+	mCmdInBuf[mIdxLineEdit][0] = 0;
+	mIdxColLineEnd = 0;
+
+	mIdxColCursor = 0;
+}
+
+bool SystemCommanding::bufferEdit(uint16_t key)
 {
 	// Filter
 
@@ -430,31 +474,31 @@ bool SystemCommanding::bufferChange(uint16_t key)
 
 	if (key == keyHome)
 	{
-		mIdxColCurrent = 0;
+		mIdxColCursor = 0;
 		return true;
 	}
 
 	if (key == keyEnd)
 	{
-		mIdxColCurrent = mIdxColMax;
+		mIdxColCursor = mIdxColLineEnd;
 		return true;
 	}
 
 	if (key == keyLeft)
 	{
-		if (!mIdxColCurrent)
+		if (!mIdxColCursor)
 			return false;
 
-		--mIdxColCurrent;
+		--mIdxColCursor;
 		return true;
 	}
 
 	if (key == keyRight)
 	{
-		if (mIdxColCurrent >= mIdxColMax)
+		if (mIdxColCursor >= mIdxColLineEnd)
 			return false;
 
-		++mIdxColCurrent;
+		++mIdxColCursor;
 		return true;
 	}
 
@@ -471,10 +515,10 @@ bool SystemCommanding::bufferChange(uint16_t key)
 	if (!keyIsInsert(key))
 		return false;
 
-	if (mIdxColMax >= cIdxColMax)
+	if (mIdxColLineEnd >= cIdxColMax)
 		return false;
 
-	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
 
 	char chInsert = (char)key;
 	char chSave;
@@ -490,21 +534,21 @@ bool SystemCommanding::bufferChange(uint16_t key)
 		chInsert = chSave;
 	}
 
-	++mIdxColCurrent;
-	++mIdxColMax;
+	++mIdxColCursor;
+	++mIdxColLineEnd;
 
 	return true;
 }
 
 bool SystemCommanding::chRemove(uint16_t key)
 {
-	char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
 	bool isBackspace = key == keyBackspace or key == keyBackspaceWin;
 	char *pRemove = NULL;
 
-	if (isBackspace and mIdxColCurrent)
+	if (isBackspace and mIdxColCursor)
 	{
-		--mIdxColCurrent;
+		--mIdxColCursor;
 		--pCursor;
 
 		pRemove = pCursor;
@@ -528,7 +572,7 @@ bool SystemCommanding::chRemove(uint16_t key)
 		++pInsert;
 	}
 
-	--mIdxColMax;
+	--mIdxColLineEnd;
 
 	return true;
 }
@@ -541,20 +585,20 @@ bool SystemCommanding::cursorJump(uint16_t key)
 	int direction = key == keyJumpRight ? 1 : -1;
 	bool statePrev = (direction + 1) >> 1;
 	bool stateCursor = not statePrev;
-	uint16_t idxStop = statePrev ? mIdxColMax : 0;
+	uint16_t idxStop = statePrev ? mIdxColLineEnd : 0;
 	bool changed = false;
 
-	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
 	const char *pPrev = pCursor - 1;
 
 	procInfLog("jumping to the %s", statePrev ? "right" : "left");
 
 	while (true)
 	{
-		if (mIdxColCurrent == idxStop)
+		if (mIdxColCursor == idxStop)
 			break;
 
-		mIdxColCurrent += direction;
+		mIdxColCursor += direction;
 		changed = true;
 
 		pPrev += direction;
@@ -568,19 +612,22 @@ bool SystemCommanding::cursorJump(uint16_t key)
 	return changed;
 }
 
-void SystemCommanding::promptSend()
+void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine)
 {
-	const char *pCh = &mCmdInBuf[mIdxLineCurrent][0];
-	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
-	const char *pEnd = &mCmdInBuf[mIdxLineCurrent][mIdxColMax + 1];
+	const char *pCh = &mCmdInBuf[mIdxLineEdit][0];
+	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
+	const char *pEnd = &mCmdInBuf[mIdxLineEdit][mIdxColLineEnd + 1];
 	string msg;
 	size_t numPad;
+
+	if (preNewLine)
+		msg += "\r\n";
 
 	msg += "\r# ";
 
 	for (; pCh < pEnd; ++pCh)
 	{
-		if (pCh == pCursor)
+		if (cursor and pCh == pCursor)
 			msg += "\033[7m";
 
 		if (*pCh)
@@ -592,10 +639,13 @@ void SystemCommanding::promptSend()
 			msg += "\033[0m";
 	}
 
-	numPad = cIdxColMax - mIdxColMax;
+	numPad = cIdxColMax - mIdxColLineEnd;
 
 	if (numPad)
 		msg.append(numPad, ' ');
+
+	if (postNewLine)
+		msg += "\r\n";
 
 	mpTrans->send(msg.c_str(), msg.size());
 }
@@ -642,8 +692,8 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 
 	bool lineDone = false;
 	const char *pCh;
-	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
-	const char *pCursorMax = &mCmdInBuf[mIdxLineCurrent][mIdxColMax];
+	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
+	const char *pCursorMax = &mCmdInBuf[mIdxLineEdit][mIdxColLineEnd];
 
 	dInfo("Buffer\n");
 	for (size_t u = 0; u < cNumCmdInBuffer; ++u)
