@@ -430,7 +430,7 @@ void SystemCommanding::lineAck()
 	if (mCmdInBuf[mIdxLineEdit][0])
 	{
 		commandExecute();
-		historyUpdate();
+		historyInsert();
 	}
 
 	mIdxLineView = mIdxLineEdit;
@@ -444,7 +444,7 @@ void SystemCommanding::commandExecute()
 	procInfLog("executing line: %s", pLine);
 }
 
-void SystemCommanding::historyUpdate()
+void SystemCommanding::historyInsert()
 {
 	mIdxLineLast = mIdxLineEdit;
 

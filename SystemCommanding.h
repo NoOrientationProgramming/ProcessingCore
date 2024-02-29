@@ -121,7 +121,7 @@ private:
 	void dataReceive();
 	void lineAck();
 	void commandExecute();
-	void historyUpdate();
+	void historyInsert();
 	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
 	bool cursorJump(uint16_t key);
