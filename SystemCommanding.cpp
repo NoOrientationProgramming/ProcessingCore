@@ -458,6 +458,9 @@ bool SystemCommanding::bufferChange(uint16_t key)
 		return true;
 	}
 
+	if (cursorJump(key))
+		return true;
+
 	// Removal
 
 	if (chRemove(key))
