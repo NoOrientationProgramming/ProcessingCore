@@ -505,6 +505,9 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 	if (cursorJump(key))
 		return true;
 
+	if (historyNavigate(key))
+		return true;
+
 	// Removal
 
 	if (chRemove(key))
