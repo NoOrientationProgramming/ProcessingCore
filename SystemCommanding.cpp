@@ -658,6 +658,7 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 			if (lineDone)
 			{
 				dInfo(".");
+				dInfo("\033[0m");
 				continue;
 			}
 
