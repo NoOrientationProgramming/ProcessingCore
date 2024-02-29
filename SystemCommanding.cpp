@@ -567,7 +567,7 @@ bool SystemCommanding::keyIsInsert(uint16_t key)
 	if (keyIsAlphaNum(key))
 		return true;
 
-	if (key == '-' and key == '_')
+	if (key == '-' or key == '_')
 		return true;
 
 	if (key == ' ')
