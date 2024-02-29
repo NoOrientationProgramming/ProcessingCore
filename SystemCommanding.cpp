@@ -234,7 +234,7 @@ Success SystemCommanding::process()
 			break;
 
 		mStartMs = curTimeMs;
-		mState = StAutoModeInitWait;
+		mState = StTelnetInit;
 
 		break;
 	case StAutoModeInitWait:
