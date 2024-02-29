@@ -564,6 +564,20 @@ void SystemCommanding::promptSend()
 
 bool SystemCommanding::keyIsInsert(uint16_t key)
 {
+	if (keyIsAlphaNum(key))
+		return true;
+
+	if (key == '-' and key == '_')
+		return true;
+
+	if (key == ' ')
+		return true;
+
+	return false;
+}
+
+bool SystemCommanding::keyIsAlphaNum(uint16_t key)
+{
 	if (key >= 'a' and key <= 'z')
 		return true;
 
@@ -571,12 +585,6 @@ bool SystemCommanding::keyIsInsert(uint16_t key)
 		return true;
 
 	if (key >= '0' and key <= '9')
-		return true;
-
-	if (key == '-' and key == '_')
-		return true;
-
-	if (key == ' ')
 		return true;
 
 	return false;

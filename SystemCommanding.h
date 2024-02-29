@@ -124,6 +124,7 @@ private:
 	void promptSend();
 
 	bool keyIsInsert(uint16_t key);
+	bool keyIsAlphaNum(uint16_t key);
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
