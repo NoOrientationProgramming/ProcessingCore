@@ -530,6 +530,41 @@ bool SystemCommanding::chRemove(uint16_t key)
 	return true;
 }
 
+bool SystemCommanding::cursorJump(uint16_t key)
+{
+	if (key != keyJumpLeft and key != keyJumpRight)
+		return false;
+
+	int direction = key == keyJumpRight ? 1 : -1;
+	bool statePrev = (direction + 1) >> 1;
+	bool stateCursor = not statePrev;
+	uint16_t idxStop = statePrev ? mIdxColMax : 0;
+	bool changed = false;
+
+	const char *pCursor = &mCmdInBuf[mIdxLineCurrent][mIdxColCurrent];
+	const char *pPrev = pCursor - 1;
+
+	procInfLog("jumping to the %s", statePrev ? "right" : "left");
+
+	while (true)
+	{
+		if (mIdxColCurrent == idxStop)
+			break;
+
+		mIdxColCurrent += direction;
+		changed = true;
+
+		pPrev += direction;
+		pCursor += direction;
+
+		if (keyIsAlphaNum(*pPrev) == statePrev and
+			keyIsAlphaNum(*pCursor) == stateCursor)
+			break;
+	}
+
+	return changed;
+}
+
 void SystemCommanding::promptSend()
 {
 	const char *pCh = &mCmdInBuf[mIdxLineCurrent][0];
