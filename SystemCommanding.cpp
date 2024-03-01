@@ -480,7 +480,57 @@ void SystemCommanding::commandExecute()
 		pEdit = mCmdInBuf[mIdxLineEdit];
 	}
 #endif
-	procInfLog("executing line: %s", pEdit);
+	//procInfLog("executing line  '%s'", pEdit);
+
+	char *pArgs;
+
+	pArgs = strchr(pEdit, ' ');
+	if (pArgs)
+		*pArgs++ = 0;
+
+	while (pArgs and *pArgs == ' ')
+		++pArgs;
+
+	if (pArgs and !*pArgs)
+		pArgs = NULL;
+#if 0
+	procInfLog("command         '%s'", pEdit);
+
+	if (pArgs)
+		procInfLog("arguments       '%s'", pArgs);
+#endif
+	list<SystemCommand>::const_iterator iter;
+	char bufOut[cSizeBufCmdOut];
+	size_t lenBuf = sizeof(bufOut) - 1;
+	string msg;
+
+	bufOut[0] = 0;
+
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
+	{
+		if (strcmp(pEdit, iter->id.c_str()) and
+			strcmp(pEdit, iter->shortcut.c_str()))
+			continue;
+
+		iter->func(pArgs, bufOut, bufOut + lenBuf);
+		bufOut[lenBuf] = 0;
+
+		lfToCrLf(bufOut, msg);
+
+		if (msg.size() and msg.back() != '\n')
+			msg += "\r\n";
+
+		mpTrans->send(msg.c_str(), msg.size());
+
+		return;
+	}
+
+	msg = "command not found";
+	procWrnLog("%s", msg.c_str());
+
+	msg += "\r\n";
+	mpTrans->send(msg.c_str(), msg.size());
 }
 
 #if CONFIG_CMD_SIZE_HISTORY
