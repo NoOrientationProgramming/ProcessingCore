@@ -405,6 +405,11 @@ void SystemCommanding::dataReceive()
 			return;
 		}
 
+		if (key < 256)
+			procInfLog("key received: %u, 0x%02X, '%c'", key, key, (char)key);
+		else
+			procInfLog("key received: %u, 0x%02X", key, key);
+
 		if (key == keyTab)
 		{
 			tabProcess();
@@ -557,11 +562,6 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 	// Filter
 
 	dKeyIgnore('\0');
-
-	if (key < 256)
-		procInfLog("key received: %u, 0x%02X, '%c'", key, key, (char)key);
-	else
-		procInfLog("key received: %u, 0x%02X", key, key);
 
 	// Navigation
 
