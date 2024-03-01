@@ -19,5 +19,11 @@ config PROC_HAVE_LIB_STD_CPP
 	help
 		System has libstdc++
 
+config PROC_INFO_BUFFER_SIZE
+	int "Process info buffer size"
+	default "1024"
+	help
+		Number of bytes for process info buffer
+
 endmenu
 

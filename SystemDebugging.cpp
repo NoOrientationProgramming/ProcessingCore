@@ -126,8 +126,8 @@ Success SystemDebugging::initialize()
 
 	start(mpLstCmd);
 
-	intCmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "d", "toggle detailed process tree output");
-	intCmdReg("colored", &SystemDebugging::procTreeColoredToggle, "c", "toggle colored process tree output");
+	cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "d", "toggle detailed process tree output", cInternalCmdCls);
+	cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "c", "toggle colored process tree output", cInternalCmdCls);
 
 #if CONFIG_DBG_HAVE_ENVIRONMENT
 	mpLstEnv = TcpListening::create();

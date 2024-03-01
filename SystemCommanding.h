@@ -34,6 +34,7 @@
 #include <string>
 #include <list>
 #include <functional>
+
 #include "Processing.h"
 #include "TcpTransfering.h"
 
@@ -50,6 +51,8 @@ struct SystemCommand
 	std::string group;
 };
 
+const std::string cInternalCmdCls = "dbg";
+
 void cmdReg(
 		const std::string &id,
 		FuncCommand cmdFunc,
@@ -57,13 +60,29 @@ void cmdReg(
 		const std::string &desc = "",
 		const std::string &group = "");
 
+// Temp
+#define CONFIG_CMD_SIZE_HISTORY		3
+#define CONFIG_CMD_SIZE_BUFFER_IN		30
+
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 
-void intCmdReg(
-		const std::string &id,
-		FuncCommand cmdFunc,
-		const std::string &shortcut = "",
-		const std::string &desc = "");
+#ifndef CONFIG_CMD_SIZE_HISTORY
+#define CONFIG_CMD_SIZE_HISTORY		5
+#endif
+
+#ifndef CONFIG_CMD_SIZE_BUFFER_IN
+#define CONFIG_CMD_SIZE_BUFFER_IN		63
+#endif
+
+#ifndef CONFIG_CMD_SIZE_BUFFER_OUT
+#define CONFIG_CMD_SIZE_BUFFER_OUT		507
+#endif
+
+const int16_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
+const size_t cSizeBufCmdIn = CONFIG_CMD_SIZE_BUFFER_IN;
+const size_t cSizeBufCmdOut = CONFIG_CMD_SIZE_BUFFER_OUT;
+
+const size_t cIdxColMax = cSizeBufCmdIn - 1;
 
 class SystemCommanding : public Processing
 {
@@ -95,31 +114,52 @@ private:
 	 */
 
 	/* member functions */
-	Success initialize();
 	Success process();
+	Success shutdown();
 
-	Success commandReceive();
+	Success autoCommandReceive();
+	void dataReceive();
+	void tabProcess();
+	void lineAck();
+	void commandExecute();
+#if CONFIG_CMD_SIZE_HISTORY
+	void historyInsert();
+	bool historyNavigate(uint16_t key);
+#endif
+	bool bufferEdit(uint16_t key);
+	bool chRemove(uint16_t key);
+	bool cursorJump(uint16_t key);
+	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
+
+	bool keyIsInsert(uint16_t key);
+	bool keyIsAlphaNum(uint16_t key);
 	void lfToCrLf(char *pBuf, std::string &str);
-	void commandExecute(const char *pCmd, char *pArg);
-
-	void inputsProcess();
-	void inputAdd();
 
 	void processInfo(char *pBuf, char *pBufEnd);
 
+	void globalInit();
+	Success ansiFilter(uint8_t key, uint16_t *pKeyOut);
+
 	/* member variables */
-	uint32_t mStartMs;
 	SOCKET mSocketFd;
 	TcpTransfering *mpTrans;
-	const SystemCommand *mpCmdLast;
-	std::string mArgLast;
-	std::string mBufFragment;
+	uint32_t mStateKey;
+	uint32_t mStartMs;
+	bool mCursorHidden;
+	bool mDone;
+	bool mLastKeyWasTab;
+	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
+	int16_t mIdxLineEdit;
+	int16_t mIdxLineView;
+#if CONFIG_CMD_SIZE_HISTORY
+	int16_t mIdxLineLast;
+#endif
+	uint16_t mIdxColCursor;
+	uint16_t mIdxColLineEnd;
 
 	/* static functions */
-	static void dummyExecute(char *pArgs, char *pBuf, char *pBufEnd);
+	static uint32_t millis();
 	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
-	static void messageBroadcast(char *pArgs, char *pBuf, char *pBufEnd);
-	static void memoryWrite(char *pArgs, char *pBuf, char *pBufEnd);
 
 	/* static variables */
 	static bool globalInitDone;
