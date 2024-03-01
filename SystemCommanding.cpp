@@ -469,6 +469,9 @@ void SystemCommanding::commandExecute()
 #if CONFIG_CMD_SIZE_HISTORY
 void SystemCommanding::historyInsert()
 {
+	if (cNumCmdInBuffer <= 1)
+		return;
+
 	const char *pEdit = mCmdInBuf[mIdxLineEdit];
 	const char *pLast = mIdxLineLast >= 0 ? mCmdInBuf[mIdxLineLast] : NULL;
 
