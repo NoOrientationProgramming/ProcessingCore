@@ -427,11 +427,13 @@ void SystemCommanding::lineAck()
 
 	promptSend(false, false, true);
 
-	if (mCmdInBuf[mIdxLineEdit][0])
-	{
-		commandExecute();
-		historyInsert();
-	}
+	commandExecute();
+	historyInsert();
+
+	// Reset editing buffer
+	mCmdInBuf[mIdxLineEdit][0] = 0;
+	mIdxColLineEnd = 0;
+	mIdxColCursor = 0;
 
 	mIdxLineView = mIdxLineEdit;
 
@@ -440,23 +442,43 @@ void SystemCommanding::lineAck()
 
 void SystemCommanding::commandExecute()
 {
-	const char *pLine = mCmdInBuf[mIdxLineEdit];
-	procInfLog("executing line: %s", pLine);
+	const char *pEdit = mCmdInBuf[mIdxLineEdit];
+
+	// ignore empty
+	if (!*pEdit)
+		return;
+
+	procInfLog("executing line: %s", pEdit);
 }
 
 void SystemCommanding::historyInsert()
 {
+	const char *pEdit = mCmdInBuf[mIdxLineEdit];
+
+	// ignore empty
+	if (!*pEdit)
+		return;
+
+	const char *pLast = mIdxLineLast >= 0 ? mCmdInBuf[mIdxLineLast] : NULL;
+
+	while (pLast and *pEdit == *pLast and *pEdit)
+	{
+		++pEdit;
+		++pLast;
+	}
+
+	// ignore duplicate
+	if (pLast and *pEdit == *pLast)
+		return;
+
+	// insert
+
 	mIdxLineLast = mIdxLineEdit;
 
 	++mIdxLineEdit;
 
 	if (mIdxLineEdit >= cNumCmdInBuffer)
 		mIdxLineEdit = 0;
-
-	mCmdInBuf[mIdxLineEdit][0] = 0;
-	mIdxColLineEnd = 0;
-
-	mIdxColCursor = 0;
 }
 
 bool SystemCommanding::bufferEdit(uint16_t key)
