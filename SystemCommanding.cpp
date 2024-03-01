@@ -885,6 +885,7 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 
 	dInfo("Last command\t\t%s\n", pLineLast);
 #endif
+#if 1
 	bool lineDone = false;
 	const char *pCh;
 	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
@@ -937,6 +938,7 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 		}
 		dInfo("|\n");
 	}
+#endif
 }
 
 void SystemCommanding::globalInit()
