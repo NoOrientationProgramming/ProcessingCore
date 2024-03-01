@@ -774,6 +774,54 @@ bool SystemCommanding::keyIsAlphaNum(uint16_t key)
 	return false;
 }
 
+void SystemCommanding::lfToCrLf(char *pBuf, string &str)
+{
+	size_t lenBuf = strlen(pBuf) + 1;
+	char *pBufLineStart, *pBufIter;
+	int8_t lastLine;
+
+	str.clear();
+
+	if (!pBuf or !*pBuf)
+		return;
+
+	str.reserve(lenBuf);
+
+	pBufLineStart = pBufIter = pBuf;
+	lastLine = 0;
+
+	while (1)
+	{
+		if (pBufIter >= pBuf + lenBuf)
+			break;
+
+		if (*pBufIter and *pBufIter != '\n')
+		{
+			++pBufIter;
+			continue;
+		}
+
+		if (!*pBufIter)
+		{
+			if (!*(pBufIter - 1)) // last line drawn already
+				break;
+
+			lastLine = 1;
+		}
+
+		*pBufIter = 0; // terminate current line starting at pBufLineStart
+
+		str += pBufLineStart;
+		str += "\r\n";
+
+		++pBufIter;
+		pBufLineStart = pBufIter;
+
+		if (lastLine)
+			break;
+	}
+}
+
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 {
 #if 1
