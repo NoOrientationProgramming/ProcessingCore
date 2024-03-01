@@ -427,13 +427,15 @@ void SystemCommanding::lineAck()
 
 	promptSend(false, false, true);
 
-	if (mCmdInBuf[mIdxLineEdit][0])
+	char *pEdit= mCmdInBuf[mIdxLineEdit];
+
+	if (*pEdit)
 	{
 		historyInsert();
 		commandExecute();
 	}
 
-	mCmdInBuf[mIdxLineEdit][0] = 0;
+	*pEdit = 0;
 	mIdxColLineEnd = 0;
 	mIdxColCursor = 0;
 
