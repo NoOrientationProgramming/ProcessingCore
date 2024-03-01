@@ -183,7 +183,9 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mDone(false)
 	, mIdxLineEdit(0)
 	, mIdxLineView(0)
+#if CONFIG_CMD_SIZE_HISTORY
 	, mIdxLineLast(-1)
+#endif
 	, mIdxColCursor(0)
 	, mIdxColLineEnd(0)
 {
@@ -431,7 +433,9 @@ void SystemCommanding::lineAck()
 
 	if (*pEdit)
 	{
+#if CONFIG_CMD_SIZE_HISTORY
 		historyInsert();
+#endif
 		commandExecute();
 	}
 
@@ -446,24 +450,23 @@ void SystemCommanding::lineAck()
 
 void SystemCommanding::commandExecute()
 {
-	if (mIdxLineLast < 0)
-		return;
-
-	const char *pLast = mCmdInBuf[mIdxLineLast];
 	char *pEdit = mCmdInBuf[mIdxLineEdit];
-
-	// reuse edit buffer as command buffer
+#if CONFIG_CMD_SIZE_HISTORY
 	if (!*pEdit)
 	{
+		const char *pLast = mCmdInBuf[mIdxLineLast];
+
+		// reuse edit buffer as command buffer
 		while (*pLast)
 			*pEdit++ = *pLast++;
+
+		pEdit = mCmdInBuf[mIdxLineEdit];
 	}
-
-	pEdit = mCmdInBuf[mIdxLineEdit];
-
+#endif
 	procInfLog("executing line: %s", pEdit);
 }
 
+#if CONFIG_CMD_SIZE_HISTORY
 void SystemCommanding::historyInsert()
 {
 	const char *pEdit = mCmdInBuf[mIdxLineEdit];
@@ -490,6 +493,51 @@ void SystemCommanding::historyInsert()
 
 	mCmdInBuf[mIdxLineEdit] = 0;
 }
+
+bool SystemCommanding::historyNavigate(uint16_t key)
+{
+	if (key != keyUp and key != keyDown)
+		return false;
+
+	if (key == keyDown and mIdxLineView == mIdxLineEdit)
+		return false;
+
+	int16_t direction = key == keyDown ? 1 : -1;
+	int16_t mIdxLineViewNew = mIdxLineView + direction;
+
+	if (mIdxLineViewNew < 0)
+		mIdxLineViewNew = cNumCmdInBuffer - 1;
+
+	if (mIdxLineViewNew >= cNumCmdInBuffer)
+		mIdxLineViewNew = 0;
+
+	if (key == keyUp and mIdxLineViewNew == mIdxLineEdit)
+		return false;
+
+	if (!mCmdInBuf[mIdxLineViewNew][0])
+		return false;
+
+	mIdxLineView = mIdxLineViewNew;
+
+	char *pDstBase = mCmdInBuf[mIdxLineEdit];
+	char *pDst = pDstBase;
+
+	if (mIdxLineView != mIdxLineEdit)
+	{
+		const char *pSrc = mCmdInBuf[mIdxLineView];
+
+		while (*pSrc)
+			*pDst++ = *pSrc++;
+	}
+
+	*pDst = 0;
+
+	mIdxColLineEnd = pDst - pDstBase;
+	mIdxColCursor = mIdxColLineEnd;
+
+	return true;
+}
+#endif
 
 bool SystemCommanding::bufferEdit(uint16_t key)
 {
@@ -536,10 +584,10 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 
 	if (cursorJump(key))
 		return true;
-
+#if CONFIG_CMD_SIZE_HISTORY
 	if (historyNavigate(key))
 		return true;
-
+#endif
 	// Removal
 
 	if (chRemove(key))
@@ -647,50 +695,6 @@ bool SystemCommanding::cursorJump(uint16_t key)
 	return changed;
 }
 
-bool SystemCommanding::historyNavigate(uint16_t key)
-{
-	if (key != keyUp and key != keyDown)
-		return false;
-
-	if (key == keyDown and mIdxLineView == mIdxLineEdit)
-		return false;
-
-	int16_t direction = key == keyDown ? 1 : -1;
-	int16_t mIdxLineViewNew = mIdxLineView + direction;
-
-	if (mIdxLineViewNew < 0)
-		mIdxLineViewNew = cNumCmdInBuffer - 1;
-
-	if (mIdxLineViewNew >= cNumCmdInBuffer)
-		mIdxLineViewNew = 0;
-
-	if (key == keyUp and mIdxLineViewNew == mIdxLineEdit)
-		return false;
-
-	if (!mCmdInBuf[mIdxLineViewNew][0])
-		return false;
-
-	mIdxLineView = mIdxLineViewNew;
-
-	char *pDstBase = mCmdInBuf[mIdxLineEdit];
-	char *pDst = pDstBase;
-
-	if (mIdxLineView != mIdxLineEdit)
-	{
-		const char *pSrc = mCmdInBuf[mIdxLineView];
-
-		while (*pSrc)
-			*pDst++ = *pSrc++;
-	}
-
-	*pDst = 0;
-
-	mIdxColLineEnd = pDst - pDstBase;
-	mIdxColCursor = mIdxColLineEnd;
-
-	return true;
-}
-
 void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine)
 {
 	const char *pCh = &mCmdInBuf[mIdxLineEdit][0];
@@ -762,13 +766,14 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 #if 1
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 #endif
+#if CONFIG_CMD_SIZE_HISTORY
 	const char *pLineLast = "<none>";
 
 	if (mIdxLineLast >= 0)
 		pLineLast = mCmdInBuf[mIdxLineLast];
 
 	dInfo("Last command\t\t%s\n", pLineLast);
-
+#endif
 	bool lineDone = false;
 	const char *pCh;
 	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];

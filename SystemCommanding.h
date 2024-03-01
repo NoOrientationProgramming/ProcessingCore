@@ -121,11 +121,13 @@ private:
 	void dataReceive();
 	void lineAck();
 	void commandExecute();
+#if CONFIG_CMD_SIZE_HISTORY
 	void historyInsert();
+	bool historyNavigate(uint16_t key);
+#endif
 	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
 	bool cursorJump(uint16_t key);
-	bool historyNavigate(uint16_t key);
 	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
 
 	bool keyIsInsert(uint16_t key);
@@ -146,7 +148,9 @@ private:
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
 	int16_t mIdxLineEdit;
 	int16_t mIdxLineView;
+#if CONFIG_CMD_SIZE_HISTORY
 	int16_t mIdxLineLast;
+#endif
 	uint16_t mIdxColCursor;
 	uint16_t mIdxColLineEnd;
 
