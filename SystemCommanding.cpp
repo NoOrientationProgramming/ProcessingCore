@@ -475,6 +475,8 @@ void SystemCommanding::commandExecute()
 		while (*pLast)
 			*pEdit++ = *pLast++;
 
+		*pEdit = 0;
+
 		pEdit = mCmdInBuf[mIdxLineEdit];
 	}
 #endif
