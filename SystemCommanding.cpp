@@ -427,13 +427,11 @@ void SystemCommanding::lineAck()
 
 	promptSend(false, false, true);
 
-	commandExecute();
-	historyInsert();
-
-	// Reset editing buffer
-	mCmdInBuf[mIdxLineEdit][0] = 0;
-	mIdxColLineEnd = 0;
-	mIdxColCursor = 0;
+	if (mCmdInBuf[mIdxLineEdit][0])
+	{
+		historyInsert();
+		commandExecute();
+	}
 
 	mIdxLineView = mIdxLineEdit;
 
@@ -442,23 +440,30 @@ void SystemCommanding::lineAck()
 
 void SystemCommanding::commandExecute()
 {
-	const char *pEdit = mCmdInBuf[mIdxLineEdit];
-
-	// ignore empty
-	if (!*pEdit)
+	if (mIdxLineLast < 0)
 		return;
 
-	procInfLog("executing line: %s", pEdit);
+	const char *pLast = mCmdInBuf[mIdxLineLast];
+	char *pEditBase = mCmdInBuf[mIdxLineEdit];
+	char *pEdit = pEditBase;
+
+	// reuse edit buffer as command buffer
+	if (!*pEditBase)
+	{
+		while (*pLast)
+			*pEdit++ = *pLast++;
+	}
+
+	procInfLog("executing line: %s", pEditBase);
+
+	// clear edit buffer again!
+	*pEditBase = 0;
 }
 
 void SystemCommanding::historyInsert()
 {
-	const char *pEdit = mCmdInBuf[mIdxLineEdit];
-
-	// ignore empty
-	if (!*pEdit)
-		return;
-
+	const char *pEditBase = mCmdInBuf[mIdxLineEdit];
+	const char *pEdit = pEditBase;
 	const char *pLast = mIdxLineLast >= 0 ? mCmdInBuf[mIdxLineLast] : NULL;
 
 	while (pLast and *pEdit == *pLast and *pEdit)
@@ -479,6 +484,10 @@ void SystemCommanding::historyInsert()
 
 	if (mIdxLineEdit >= cNumCmdInBuffer)
 		mIdxLineEdit = 0;
+
+	*pEditBase = 0;
+	mIdxColLineEnd = 0;
+	mIdxColCursor = 0;
 }
 
 bool SystemCommanding::bufferEdit(uint16_t key)
