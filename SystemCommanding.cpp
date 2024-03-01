@@ -449,7 +449,7 @@ void SystemCommanding::lineAck()
 		commandExecute();
 	}
 
-	*pEdit = 0;
+	mCmdInBuf[mIdxLineEdit][0] = 0;
 	mIdxColLineEnd = 0;
 	mIdxColCursor = 0;
 
