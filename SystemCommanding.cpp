@@ -433,6 +433,10 @@ void SystemCommanding::lineAck()
 		commandExecute();
 	}
 
+	mCmdInBuf[mIdxLineEdit][0] = 0;
+	mIdxColLineEnd = 0;
+	mIdxColCursor = 0;
+
 	mIdxLineView = mIdxLineEdit;
 
 	promptSend();
@@ -455,9 +459,6 @@ void SystemCommanding::commandExecute()
 	}
 
 	procInfLog("executing line: %s", pEditBase);
-
-	// clear edit buffer again!
-	*pEditBase = 0;
 }
 
 void SystemCommanding::historyInsert()
@@ -486,8 +487,6 @@ void SystemCommanding::historyInsert()
 		mIdxLineEdit = 0;
 
 	*pEditBase = 0;
-	mIdxColLineEnd = 0;
-	mIdxColCursor = 0;
 }
 
 bool SystemCommanding::bufferEdit(uint16_t key)
