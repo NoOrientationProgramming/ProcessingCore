@@ -119,6 +119,7 @@ private:
 
 	Success autoCommandReceive();
 	void dataReceive();
+	void tabProcess();
 	void lineAck();
 	void commandExecute();
 #if CONFIG_CMD_SIZE_HISTORY
@@ -145,6 +146,7 @@ private:
 	uint32_t mStartMs;
 	bool mCursorHidden;
 	bool mDone;
+	bool mLastKeyWasTab;
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];
 	int16_t mIdxLineEdit;
 	int16_t mIdxLineView;

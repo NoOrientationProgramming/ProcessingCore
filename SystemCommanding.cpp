@@ -90,7 +90,7 @@ if (key == b) \
 #define dKeyIgnore(k)	\
 if (key == k) \
 { \
-	procInfLog("ignoring %u, 0x%02X", key, key); \
+	/* procInfLog("ignoring %u, 0x%02X", key, key); */ \
 	return false; \
 }
 
@@ -181,6 +181,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mStartMs(0)
 	, mCursorHidden(false)
 	, mDone(false)
+	, mLastKeyWasTab(false)
 	, mIdxLineEdit(0)
 	, mIdxLineView(0)
 #if CONFIG_CMD_SIZE_HISTORY
@@ -401,13 +402,21 @@ void SystemCommanding::dataReceive()
 		if (success != Positive)
 		{
 			mDone = true;
-			break;
+			return;
 		}
+
+		if (key == keyTab)
+		{
+			tabProcess();
+			continue;
+		}
+
+		mLastKeyWasTab = false;
 
 		if (key == keyEnter)
 		{
 			lineAck();
-			break;
+			continue;
 		}
 
 		changed |= bufferEdit(key);
@@ -418,15 +427,16 @@ void SystemCommanding::dataReceive()
 	if (!changed)
 		return;
 
-	procInfLog("buffer changed");
-
 	promptSend();
+}
+
+void SystemCommanding::tabProcess()
+{
+	mLastKeyWasTab = true;
 }
 
 void SystemCommanding::lineAck()
 {
-	procInfLog("line acknowledged");
-
 	promptSend(false, false, true);
 
 	char *pEdit= mCmdInBuf[mIdxLineEdit];
@@ -676,8 +686,6 @@ bool SystemCommanding::cursorJump(uint16_t key)
 
 	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
 	const char *pPrev = pCursor - 1;
-
-	procInfLog("jumping to the %s", statePrev ? "right" : "left");
 
 	while (true)
 	{
