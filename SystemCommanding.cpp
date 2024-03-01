@@ -384,7 +384,7 @@ void SystemCommanding::dataReceive()
 
 	buf[lenDone] = 0;
 
-	procInfLog("bytes received: %d", lenDone);
+	//procInfLog("bytes received: %d", lenDone);
 
 	if (lenDone == 1 and buf[0] == keyEsc)
 		return;
@@ -393,7 +393,7 @@ void SystemCommanding::dataReceive()
 
 	for (ssize_t i = 0; i < lenDone; ++i)
 	{
-		procInfLog("byte: %3u %02x '%c'", buf[i], buf[i], buf[i]);
+		//procInfLog("byte: %3u %02x '%c'", buf[i], buf[i], buf[i]);
 
 		success = ansiFilter(buf[i], &key);
 		if (success == Pending)
@@ -404,12 +404,12 @@ void SystemCommanding::dataReceive()
 			mDone = true;
 			return;
 		}
-
+#if 0
 		if (key < 256)
 			procInfLog("key received: %u, 0x%02X, '%c'", key, key, (char)key);
 		else
 			procInfLog("key received: %u, 0x%02X", key, key);
-
+#endif
 		if (key == keyTab)
 		{
 			tabProcess();
