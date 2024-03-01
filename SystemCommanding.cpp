@@ -450,23 +450,23 @@ void SystemCommanding::commandExecute()
 		return;
 
 	const char *pLast = mCmdInBuf[mIdxLineLast];
-	char *pEditBase = mCmdInBuf[mIdxLineEdit];
-	char *pEdit = pEditBase;
+	char *pEdit = mCmdInBuf[mIdxLineEdit];
 
 	// reuse edit buffer as command buffer
-	if (!*pEditBase)
+	if (!*pEdit)
 	{
 		while (*pLast)
 			*pEdit++ = *pLast++;
 	}
 
-	procInfLog("executing line: %s", pEditBase);
+	pEdit = mCmdInBuf[mIdxLineEdit];
+
+	procInfLog("executing line: %s", pEdit);
 }
 
 void SystemCommanding::historyInsert()
 {
-	const char *pEditBase = mCmdInBuf[mIdxLineEdit];
-	const char *pEdit = pEditBase;
+	const char *pEdit = mCmdInBuf[mIdxLineEdit];
 	const char *pLast = mIdxLineLast >= 0 ? mCmdInBuf[mIdxLineLast] : NULL;
 
 	while (pLast and *pEdit == *pLast and *pEdit)
@@ -488,7 +488,7 @@ void SystemCommanding::historyInsert()
 	if (mIdxLineEdit >= cNumCmdInBuffer)
 		mIdxLineEdit = 0;
 
-	*pEditBase = 0;
+	mCmdInBuf[mIdxLineEdit] = 0;
 }
 
 bool SystemCommanding::bufferEdit(uint16_t key)
