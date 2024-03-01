@@ -494,7 +494,7 @@ void SystemCommanding::historyInsert()
 	if (mIdxLineEdit >= cNumCmdInBuffer)
 		mIdxLineEdit = 0;
 
-	mCmdInBuf[mIdxLineEdit] = 0;
+	mCmdInBuf[mIdxLineEdit][0] = 0;
 }
 
 bool SystemCommanding::historyNavigate(uint16_t key)
@@ -783,7 +783,7 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 	const char *pCursorMax = &mCmdInBuf[mIdxLineEdit][mIdxColLineEnd];
 
 	dInfo("Buffer\n");
-	for (size_t u = 0; u < cNumCmdInBuffer; ++u)
+	for (int16_t u = 0; u < cNumCmdInBuffer; ++u)
 	{
 		lineDone = false;
 

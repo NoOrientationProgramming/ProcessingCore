@@ -78,7 +78,7 @@ void cmdReg(
 #define CONFIG_CMD_SIZE_BUFFER_OUT		507
 #endif
 
-const size_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
+const int16_t cNumCmdInBuffer = 1 + CONFIG_CMD_SIZE_HISTORY;
 const size_t cSizeBufCmdIn = CONFIG_CMD_SIZE_BUFFER_IN;
 const size_t cSizeBufCmdOut = CONFIG_CMD_SIZE_BUFFER_OUT;
 
