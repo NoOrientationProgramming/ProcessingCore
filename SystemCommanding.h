@@ -60,10 +60,6 @@ void cmdReg(
 		const std::string &desc = "",
 		const std::string &group = "");
 
-// Temp
-#define CONFIG_CMD_SIZE_HISTORY		3
-#define CONFIG_CMD_SIZE_BUFFER_IN		30
-
 //void procReg(const std::string &group, const std::string &id, const std::string &shortcut, COMMANDING PROCESS CREATE FUNCTION, const std::string &desc);
 
 #ifndef CONFIG_CMD_SIZE_HISTORY
@@ -71,7 +67,7 @@ void cmdReg(
 #endif
 
 #ifndef CONFIG_CMD_SIZE_BUFFER_IN
-#define CONFIG_CMD_SIZE_BUFFER_IN		63
+#define CONFIG_CMD_SIZE_BUFFER_IN		29
 #endif
 
 #ifndef CONFIG_CMD_SIZE_BUFFER_OUT
