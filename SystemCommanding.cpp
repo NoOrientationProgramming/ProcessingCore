@@ -526,7 +526,7 @@ void SystemCommanding::commandExecute()
 		return;
 	}
 
-	msg = "command not found";
+	msg = "Command not found";
 	procWrnLog("%s", msg.c_str());
 
 	msg += "\r\n";
