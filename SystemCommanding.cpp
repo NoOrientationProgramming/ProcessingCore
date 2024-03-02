@@ -769,7 +769,11 @@ void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine
 	if (preNewLine)
 		msg += "\r\n";
 
-	msg += "\r# ";
+	msg += "\rcore@";
+	msg += "app";
+	msg += ":";
+	msg += "~"; // directory
+	msg += "# ";
 
 	for (; pCh < pEnd; ++pCh)
 	{
