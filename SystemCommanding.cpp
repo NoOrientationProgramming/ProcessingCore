@@ -674,9 +674,13 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 	while (true)
 	{
 		chSave = *pCursor;
+
+		if (!chSave)
+			*(pCursor + 1) = 0;
+
 		*pCursor++ = chInsert;
 
-		if (!chInsert)
+		if (!chSave)
 			break;
 
 		chInsert = chSave;
