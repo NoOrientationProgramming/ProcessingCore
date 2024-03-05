@@ -30,6 +30,7 @@
 
 #include <string.h>
 #include <cstdint>
+#include <cinttypes>
 #include <chrono>
 
 #include "SystemCommanding.h"
@@ -1514,7 +1515,7 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 		pLine = pByte;
 		lenPrinted = 0;
 
-		dInfo("%08x", addressAbs);
+		dInfo("%08" PRIx32, addressAbs);
 
 		for (i = 0; i < numBytesPerLine; ++i)
 		{
@@ -1527,7 +1528,7 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 				continue;
 			}
 
-			dInfo(" %02x", (uint8_t)*pByte);
+			dInfo(" %02" PRIx8, (uint8_t)*pByte);
 
 			++pByte;
 			--len;
