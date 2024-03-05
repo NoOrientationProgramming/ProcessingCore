@@ -48,7 +48,7 @@
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
 
-#if 1
+#if 0
 #define dGenProcStateString(s) #s,
 dProcessStateStr(ProcState);
 #endif
@@ -437,7 +437,137 @@ void SystemCommanding::dataReceive()
 
 void SystemCommanding::tabProcess()
 {
+	if (!mIdxColCursor)
+		return;
+
+	if (mLastKeyWasTab)
+	{
+		cmdCandidatesShow();
+		return;
+	}
+
+	cmdAutoComplete();
 	mLastKeyWasTab = true;
+}
+
+void SystemCommanding::cmdAutoComplete()
+{
+	list<const char *> candidates;
+	list<const char *>::const_iterator iter;
+	const char *pNext;
+	const char *pCandidateEnd;
+	uint16_t idxEnd = mIdxColCursor;
+	bool ok;
+
+	cmdCandidatesGet(candidates);
+
+	while (true)
+	{
+		pNext = NULL;
+
+		iter = candidates.begin();
+		for (; iter != candidates.end(); ++iter)
+		{
+			pCandidateEnd = *iter + idxEnd;
+
+			if (!pNext)
+			{
+				pNext = pCandidateEnd;
+				continue;
+			}
+
+			if (*pCandidateEnd == *pNext)
+				continue;
+
+			pNext = NULL;
+			break;
+		}
+
+		if (!pNext)
+			break;
+
+		if (!*pNext)
+		{
+			chInsert(' ');
+			break;
+		}
+
+		ok = chInsert(*pNext);
+		if (!ok)
+			break;
+
+		++idxEnd;
+	}
+
+	promptSend();
+}
+
+void SystemCommanding::cmdCandidatesShow()
+{
+	list<const char *> candidates;
+	list<const char *>::const_iterator iter;
+	size_t widthNameCmdMax = 20;
+	uint8_t idxColCmdMax = 1;
+	uint8_t idxColCmd = 0;
+	string str, msg;
+
+	cmdCandidatesGet(candidates);
+
+	if (!candidates.size())
+		return;
+
+	promptSend(false, false, true);
+
+	iter = candidates.begin();
+	for (; iter != candidates.end(); ++iter)
+	{
+		str = *iter;
+		str = str.substr(0, widthNameCmdMax);
+
+		if (str.size() < widthNameCmdMax)
+			str += string(widthNameCmdMax - str.size(), ' ');
+
+		str += "  ";
+		msg += str;
+
+		if (idxColCmd < idxColCmdMax)
+		{
+			++idxColCmd;
+			continue;
+		}
+
+		msg += "\r\n";
+		mpTrans->send(msg.c_str(), msg.size());
+
+		idxColCmd = 0;
+		msg = "";
+	}
+
+	if (msg.size())
+	{
+		msg += "\r\n";
+		mpTrans->send(msg.c_str(), msg.size());
+	}
+
+	promptSend();
+}
+
+void SystemCommanding::cmdCandidatesGet(list<const char *> &listCandidates)
+{
+	char *pEdit= mCmdInBuf[mIdxLineEdit];
+	list<SystemCommand>::const_iterator iter;
+	const char *pId;
+
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
+	{
+		pId = iter->id.c_str();
+
+		if (strncmp(pEdit, pId, mIdxColCursor))
+			continue;
+
+		listCandidates.push_back(pId);
+	}
 }
 
 void SystemCommanding::lineAck()
@@ -526,7 +656,7 @@ void SystemCommanding::commandExecute()
 		return;
 	}
 
-	msg = "command not found";
+	msg = "Command not found";
 	procWrnLog("%s", msg.c_str());
 
 	msg += "\r\n";
@@ -663,29 +793,7 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 	if (!keyIsInsert(key))
 		return false;
 
-	if (mIdxColLineEnd >= cIdxColMax)
-		return false;
-
-	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
-
-	char chInsert = (char)key;
-	char chSave;
-
-	while (true)
-	{
-		chSave = *pCursor;
-		*pCursor++ = chInsert;
-
-		if (!chInsert)
-			break;
-
-		chInsert = chSave;
-	}
-
-	++mIdxColCursor;
-	++mIdxColLineEnd;
-
-	return true;
+	return chInsert(key);
 }
 
 bool SystemCommanding::chRemove(uint16_t key)
@@ -721,6 +829,37 @@ bool SystemCommanding::chRemove(uint16_t key)
 	}
 
 	--mIdxColLineEnd;
+
+	return true;
+}
+
+bool SystemCommanding::chInsert(uint16_t key)
+{
+	if (mIdxColLineEnd >= cIdxColMax)
+		return false;
+
+	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
+
+	char chInsert = (char)key;
+	char chSave;
+
+	while (true)
+	{
+		chSave = *pCursor;
+
+		if (!chSave)
+			*(pCursor + 1) = 0;
+
+		*pCursor++ = chInsert;
+
+		if (!chSave)
+			break;
+
+		chInsert = chSave;
+	}
+
+	++mIdxColCursor;
+	++mIdxColLineEnd;
 
 	return true;
 }
@@ -769,7 +908,11 @@ void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine
 	if (preNewLine)
 		msg += "\r\n";
 
-	msg += "\r# ";
+	msg += "\rcore@";
+	msg += "app";
+	msg += ":";
+	msg += "~"; // directory
+	msg += "# ";
 
 	for (; pCh < pEnd; ++pCh)
 	{
@@ -874,7 +1017,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 {
-#if 1
+#if 0
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 #endif
 #if CONFIG_CMD_SIZE_HISTORY
@@ -952,8 +1095,12 @@ void SystemCommanding::globalInit()
 
 	/* register standard commands here */
 	cmdReg("help",
-		helpPrint,
+		cmdHelpPrint,
 		"h", "this help screen",
+		cInternalCmdCls);
+	cmdReg("hd",
+		cmdHexDump,
+		"", "Hex dump. Usage: hd <addr> [len=32]",
 		cInternalCmdCls);
 #if 0
 	cmdReg("broadcast",
@@ -1274,7 +1421,7 @@ uint32_t SystemCommanding::millis()
 	return (uint32_t)nowMs.time_since_epoch().count();
 }
 
-void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	list<SystemCommand>::iterator iter;
 	SystemCommand cmd;
@@ -1314,6 +1461,100 @@ void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 	}
 
 	dInfo("\n");
+}
+
+void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	void *pData = NULL;
+	long int len = 16;
+
+	if (pArgs)
+		pData = (void *)strtol(pArgs, NULL, 0);
+
+	if (!pData)
+	{
+		dInfo("Specify address\n");
+		return;
+	}
+
+	if (pArgs)
+		pArgs = strchr(pArgs, ' ');
+
+	if (pArgs)
+		len = strtol(pArgs, NULL, 10);
+
+	if (len <= 0)
+	{
+		dInfo("Length must be greater than zero\n");
+		return;
+	}
+
+	hexDumpPrint(pBuf, pBufEnd, pData, len, NULL, 8);
+}
+
+size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
+			const void *pData, size_t len,
+			const char *pName, size_t colWidth)
+{
+	if (!pData)
+		return 0;
+
+	char *pBufStart = pBuf;
+	const char *pByte = (const char *)pData;
+	uint32_t addressAbs = 0;
+	const char *pLine = pByte;
+	uint8_t lenPrinted;
+	uint8_t numBytesPerLine = colWidth;
+	size_t i = 0;
+
+	dInfo("%p  %s\n", pData, pName ? pName : "Data");
+
+	while (len)
+	{
+		pLine = pByte;
+		lenPrinted = 0;
+
+		dInfo("%08x", addressAbs);
+
+		for (i = 0; i < numBytesPerLine; ++i)
+		{
+			if (!(i & 7))
+				dInfo(" ");
+
+			if (!len)
+			{
+				dInfo("   ");
+				continue;
+			}
+
+			dInfo(" %02x", (uint8_t)*pByte);
+
+			++pByte;
+			--len;
+			++lenPrinted;
+		}
+
+		dInfo("  |");
+
+		for (i = 0; i < lenPrinted; ++i, ++pLine, ++pBuf)
+		{
+			char c = *pLine;
+
+			if (c < 32 or c > 126)
+			{
+				*pBuf = '.';
+				continue;
+			}
+
+			*pBuf = c;
+		}
+
+		dInfo("|\n");
+
+		addressAbs += lenPrinted;
+	}
+
+	return pBuf - pBufStart;
 }
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)

@@ -116,6 +116,9 @@ private:
 	Success autoCommandReceive();
 	void dataReceive();
 	void tabProcess();
+	void cmdAutoComplete();
+	void cmdCandidatesShow();
+	void cmdCandidatesGet(std::list<const char *> &listCandidates);
 	void lineAck();
 	void commandExecute();
 #if CONFIG_CMD_SIZE_HISTORY
@@ -124,6 +127,7 @@ private:
 #endif
 	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
+	bool chInsert(uint16_t key);
 	bool cursorJump(uint16_t key);
 	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
 
@@ -155,7 +159,11 @@ private:
 
 	/* static functions */
 	static uint32_t millis();
-	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	static void cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	static void cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd);
+	static size_t hexDumpPrint(char *pBuf, char *pBufEnd,
+					const void *pData, size_t len,
+					const char *pName = NULL, size_t colWidth = 0x10);
 
 	/* static variables */
 	static bool globalInitDone;
