@@ -486,6 +486,12 @@ void SystemCommanding::cmdAutoComplete()
 		if (!pNext)
 			break;
 
+		if (!*pNext)
+		{
+			chInsert(' ');
+			break;
+		}
+
 		ok = chInsert(*pNext);
 		if (!ok)
 			break;
