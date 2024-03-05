@@ -117,7 +117,7 @@ private:
 	void dataReceive();
 	void tabProcess();
 	void cmdAutoComplete();
-	void cmdSuggestionsShow();
+	void cmdCandidatesShow();
 	void cmdCandidatesGet(std::list<const char *> &listCandidates);
 	void lineAck();
 	void commandExecute();

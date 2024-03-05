@@ -442,7 +442,7 @@ void SystemCommanding::tabProcess()
 
 	if (mLastKeyWasTab)
 	{
-		cmdSuggestionsShow();
+		cmdCandidatesShow();
 		return;
 	}
 
@@ -496,7 +496,7 @@ void SystemCommanding::cmdAutoComplete()
 	promptSend();
 }
 
-void SystemCommanding::cmdSuggestionsShow()
+void SystemCommanding::cmdCandidatesShow()
 {
 	procInfLog("printing suggestions");
 
