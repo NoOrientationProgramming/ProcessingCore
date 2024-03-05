@@ -118,6 +118,7 @@ private:
 	void tabProcess();
 	void cmdAutoComplete();
 	void cmdSuggestionsShow();
+	void cmdCandidatesGet(std::list<const char *> &listCandidates);
 	void lineAck();
 	void commandExecute();
 #if CONFIG_CMD_SIZE_HISTORY

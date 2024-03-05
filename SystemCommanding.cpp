@@ -437,6 +437,9 @@ void SystemCommanding::dataReceive()
 
 void SystemCommanding::tabProcess()
 {
+	if (!mIdxColCursor)
+		return;
+
 	if (mLastKeyWasTab)
 	{
 		cmdSuggestionsShow();
@@ -449,10 +452,76 @@ void SystemCommanding::tabProcess()
 
 void SystemCommanding::cmdAutoComplete()
 {
+	list<const char *> candidates;
+	list<const char *>::const_iterator iter;
+	const char *pNext;
+	const char *pCandidateEnd;
+	uint16_t idxEnd = mIdxColCursor;
+	bool ok;
+
+	cmdCandidatesGet(candidates);
+
+	while (true)
+	{
+		pNext = NULL;
+
+		iter = candidates.begin();
+		for (; iter != candidates.end(); ++iter)
+		{
+			pCandidateEnd = *iter + idxEnd;
+
+			if (!pNext)
+			{
+				pNext = pCandidateEnd;
+				continue;
+			}
+
+			if (*pCandidateEnd == *pNext)
+				continue;
+
+			pNext = NULL;
+			break;
+		}
+
+		if (!pNext)
+			break;
+
+		ok = chInsert(*pNext);
+		if (!ok)
+			break;
+
+		++idxEnd;
+	}
+
+	promptSend();
 }
 
 void SystemCommanding::cmdSuggestionsShow()
 {
+	procInfLog("printing suggestions");
+
+	list<const char *> candidates;
+
+	cmdCandidatesGet(candidates);
+}
+
+void SystemCommanding::cmdCandidatesGet(list<const char *> &listCandidates)
+{
+	char *pEdit= mCmdInBuf[mIdxLineEdit];
+	list<SystemCommand>::const_iterator iter;
+	const char *pId;
+
+	iter = cmds.begin();
+	for (; iter != cmds.end(); ++iter)
+	{
+		pId = iter->id.c_str();
+
+		if (strncmp(pEdit, pId, mIdxColCursor))
+			continue;
+
+		procInfLog("saving candidate: %s", pId);
+		listCandidates.push_back(pId);
+	}
 }
 
 void SystemCommanding::lineAck()
