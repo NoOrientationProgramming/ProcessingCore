@@ -513,6 +513,9 @@ void SystemCommanding::cmdCandidatesShow()
 
 	cmdCandidatesGet(candidates);
 
+	if (!candidates.size())
+		return;
+
 	promptSend(false, false, true);
 
 	iter = candidates.begin();
