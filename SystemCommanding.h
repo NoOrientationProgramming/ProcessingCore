@@ -159,7 +159,11 @@ private:
 
 	/* static functions */
 	static uint32_t millis();
-	static void helpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	static void cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd);
+	static void cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd);
+	static size_t hexDumpPrint(char *pBuf, char *pBufEnd,
+					const void *pData, size_t len,
+					const char *pName = NULL, size_t colWidth = 0x10);
 
 	/* static variables */
 	static bool globalInitDone;

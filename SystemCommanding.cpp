@@ -1095,8 +1095,12 @@ void SystemCommanding::globalInit()
 
 	/* register standard commands here */
 	cmdReg("help",
-		helpPrint,
+		cmdHelpPrint,
 		"h", "this help screen",
+		cInternalCmdCls);
+	cmdReg("hd",
+		cmdHexDump,
+		"", "Hex dump. Usage: hd <addr> [len=32]",
 		cInternalCmdCls);
 #if 0
 	cmdReg("broadcast",
@@ -1417,7 +1421,7 @@ uint32_t SystemCommanding::millis()
 	return (uint32_t)nowMs.time_since_epoch().count();
 }
 
-void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
+void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	list<SystemCommand>::iterator iter;
 	SystemCommand cmd;
@@ -1457,6 +1461,100 @@ void SystemCommanding::helpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 	}
 
 	dInfo("\n");
+}
+
+void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	void *pData = NULL;
+	long int len = 16;
+
+	if (pArgs)
+		pData = (void *)strtol(pArgs, NULL, 0);
+
+	if (!pData)
+	{
+		dInfo("Specify address\n");
+		return;
+	}
+
+	if (pArgs)
+		pArgs = strchr(pArgs, ' ');
+
+	if (pArgs)
+		len = strtol(pArgs, NULL, 10);
+
+	if (len <= 0)
+	{
+		dInfo("Length must be greater than zero\n");
+		return;
+	}
+
+	hexDumpPrint(pBuf, pBufEnd, pData, len, NULL, 8);
+}
+
+size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
+			const void *pData, size_t len,
+			const char *pName, size_t colWidth)
+{
+	if (!pData)
+		return 0;
+
+	char *pBufStart = pBuf;
+	const char *pByte = (const char *)pData;
+	uint32_t addressAbs = 0;
+	const char *pLine = pByte;
+	uint8_t lenPrinted;
+	uint8_t numBytesPerLine = colWidth;
+	size_t i = 0;
+
+	dInfo("%p  %s\n", pData, pName ? pName : "Data");
+
+	while (len)
+	{
+		pLine = pByte;
+		lenPrinted = 0;
+
+		dInfo("%08x", addressAbs);
+
+		for (i = 0; i < numBytesPerLine; ++i)
+		{
+			if (!(i & 7))
+				dInfo(" ");
+
+			if (!len)
+			{
+				dInfo("   ");
+				continue;
+			}
+
+			dInfo(" %02x", (uint8_t)*pByte);
+
+			++pByte;
+			--len;
+			++lenPrinted;
+		}
+
+		dInfo("  |");
+
+		for (i = 0; i < lenPrinted; ++i, ++pLine, ++pBuf)
+		{
+			char c = *pLine;
+
+			if (c < 32 or c > 126)
+			{
+				*pBuf = '.';
+				continue;
+			}
+
+			*pBuf = c;
+		}
+
+		dInfo("|\n");
+
+		addressAbs += lenPrinted;
+	}
+
+	return pBuf - pBufStart;
 }
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
