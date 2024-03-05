@@ -48,7 +48,7 @@
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
 
-#if 1
+#if 0
 #define dGenProcStateString(s) #s,
 dProcessStateStr(ProcState);
 #endif
@@ -1017,7 +1017,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 {
-#if 1
+#if 0
 	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 #endif
 #if CONFIG_CMD_SIZE_HISTORY
@@ -1028,7 +1028,7 @@ void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
 
 	dInfo("Last command\t\t%s\n", pLineLast);
 #endif
-#if 1
+#if 0
 	bool lineDone = false;
 	const char *pCh;
 	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
