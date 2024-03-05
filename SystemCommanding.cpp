@@ -498,8 +498,6 @@ void SystemCommanding::cmdAutoComplete()
 
 void SystemCommanding::cmdCandidatesShow()
 {
-	procInfLog("printing suggestions");
-
 	list<const char *> candidates;
 
 	cmdCandidatesGet(candidates);
@@ -519,7 +517,6 @@ void SystemCommanding::cmdCandidatesGet(list<const char *> &listCandidates)
 		if (strncmp(pEdit, pId, mIdxColCursor))
 			continue;
 
-		procInfLog("saving candidate: %s", pId);
 		listCandidates.push_back(pId);
 	}
 }
