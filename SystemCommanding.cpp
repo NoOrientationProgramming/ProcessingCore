@@ -437,7 +437,22 @@ void SystemCommanding::dataReceive()
 
 void SystemCommanding::tabProcess()
 {
+	if (mLastKeyWasTab)
+	{
+		cmdSuggestionsShow();
+		return;
+	}
+
+	cmdAutoComplete();
 	mLastKeyWasTab = true;
+}
+
+void SystemCommanding::cmdAutoComplete()
+{
+}
+
+void SystemCommanding::cmdSuggestionsShow()
+{
 }
 
 void SystemCommanding::lineAck()

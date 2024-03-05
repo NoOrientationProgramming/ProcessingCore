@@ -116,6 +116,8 @@ private:
 	Success autoCommandReceive();
 	void dataReceive();
 	void tabProcess();
+	void cmdAutoComplete();
+	void cmdSuggestionsShow();
 	void lineAck();
 	void commandExecute();
 #if CONFIG_CMD_SIZE_HISTORY
