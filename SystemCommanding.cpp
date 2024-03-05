@@ -499,8 +499,48 @@ void SystemCommanding::cmdAutoComplete()
 void SystemCommanding::cmdCandidatesShow()
 {
 	list<const char *> candidates;
+	list<const char *>::const_iterator iter;
+	size_t widthNameCmdMax = 20;
+	uint8_t idxColCmdMax = 1;
+	uint8_t idxColCmd = 0;
+	string str, msg;
 
 	cmdCandidatesGet(candidates);
+
+	promptSend(false, false, true);
+
+	iter = candidates.begin();
+	for (; iter != candidates.end(); ++iter)
+	{
+		str = *iter;
+		str = str.substr(0, widthNameCmdMax);
+
+		if (str.size() < widthNameCmdMax)
+			str += string(widthNameCmdMax - str.size(), ' ');
+
+		str += "  ";
+		msg += str;
+
+		if (idxColCmd < idxColCmdMax)
+		{
+			++idxColCmd;
+			continue;
+		}
+
+		msg += "\r\n";
+		mpTrans->send(msg.c_str(), msg.size());
+
+		idxColCmd = 0;
+		msg = "";
+	}
+
+	if (msg.size())
+	{
+		msg += "\r\n";
+		mpTrans->send(msg.c_str(), msg.size());
+	}
+
+	promptSend();
 }
 
 void SystemCommanding::cmdCandidatesGet(list<const char *> &listCandidates)
