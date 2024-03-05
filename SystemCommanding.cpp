@@ -678,33 +678,7 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 	if (!keyIsInsert(key))
 		return false;
 
-	if (mIdxColLineEnd >= cIdxColMax)
-		return false;
-
-	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
-
-	char chInsert = (char)key;
-	char chSave;
-
-	while (true)
-	{
-		chSave = *pCursor;
-
-		if (!chSave)
-			*(pCursor + 1) = 0;
-
-		*pCursor++ = chInsert;
-
-		if (!chSave)
-			break;
-
-		chInsert = chSave;
-	}
-
-	++mIdxColCursor;
-	++mIdxColLineEnd;
-
-	return true;
+	return chInsert(key);
 }
 
 bool SystemCommanding::chRemove(uint16_t key)
@@ -740,6 +714,37 @@ bool SystemCommanding::chRemove(uint16_t key)
 	}
 
 	--mIdxColLineEnd;
+
+	return true;
+}
+
+bool SystemCommanding::chInsert(uint16_t key)
+{
+	if (mIdxColLineEnd >= cIdxColMax)
+		return false;
+
+	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
+
+	char chInsert = (char)key;
+	char chSave;
+
+	while (true)
+	{
+		chSave = *pCursor;
+
+		if (!chSave)
+			*(pCursor + 1) = 0;
+
+		*pCursor++ = chInsert;
+
+		if (!chSave)
+			break;
+
+		chInsert = chSave;
+	}
+
+	++mIdxColCursor;
+	++mIdxColLineEnd;
 
 	return true;
 }

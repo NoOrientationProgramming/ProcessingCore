@@ -126,6 +126,7 @@ private:
 #endif
 	bool bufferEdit(uint16_t key);
 	bool chRemove(uint16_t key);
+	bool chInsert(uint16_t key);
 	bool cursorJump(uint16_t key);
 	void promptSend(bool cursor = true, bool preNewLine = false, bool postNewLine = false);
 
