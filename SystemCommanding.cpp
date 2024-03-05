@@ -161,6 +161,7 @@ const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
 const uint32_t cTmoAutoModeMs = 40;
 const int cSizeCmdIdMax = 16;
+const long int cLenHexDumpStd = 16;
 
 // --------------------
 
@@ -1101,7 +1102,7 @@ void SystemCommanding::globalInit()
 		cInternalCmdCls);
 	cmdReg("hd",
 		cmdHexDump,
-		"", "Hex dump. Usage: hd <addr> [len=32]",
+		"", "Hex dump. Usage: hd <addr> [len=16]",
 		cInternalCmdCls);
 #if 0
 	cmdReg("broadcast",
@@ -1467,7 +1468,7 @@ void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	void *pData = NULL;
-	long int len = 16;
+	long int len = cLenHexDumpStd;
 
 	if (pArgs)
 		pData = (void *)strtol(pArgs, NULL, 0);
