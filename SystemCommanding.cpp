@@ -873,7 +873,7 @@ bool SystemCommanding::cursorJump(uint16_t key)
 
 	int direction = key == keyJumpRight ? 1 : -1;
 	bool statePrev = (direction + 1) >> 1;
-	bool stateCursor = not statePrev;
+	bool stateCursor = !statePrev;
 	uint16_t idxStop = statePrev ? mIdxColLineEnd : 0;
 	bool changed = false;
 

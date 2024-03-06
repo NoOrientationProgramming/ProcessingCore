@@ -468,7 +468,7 @@ void SystemDebugging::procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBuf
 	(void)pBuf;
 	(void)pBufEnd;
 
-	procTreeDetailed = not procTreeDetailed;
+	procTreeDetailed = !procTreeDetailed;
 }
 
 void SystemDebugging::procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufEnd)
@@ -478,7 +478,7 @@ void SystemDebugging::procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufE
 	(void)pBufEnd;
 
 #if CONFIG_PROC_USE_DRIVER_COLOR
-	procTreeColored = not procTreeColored;
+	procTreeColored = !procTreeColored;
 #endif
 }
 
