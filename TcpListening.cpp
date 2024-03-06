@@ -159,12 +159,12 @@ Success TcpListening::connectionsAccept()
 	{
 		numErr = errGet();
 #ifdef _WIN32
-		if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+		if (numErr == WSAEWOULDBLOCK || numErr == WSAEINPROGRESS)
 			return Pending;
 #else
-		if (numErr == EWOULDBLOCK or
-			numErr == EALREADY or
-			numErr == EINPROGRESS or
+		if (numErr == EWOULDBLOCK ||
+			numErr == EALREADY ||
+			numErr == EINPROGRESS ||
 			numErr == EAGAIN)
 			return Pending;
 #endif
@@ -184,7 +184,7 @@ Success TcpListening::connectionsAccept()
 		procDbgLog(LOG_LVL, "got peer %s:%u", buf, mPortRemote);
 	}
 
-	if (ppPeerFd.isFull() or ppPeerFd.size() >= mMaxConn)
+	if (ppPeerFd.isFull() || ppPeerFd.size() >= mMaxConn)
 	{
 		procWrnLog("dropping connection. Output queue full");
 #ifdef _WIN32

@@ -200,7 +200,7 @@ bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 
 	buf[lenDone] = 0;
 
-	if ((buf[0] == 0x03) or (buf[0] == 0x04))
+	if ((buf[0] == 0x03) || (buf[0] == 0x04))
 	{
 		procInfLog("end of transmission");
 		return true;
@@ -228,12 +228,12 @@ void SystemDebugging::peerRemove()
 		peer = *iter;
 		pProc = peer.pProc;
 
-		if (peer.type == PeerProc or peer.type == PeerLog)
+		if (peer.type == PeerProc || peer.type == PeerLog)
 			disconnectReq = disconnectRequestedCheck((TcpTransfering *)pProc);
 		else
 			disconnectReq = false;
 
-		removeReq = (pProc->success() != Pending) or disconnectReq;
+		removeReq = (pProc->success() != Pending) || disconnectReq;
 		if (!removeReq)
 		{
 			++iter;
@@ -330,7 +330,7 @@ void SystemDebugging::processTreeSend()
 
 	string procTree(buffProcTree);
 
-	bool procTreeUpdated = procTree != mProcTree or mProcTreePeerAdded;
+	bool procTreeUpdated = procTree != mProcTree || mProcTreePeerAdded;
 
 	if (!procTreeUpdated)
 		return;

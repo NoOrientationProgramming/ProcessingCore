@@ -388,7 +388,7 @@ void SystemCommanding::dataReceive()
 
 	//procInfLog("bytes received: %d", lenDone);
 
-	if (lenDone == 1 and buf[0] == keyEsc)
+	if (lenDone == 1 && buf[0] == keyEsc)
 		return;
 
 	bool changed = false;
@@ -620,10 +620,10 @@ void SystemCommanding::commandExecute()
 	if (pArgs)
 		*pArgs++ = 0;
 
-	while (pArgs and *pArgs == ' ')
+	while (pArgs && *pArgs == ' ')
 		++pArgs;
 
-	if (pArgs and !*pArgs)
+	if (pArgs && !*pArgs)
 		pArgs = NULL;
 #if 0
 	procInfLog("command         '%s'", pEdit);
@@ -641,7 +641,7 @@ void SystemCommanding::commandExecute()
 	iter = cmds.begin();
 	for (; iter != cmds.end(); ++iter)
 	{
-		if (strcmp(pEdit, iter->id.c_str()) and
+		if (strcmp(pEdit, iter->id.c_str()) &&
 			strcmp(pEdit, iter->shortcut.c_str()))
 			continue;
 
@@ -650,7 +650,7 @@ void SystemCommanding::commandExecute()
 
 		lfToCrLf(bufOut, msg);
 
-		if (msg.size() and msg.back() != '\n')
+		if (msg.size() && msg.back() != '\n')
 			msg += "\r\n";
 
 		mpTrans->send(msg.c_str(), msg.size());
@@ -674,14 +674,14 @@ void SystemCommanding::historyInsert()
 	const char *pEdit = mCmdInBuf[mIdxLineEdit];
 	const char *pLast = mIdxLineLast >= 0 ? mCmdInBuf[mIdxLineLast] : NULL;
 
-	while (pLast and *pEdit == *pLast and *pEdit)
+	while (pLast && *pEdit == *pLast && *pEdit)
 	{
 		++pEdit;
 		++pLast;
 	}
 
 	// ignore duplicate
-	if (pLast and *pEdit == *pLast)
+	if (pLast && *pEdit == *pLast)
 		return;
 
 	// insert
@@ -698,10 +698,10 @@ void SystemCommanding::historyInsert()
 
 bool SystemCommanding::historyNavigate(uint16_t key)
 {
-	if (key != keyUp and key != keyDown)
+	if (key != keyUp && key != keyDown)
 		return false;
 
-	if (key == keyDown and mIdxLineView == mIdxLineEdit)
+	if (key == keyDown && mIdxLineView == mIdxLineEdit)
 		return false;
 
 	int16_t direction = key == keyDown ? 1 : -1;
@@ -713,7 +713,7 @@ bool SystemCommanding::historyNavigate(uint16_t key)
 	if (mIdxLineViewNew >= cNumCmdInBuffer)
 		mIdxLineViewNew = 0;
 
-	if (key == keyUp and mIdxLineViewNew == mIdxLineEdit)
+	if (key == keyUp && mIdxLineViewNew == mIdxLineEdit)
 		return false;
 
 	if (!mCmdInBuf[mIdxLineViewNew][0])
@@ -801,10 +801,10 @@ bool SystemCommanding::bufferEdit(uint16_t key)
 bool SystemCommanding::chRemove(uint16_t key)
 {
 	char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
-	bool isBackspace = key == keyBackspace or key == keyBackspaceWin;
+	bool isBackspace = key == keyBackspace || key == keyBackspaceWin;
 	char *pRemove = NULL;
 
-	if (isBackspace and mIdxColCursor)
+	if (isBackspace && mIdxColCursor)
 	{
 		--mIdxColCursor;
 		--pCursor;
@@ -812,7 +812,7 @@ bool SystemCommanding::chRemove(uint16_t key)
 		pRemove = pCursor;
 	}
 
-	if (key == keyDelete and *pCursor)
+	if (key == keyDelete && *pCursor)
 		pRemove = pCursor;
 
 	if (!pRemove)
@@ -868,7 +868,7 @@ bool SystemCommanding::chInsert(uint16_t key)
 
 bool SystemCommanding::cursorJump(uint16_t key)
 {
-	if (key != keyJumpLeft and key != keyJumpRight)
+	if (key != keyJumpLeft && key != keyJumpRight)
 		return false;
 
 	int direction = key == keyJumpRight ? 1 : -1;
@@ -891,7 +891,7 @@ bool SystemCommanding::cursorJump(uint16_t key)
 		pPrev += direction;
 		pCursor += direction;
 
-		if (keyIsAlphaNum(*pPrev) == statePrev and
+		if (keyIsAlphaNum(*pPrev) == statePrev &&
 			keyIsAlphaNum(*pCursor) == stateCursor)
 			break;
 	}
@@ -918,7 +918,7 @@ void SystemCommanding::promptSend(bool cursor, bool preNewLine, bool postNewLine
 
 	for (; pCh < pEnd; ++pCh)
 	{
-		if (cursor and pCh == pCursor)
+		if (cursor && pCh == pCursor)
 			msg += "\033[7m";
 
 		if (*pCh)
@@ -946,7 +946,7 @@ bool SystemCommanding::keyIsInsert(uint16_t key)
 	if (keyIsAlphaNum(key))
 		return true;
 
-	if (key == '-' or key == '_')
+	if (key == '-' || key == '_')
 		return true;
 
 	if (key == ' ')
@@ -957,13 +957,13 @@ bool SystemCommanding::keyIsInsert(uint16_t key)
 
 bool SystemCommanding::keyIsAlphaNum(uint16_t key)
 {
-	if (key >= 'a' and key <= 'z')
+	if (key >= 'a' && key <= 'z')
 		return true;
 
-	if (key >= 'A' and key <= 'Z')
+	if (key >= 'A' && key <= 'Z')
 		return true;
 
-	if (key >= '0' and key <= '9')
+	if (key >= '0' && key <= '9')
 		return true;
 
 	return false;
@@ -977,7 +977,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 	str.clear();
 
-	if (!pBuf or !*pBuf)
+	if (!pBuf || !*pBuf)
 		return;
 
 	str.reserve(lenBuf);
@@ -990,7 +990,7 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 		if (pBufIter >= pBuf + lenBuf)
 			break;
 
-		if (*pBufIter and *pBufIter != '\n')
+		if (*pBufIter && *pBufIter != '\n')
 		{
 			++pBufIter;
 			continue;
@@ -1144,7 +1144,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 		}
 
 		// user disconnect
-		if (key == keyCtrlC or key == keyCtrlD)
+		if (key == keyCtrlC || key == keyCtrlD)
 			return -1;
 
 		*pKeyOut = key;
@@ -1193,7 +1193,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			break;
 		}
 
-		if (key == '4' or key == '8')
+		if (key == '4' || key == '8')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1239,7 +1239,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			break;
 		}
 
-		if (key >= '0' and key <= '5')
+		if (key >= '0' && key <= '5')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1247,7 +1247,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			return Positive;
 		}
 
-		if (key >= '7' and key <= '9')
+		if (key >= '7' && key <= '9')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1255,7 +1255,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			return Positive;
 		}
 
-		if (key >= 'P' and key <= 'S')
+		if (key >= 'P' && key <= 'S')
 		{
 			mStateKey = StKeyMain;
 
@@ -1305,7 +1305,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 
 		dByteCheckKeyCommit('~', keyInsert);
 
-		if (key >= '0' and key <= '1')
+		if (key >= '0' && key <= '1')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1313,7 +1313,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			return Positive;
 		}
 
-		if (key >= '3' and key <= '6')
+		if (key >= '3' && key <= '6')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1321,7 +1321,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 			return Positive;
 		}
 
-		if (key >= '8' and key <= '9')
+		if (key >= '8' && key <= '9')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1337,7 +1337,7 @@ Success SystemCommanding::ansiFilter(uint8_t ch, uint16_t *pKeyOut)
 
 		dByteCheckKeyCommit('~', keyDelete);
 
-		if (key >= '1' and key <= '4')
+		if (key >= '1' && key <= '4')
 		{
 			mStateKey = StKeyEscTilde;
 
@@ -1442,7 +1442,7 @@ void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 		{
 			dInfo("\n");
 
-			if (cmd.group.size() and cmd.group != cInternalCmdCls)
+			if (cmd.group.size() && cmd.group != cInternalCmdCls)
 				dInfo("%s\n", cmd.group.c_str());
 			group = cmd.group;
 		}
@@ -1546,7 +1546,7 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 		{
 			char c = *pLine;
 
-			if (c < 32 or c > 126)
+			if (c < 32 || c > 126)
 			{
 				*pBuf = '.';
 				continue;
@@ -1565,9 +1565,9 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 
 static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
 {
-	if (cmdFirst.group == cInternalCmdCls and cmdSecond.group != cInternalCmdCls)
+	if (cmdFirst.group == cInternalCmdCls && cmdSecond.group != cInternalCmdCls)
 		return true;
-	if (cmdFirst.group != cInternalCmdCls and cmdSecond.group == cInternalCmdCls)
+	if (cmdFirst.group != cInternalCmdCls && cmdSecond.group == cInternalCmdCls)
 		return false;
 
 	if (cmdFirst.group < cmdSecond.group)
@@ -1575,9 +1575,9 @@ static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
 	if (cmdFirst.group > cmdSecond.group)
 		return false;
 
-	if (cmdFirst.shortcut != "" and cmdSecond.shortcut == "")
+	if (cmdFirst.shortcut != "" && cmdSecond.shortcut == "")
 		return true;
-	if (cmdFirst.shortcut == "" and cmdSecond.shortcut != "")
+	if (cmdFirst.shortcut == "" && cmdSecond.shortcut != "")
 		return false;
 
 	if (cmdFirst.id < cmdSecond.id)

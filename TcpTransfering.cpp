@@ -197,12 +197,12 @@ Success TcpTransfering::process()
 		{
 			numErr = errGet();
 #ifdef _WIN32
-			if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+			if (numErr == WSAEWOULDBLOCK || numErr == WSAEINPROGRESS)
 				break;
 #else
-			if (numErr == EWOULDBLOCK or
-				numErr == EALREADY or
-				numErr == EINPROGRESS or
+			if (numErr == EWOULDBLOCK ||
+				numErr == EALREADY ||
+				numErr == EINPROGRESS ||
 				numErr == EAGAIN)
 				break;
 #endif
@@ -291,7 +291,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 	bool peek = false;
 	char buf[1];
 
-	if (!pBuf or !lenReq)
+	if (!pBuf || !lenReq)
 	{
 		pBuf = buf;
 		lenReq = sizeof(buf);
@@ -306,7 +306,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 	{
 		int numErr = errGet();
 #ifdef _WIN32
-		if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+		if (numErr == WSAEWOULDBLOCK || numErr == WSAEINPROGRESS)
 			return 0; // std case and ok
 
 		if (numErr == WSAECONNRESET)
@@ -316,7 +316,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 			return -2;
 		}
 #else
-		if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+		if (numErr == EWOULDBLOCK || numErr == EINPROGRESS || numErr == EAGAIN)
 			return 0; // std case and ok
 
 		if (numErr == ECONNRESET)
@@ -402,10 +402,10 @@ ssize_t TcpTransfering::send(const void *pData, size_t lenReq)
 		{
 			int numErr = errGet();
 #ifdef _WIN32
-			if (numErr == WSAEWOULDBLOCK or numErr == WSAEINPROGRESS)
+			if (numErr == WSAEWOULDBLOCK || numErr == WSAEINPROGRESS)
 				return 0; // std case and ok
 #else
-			if (numErr == EWOULDBLOCK or numErr == EINPROGRESS or numErr == EAGAIN)
+			if (numErr == EWOULDBLOCK || numErr == EINPROGRESS || numErr == EAGAIN)
 				return 0; // std case and ok
 #endif
 			disconnect(numErr);
@@ -621,7 +621,7 @@ bool TcpTransfering::wsaInit()
 		return false;
 	}
 
-	if (LOBYTE(wsaData.wVersion) != verLow or HIBYTE(wsaData.wVersion) != verHigh)
+	if (LOBYTE(wsaData.wVersion) != verLow || HIBYTE(wsaData.wVersion) != verHigh)
 	{
 		errLog(-3, "could not find a usable version of Winsock.dll");
 		WSACleanup();

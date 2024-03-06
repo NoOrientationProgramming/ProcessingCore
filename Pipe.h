@@ -115,7 +115,7 @@ public:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mEntryMtx);
 #endif
-		return !mSize and mLastEntries;
+		return !mSize && mLastEntries;
 	}
 
 	void dataBlockingSet(bool block)
@@ -333,7 +333,7 @@ public:
 				break;
 			}
 
-			if (wouldBlock and mDataBlocking)
+			if (wouldBlock && mDataBlocking)
 				break;
 
 			/* this entry will be transfered => remove it */
