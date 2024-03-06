@@ -1483,7 +1483,7 @@ void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
 		pArgs = strchr(pArgs, ' ');
 
 	if (pArgs)
-		len = strtol(pArgs, NULL, 10);
+		len = strtol(pArgs, NULL, 0);
 
 	if (len <= 0)
 	{
