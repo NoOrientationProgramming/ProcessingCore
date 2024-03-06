@@ -962,7 +962,7 @@ size_t Processing::progressStr(char *pBuf, char *pBufEnd, const int val, const i
 	int maxValCpy = maxVal;
 
 	for (; maxValCpy; ++maxValLen)
-		maxValCpy *= (float)0.1;
+		maxValCpy *= 0.1f;
 
 	dInfo(" %*d / %d", maxValLen, val, maxVal);
 
