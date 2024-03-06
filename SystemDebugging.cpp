@@ -29,7 +29,6 @@
 */
 
 #include <string.h>
-#include <iostream>
 
 #include "SystemDebugging.h"
 #if CONFIG_DBG_HAVE_ENVIRONMENT
