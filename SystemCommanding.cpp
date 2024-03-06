@@ -1471,7 +1471,11 @@ void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
 	long int len = cLenHexDumpStd;
 
 	if (pArgs)
-		pData = (void *)strtol(pArgs, NULL, 0);
+	{
+		long l = strtol(pArgs, NULL, 0);
+		intptr_t i = l;
+		pData = (void *)i;
+	}
 
 	if (!pData)
 	{
