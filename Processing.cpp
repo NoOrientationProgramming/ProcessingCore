@@ -113,13 +113,13 @@ void Processing::treeTick()
 		pChild = *iter;
 #else
 	Processing **pChildListElem = mpChildList;
-	while (pChildListElem and *pChildListElem)
+	while (pChildListElem && *pChildListElem)
 	{
 		pChild = *pChildListElem;
 #endif
 		parentalDrive(pChild);
 
-		childCanBeRemoved = pChild->mStatDrv & PsbDrvUndriven and
+		childCanBeRemoved = pChild->mStatDrv & PsbDrvUndriven &&
 						pChild->mStatParent & PsbParUnused;
 
 		if (!childCanBeRemoved)
@@ -272,7 +272,7 @@ void Processing::treeTick()
 			pChild = *iter++;
 #else
 		pChildListElem = mpChildList;
-		while (pChildListElem and *pChildListElem)
+		while (pChildListElem && *pChildListElem)
 		{
 			pChild = *pChildListElem++;
 #endif
@@ -308,7 +308,7 @@ void Processing::treeTick()
 
 bool Processing::progress() const
 {
-	return mStateAbstract != PsFinished or mNumChildren;
+	return mStateAbstract != PsFinished || mNumChildren;
 }
 
 Success Processing::success() const
@@ -346,7 +346,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 	if (mStatDrv & PsbDrvPrTreeDisable)
 		return 0;
 
-	if (!pBuf or !(pBufEnd - pBuf))
+	if (!pBuf || !(pBufEnd - pBuf))
 		return 0;
 
 	for (n = 0; n < 2 * mLevelTree; ++n)
@@ -372,7 +372,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 	}
 
 #if CONFIG_PROC_USE_DRIVER_COLOR
-	if (colored and !mLevelDriver)
+	if (colored && !mLevelDriver)
 		dInfo("\033[32m");
 #endif
 
@@ -394,7 +394,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 		dInfo("\033[37m");
 #endif
 
-	if (detailed and mStateAbstract != PsFinished)
+	if (detailed && mStateAbstract != PsFinished)
 	{
 		bufInfo[0] = 0;
 		processInfo(bufInfo, bufInfo + sizeof(bufInfo));
@@ -411,7 +411,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 			if (!bufInfo[0])
 				break;
 
-			if (*pBufIter and *pBufIter != '\n')
+			if (*pBufIter && *pBufIter != '\n')
 			{
 				++pBufIter;
 				continue;
@@ -453,7 +453,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 			pChild = *iter++;
 #else
 		Processing **pChildListElem = mpChildList;
-		while (pChildListElem and *pChildListElem)
+		while (pChildListElem && *pChildListElem)
 		{
 			pChild = *pChildListElem++;
 #endif
@@ -539,7 +539,7 @@ void Processing::applicationClose()
 #else
 	GlobDestructorFunc *pGlobDestrListElem = pGlobalDestructors;
 
-	while (pGlobDestrListElem and *pGlobDestrListElem)
+	while (pGlobDestrListElem && *pGlobDestrListElem)
 		(*pGlobDestrListElem++)();
 
 	if (pGlobalDestructors)
@@ -871,7 +871,7 @@ Success Processing::childrenSuccess()
 		pChild = *iter++;
 #else
 	Processing **pChildListElem = mpChildList;
-	while (pChildListElem and *pChildListElem)
+	while (pChildListElem && *pChildListElem)
 	{
 		pChild = *pChildListElem++;
 #endif
