@@ -119,7 +119,7 @@ void Processing::treeTick()
 #endif
 		parentalDrive(pChild);
 
-		childCanBeRemoved = pChild->mStatDrv & PsbDrvUndriven and
+		childCanBeRemoved = pChild->mStatDrv & PsbDrvUndriven and \
 						pChild->mStatParent & PsbParUnused;
 
 		if (!childCanBeRemoved)
