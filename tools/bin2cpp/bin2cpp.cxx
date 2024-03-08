@@ -47,36 +47,33 @@ int main(int argc, char *argv[])
 	fHpp << "#ifndef " << guard << endl;
 	fHpp << "#define " << guard << endl;
 	fHpp << endl;
-
 #if 0
 	fHpp << "#ifdef __cplusplus" << endl;
 	fHpp << "extern \"C\" {" << endl;
 	fHpp << "#endif" << endl;
 	fHpp << endl;
 #endif
-
-	fHpp << "#include <cstddef>" << endl;
+	fHpp << "#include \"Res.h\"" << endl;
 	fHpp << endl;
 
-	fHpp << "typedef struct" << endl;
-	fHpp << "{" << endl;
-	fHpp << "\tconst char *name;" << endl;
-	fHpp << "\tconst char *pSrc;" << endl;
-	fHpp << "\tconst size_t size;" << endl;
-	fHpp << "} Resource;" << endl;
-	fHpp << endl;
+	string namePtr = nameOut;
+	namePtr[0] = toupper(namePtr[0]);
 
-	fHpp << "extern const Resource resources[];" << endl;
-	fHpp << "extern const Resource *pResourcesEnd;" << endl;
-	fHpp << endl;
+	fHpp << "extern const Resource ";
+	fHpp << nameOut;
+	fHpp << "[];" << endl;
 
+	fHpp << "extern const Resource *p";
+	fHpp << namePtr;
+	fHpp << "End;" << endl;
+
+	fHpp << endl;
 #if 0
 	fHpp << "#ifdef __cplusplus" << endl;
 	fHpp << "} /* extern \"C\" */" << endl;
 	fHpp << "#endif" << endl;
 	fHpp << endl;
 #endif
-
 	fHpp << "#endif /* " << guard << " */" << endl;
 	fHpp << endl;
 
@@ -93,29 +90,34 @@ int main(int argc, char *argv[])
 
 		ifstream fIn(nameIn, ios::binary);
 		vector<unsigned char> bufIn(istreambuf_iterator<char>(fIn), {});
+		vector<unsigned char>::iterator iter;
 
 		nameIn = nameIn.substr(nameIn.rfind("/") + 1);
 		replace(nameIn.begin(), nameIn.end(), '.', '_');
 		replace(nameIn.begin(), nameIn.end(), '-', '_');
 
-		fCpp << "const unsigned char " << nameIn << "[] = " << endl;
+		fCpp << "const unsigned char " << nameIn << "[] =" << endl;
 		fCpp << "{" << endl;
 
 		int dataIdx = 0;
-		for (vector<unsigned char>::iterator iter = bufIn.begin(); iter != bufIn.end(); ++iter)
-		{
-			if (dataIdx >= 16)
-			{
-				fCpp << endl;
-				dataIdx = 0;
-			}
 
-			fCpp << "0x" << hex << setw(2) << setfill('0') << ((int)*iter) << ", ";
+		iter = bufIn.begin();
+		for (; iter != bufIn.end(); ++iter)
+		{
+			fCpp << "0x" << hex << setw(2) << setfill('0') << ((int)*iter) << ",";
 
 			++dataIdx;
+			if (dataIdx < 16)
+			{
+				fCpp << " ";
+				continue;
+			}
+
+			fCpp << endl;
+			dataIdx = 0;
 		}
 
-		fCpp << "0, ";
+		fCpp << "0,";
 		fCpp << endl;
 		fCpp << "};" << endl;
 		fCpp << endl;
@@ -124,7 +126,9 @@ int main(int argc, char *argv[])
 		fCpp << endl;
 	}
 
-	fCpp << "const Resource resources[] =" << endl;
+	fCpp << "const Resource ";
+	fCpp << nameOut;
+	fCpp << "[] =" << endl;
 	fCpp << "{" << endl;
 
 	for (int i = 2; i < argc; ++i)
@@ -141,7 +145,9 @@ int main(int argc, char *argv[])
 	fCpp << "};" << endl;
 	fCpp << endl;
 
-	fCpp << "const Resource *pResourcesEnd = resources + sizeof(resources) / sizeof(resources[0]);" << endl;
+	fCpp << "const Resource *p";
+	fCpp << namePtr;
+	fCpp << "End = resources + sizeof(resources) / sizeof(resources[0]);" << endl;
 	fCpp << endl;
 
 	return 0;
