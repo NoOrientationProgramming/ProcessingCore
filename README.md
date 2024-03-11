@@ -137,22 +137,18 @@ Success Supervising::process()
 	Success success;
 
 	// Wait
-
 	success = mpChild->success();
 	if (success == Pending)
 		return Pending;
 
 	// Check error
-
 	if (success != Positive)
 		return procErrLog(-1, "my child process failed");
 
 	// Consume result
-
 	mData = mpChild->data();
 
 	// Repel
-
 	repel(mpChild);
 	mpChild = NULL;
 
