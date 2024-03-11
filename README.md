@@ -2,16 +2,33 @@
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
 <!-- ![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic) -->
 
-These files provide a basic structure for almost all applications as well as a powerful debugging system.
+These files provide a basic structure for almost all applications and a powerful debugging system.
 
-But still: Your coding style is not restricted in any way! Similar to LaTeX: Focus on your content, spend less time on structural topics and debugging.
+However, your coding style is not restricted in any way! Similar to LaTeX, focus on your content and spend less time on structural topics and debugging.
+
+## Advantages
+
+- **Reduced boilerplate code**. Just add lines of code, which are beneficial for the tasks
+- **Relieved memory allocations**. Lifetime of requested memory very often matches the lifetime of the task itself, which is monitored. Therefore reducing the risk of memory leaks!
+- **Application level debugging**. Spend less time on searching for strange bugs due to the improved overview of the system. Just focus on your tasks
+- **Increased productivity**. A long-term relaxed and still speedy coding experience for *everyone*
+- **Quality control**. Your code can be characterized and rated instead of calling it "clean" or "dirty"
+- **Simple and useful documentation**. The structure allows for the creation of a visual description of your project which can be understood by tech and non-tech people.
+- **Increased maintainability**. You get an easy-to-read code at any time. This remains true regardless of the size or complexity of the system. Use a set of simple instructions to reach the target architecture starting from the current state
+- **Big support range**. Starting from small to very complex systems
+
+## Requirements
+
+- C++ standard as low as C++11 can be used
+- On Microcontrollers: Minimum of 32k flash memory
+- Nothing else
 
 ## Status
 
 - Mature code created in 2018
 - Finished
 
-## Core Advantages
+## Intro
 
 When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
@@ -44,7 +61,7 @@ Success Supervising::initialize()
 }
 ```
 
-After that you can connect to three different TCP channels.
+After that, you can connect to three different TCP channels.
 
 **Optionally**: Each process can show some useful stuff by creating a `processInfo()` function. The rest of your code is unaffected.
 
@@ -77,7 +94,7 @@ What is happening. But much more important: **Who** is doing what and when
 
 ### Channel 3 - Command interface
 
-You want to trigger something? Just register a command **anywhere** in your application.
+Do you want to trigger something? Just register a command **anywhere** in your application.
 
 ```cpp
 void yourCommand(char *pArgs, char *pBuf, char *pBufEnd)
@@ -115,7 +132,7 @@ Success Supervising::initialize()
 
 ## Learn how to use it
 
-The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to enter this wonderful (recursive) world ..
+The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to delve into this wonderful (recursive) world ..
 
 ## How to add to your project
 
