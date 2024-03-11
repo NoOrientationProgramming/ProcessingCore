@@ -8,14 +8,14 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 
 ## Advantages
 
-- **Reduced boilerplate code**. Just add lines of code, which are beneficial for the tasks
-- **Relieved memory allocations**. Lifetime of requested memory very often matches the lifetime of the task itself, which is monitored. Therefore reducing the risk of memory leaks!
-- **Application level debugging**. Spend less time on searching for strange bugs due to the improved overview of the system. Just focus on your tasks
-- **Increased productivity**. A long-term relaxed and still speedy coding experience for *everyone*
-- **Quality control**. Your code can be characterized and rated instead of calling it "clean" or "dirty"
-- **Simple and useful documentation**. The structure allows for the creation of a visual description of your project which can be understood by tech and non-tech people.
-- **Increased maintainability**. You get an easy-to-read code at any time. This remains true regardless of the size or complexity of the system. Use a set of simple instructions to reach the target architecture starting from the current state
-- **Big support range**. Starting from small to very complex systems
+- **Reduced boilerplate code** > Just add lines of code, which are beneficial for the tasks
+- **Relieved memory allocations** > Lifetime of requested memory very often matches the lifetime of the task itself, which is monitored. Therefore reducing the risk of memory leaks!
+- **Application level debugging** > Spend less time on searching for strange bugs due to the improved overview of the system. Just focus on your tasks
+- **Increased productivity** > A long-term relaxed and still speedy coding experience for *everyone*
+- **Quality control** > Your code can be characterized and rated instead of calling it "clean" or "dirty"
+- **Simple and useful documentation** > The structure allows for the creation of a visual description of your project which can be understood by tech and non-tech people.
+- **Increased maintainability** > You get an easy-to-read code at any time. This remains true regardless of the size or complexity of the system. Use a set of simple instructions to reach the target architecture starting from the current state
+- **Big support range** > Starting from small to very complex systems
 
 ## Requirements
 
