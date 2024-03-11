@@ -131,6 +131,10 @@ Here we already see an important distinction between functions and processes. A 
 
 The abstract core class solely implements the handling of success. You are free to choose the result a specific process delivers.
 
+Another difference between functions and processes is that the result of functions is passed directly and immediately by the compiler. The function can then be dismantled immediately. All of this is accomplished by the compiler and with the help of the computer system's stack. However, with processes, the user decides when the data is processed. For this fundamental reason, the user must also take care of initiating the destruction procedure at least by themselves. Here too, the abstract process class helps us to properly shut down the specific user process. One last important piece of information is that processes cannot be implemented through the usual stack processing, as the lifespan of a process can be arbitrarily long. Therefore, all processes reside on the heap.
+
+If the lifespan of the required data matches that of a process, then we have the advantage that the data does not need to be separately requested using malloc(). This is usually the case and reduces the risk of memory leaks, thereby making software development safer in general.
+
 ```cpp
 Success Supervising::process()
 {
@@ -210,3 +214,11 @@ The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials)
 ## How to add to your project
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
+
+## FAQ
+
+Q: Isn't this some kind of operating system?  
+A: No. There is no such thing as an operating system. Every piece of software should be structured this way.
+
+Q: Aren't these micro services?  
+A: Not exactly. These processes reside in the application itself.
