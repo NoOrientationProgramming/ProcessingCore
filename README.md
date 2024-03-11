@@ -30,6 +30,8 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 
 ## Intro
 
+The key element consists of a single file named Processing.cpp. This file contains an abstract C++ class, which handles the processing of tasks within larger systems. The class serves as the foundation for implementing concrete user processes.
+
 When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
 There is no low- or high-level code. Just **one essential looped function**: `process()` .. everywhere
