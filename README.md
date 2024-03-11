@@ -32,6 +32,8 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 
 The key element consists of a single file named Processing.cpp. This file contains an abstract C++ class, which handles the processing of tasks within larger systems. The class serves as the foundation for implementing concrete user processes.
 
+=> TODO: Core picture
+
 When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
 There is no low- or high-level code. Just **one essential looped function**: `process()` .. everywhere
@@ -211,9 +213,16 @@ The code of this repository is already very mature and has been successfully use
 
 The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to delve into this wonderful (recursive) world ..
 
-## How to add to your project
+### How to add to your project
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
+
+## Why is recursion so important?
+
+=> TODO: Recursion picture
+
+- Always the same => Realizes the KISS prinziple
+- Code is self-similar => Refactoring is done by just moving code around => No structural changes needed.
 
 ## FAQ
 
