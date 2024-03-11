@@ -221,4 +221,4 @@ Q: Isn't this some kind of operating system?
 A: No. There is no such thing as an operating system. Every piece of software should be structured this way.
 
 Q: Aren't these micro services?  
-A: Not exactly. These processes reside in the application itself.
+A: Not exactly. These processes reside in the application itself. They are more similar to Go-/co-routines, tasklets or async-wait structures.
