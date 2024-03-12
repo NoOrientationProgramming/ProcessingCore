@@ -156,6 +156,7 @@ private:
 #endif
 	uint16_t mIdxColCursor;
 	uint16_t mIdxColLineEnd;
+	char mBufOut[cSizeBufCmdOut];
 
 	/* static functions */
 	static uint32_t millis();

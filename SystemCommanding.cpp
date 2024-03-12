@@ -632,11 +632,10 @@ void SystemCommanding::commandExecute()
 		procInfLog("arguments       '%s'", pArgs);
 #endif
 	list<SystemCommand>::const_iterator iter;
-	char bufOut[cSizeBufCmdOut];
-	size_t lenBuf = sizeof(bufOut) - 1;
+	size_t lenBuf = sizeof(mBufOut) - 1;
 	string msg;
 
-	bufOut[0] = 0;
+	mBufOut[0] = 0;
 
 	iter = cmds.begin();
 	for (; iter != cmds.end(); ++iter)
@@ -645,10 +644,10 @@ void SystemCommanding::commandExecute()
 			strcmp(pEdit, iter->shortcut.c_str()))
 			continue;
 
-		iter->func(pArgs, bufOut, bufOut + lenBuf);
-		bufOut[lenBuf] = 0;
+		iter->func(pArgs, mBufOut, mBufOut + lenBuf);
+		mBufOut[lenBuf] = 0;
 
-		lfToCrLf(bufOut, msg);
+		lfToCrLf(mBufOut, msg);
 
 		if (msg.size() && msg.back() != '\n')
 			msg += "\r\n";
