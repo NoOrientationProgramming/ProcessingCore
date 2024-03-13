@@ -25,5 +25,11 @@ config PROC_INFO_BUFFER_SIZE
 	help
 		Number of bytes for process info buffer
 
+config CMD_SIZE_BUFFER_OUT
+	int "Command output buffer size"
+	default "2017"
+	help
+		Maximum size for command output messages
+
 endmenu
 
