@@ -21,7 +21,7 @@ config PROC_HAVE_LIB_STD_CPP
 
 config PROC_INFO_BUFFER_SIZE
 	int "Process info buffer size"
-	default "1024"
+	default "1021"
 	help
 		Number of bytes for process info buffer
 
