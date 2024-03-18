@@ -32,7 +32,11 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 
 The key element consists of a single file named Processing.cpp. This file contains an abstract C++ class, which handles the processing of tasks within larger systems. The class serves as the foundation for implementing concrete user processes.
 
-=> TODO: Core picture
+<p align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/system/core-dependencies.svg" style="max-width:100%"/>
+  </kbd>
+</p>
 
 When using the Processing() class the entire system structure is recursive. This has a big and very beneficial impact during development, runtime, documentation and communication with other team members independent of their background.
 
