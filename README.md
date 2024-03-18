@@ -23,7 +23,6 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 
 - C++ standard as low as C++11 can be used
 - On Microcontrollers: Minimum of 32k flash memory
-- Nothing else
 
 ## Status
 
