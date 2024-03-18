@@ -51,6 +51,12 @@ The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials)
 
 `git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
 
+### Use Templates!
+
+To implement a new process you can use the provided shell scripts on linux: [cppprocessing.sh](https://github.com/NoOrientationProgramming/ProcessingCore/blob/main/tools/cppprocessing.sh) / [cppprocessing_simple.sh](https://github.com/NoOrientationProgramming/ProcessingCore/blob/main/tools/cppprocessing_simple.sh)
+
+Or just create your own..
+
 ## Intro
 
 The key element consists of a single file named Processing.cpp. This file contains an abstract C++ class, which handles the processing of tasks within larger systems. The class serves as the foundation for implementing concrete user processes.
