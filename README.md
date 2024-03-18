@@ -223,10 +223,15 @@ The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials)
 
 ## Why is recursion so important?
 
-=> TODO: Recursion picture
-
+TODO
 - Always the same => Realizes the KISS prinziple
-- Code is self-similar => Refactoring is done by just moving code around => No structural changes needed.
+- Code is self-similar => Refactoring is done by just moving code around => No structural changes needed
+
+<p align="center">
+  <kbd>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/system/recursion.svg" style="max-width:100%"/>
+  </kbd>
+</p>
 
 ## FAQ
 
