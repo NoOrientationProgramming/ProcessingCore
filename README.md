@@ -30,6 +30,28 @@ However, your coding style is not restricted in any way! Similar to LaTeX, focus
 - Mature code created in 2018
 - Finished
 
+## Supported Targets
+
+The code of this repository is already very mature and has been successfully used on the following systems
+
+- Linux / Raspberry Pi
+  - GCC
+- Windows
+  - MinGW
+  - MSVC
+- ESP32
+- FreeBSD
+- STM32G030 - Only Processing()
+  - Bare Metal
+
+## Learn how to use it
+
+The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to delve into this wonderful (recursive) world ..
+
+### How to add to your project
+
+`git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
+
 ## Intro
 
 The key element consists of a single file named Processing.cpp. This file contains an abstract C++ class, which handles the processing of tasks within larger systems. The class serves as the foundation for implementing concrete user processes.
@@ -200,28 +222,6 @@ Success Supervising::initialize()
 	return Positive;
 }
 ```
-
-## Supported Targets
-
-The code of this repository is already very mature and has been successfully used on the following systems
-
-- STM32G030
-  - Bare Metal
-- ESP32
-- Linux / Raspberry Pi
-  - GCC
-- FreeBSD
-- Windows
-  - MinGW
-  - MSVC
-
-## Learn how to use it
-
-The [Tutorials](https://github.com/NoOrientationProgramming/ProcessingTutorials) provide more information on how to delve into this wonderful (recursive) world ..
-
-### How to add to your project
-
-`git submodule add https://github.com/NoOrientationProgramming/ProcessingCore.git`
 
 ## Why is recursion so important?
 
