@@ -1,6 +1,8 @@
-
-![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic)
-<!-- ![Lines of code](https://img.shields.io/tokei/lines/github/NoOrientationProgramming/ProcessingCore?style=plastic) -->
+[![Standard](https://img.shields.io/badge/standard-C%2B%2B11-blue.svg?style=plastic&logo=c%2B%2B)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic&color=blue)
+[![Linux Native](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/linux-native.yml/badge.svg?branch=main)](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/linux-native.yml)
+[![Cross arm & mingw](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/arm-and-mingw.yml/badge.svg?branch=main)](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/arm-and-mingw.yml)
+[![Windows Native](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/windows-native.yml/badge.svg?branch=main)](https://github.com/NoOrientationProgramming/ProcessingBuildTest/actions/workflows/windows-native.yml)
 
 These files provide a basic structure for almost all applications and a powerful debugging system.
 
