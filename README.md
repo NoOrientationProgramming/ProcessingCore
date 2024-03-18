@@ -229,7 +229,7 @@ TODO
 
 <p align="center">
   <kbd>
-    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/system/recursion.svg" style="max-width:100%"/>
+    <img src="https://raw.githubusercontent.com/NoOrientationProgramming/ProcessingTutorials/main/doc/system/recursion.svg" style="width:700px;max-width:100%"/>
   </kbd>
 </p>
 
