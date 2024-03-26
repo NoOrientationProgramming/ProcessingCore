@@ -916,7 +916,8 @@ void Processing::maxChildrenSet(uint16_t cnt)
 }
 #endif
 
-DriverMode Processing::driver() const	{ return mDriver; }
+DriverMode Processing::driver()	const { return mDriver;		}
+uint8_t Processing::levelDriver()	const { return mLevelDriver;	}
 
 size_t Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 {

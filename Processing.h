@@ -184,6 +184,7 @@ protected:
 	void maxChildrenSet(uint16_t cnt);
 #endif
 	DriverMode driver() const;
+	uint8_t levelDriver() const;
 
 	static size_t procId(char *pBuf, char *pBufEnd, const Processing *pProc);
 	static size_t progressStr(char *pBuf, char *pBufEnd, const int val, const int maxVal);
