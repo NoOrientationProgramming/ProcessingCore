@@ -748,7 +748,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	}
 	else if (driver == DrivenByExternalDriver)
 	{
-		procDbgLog(0, "external driver is used for %s", childId);
+		procDbgLog(LOG_LVL, "external driver is used for %s", childId);
 		++pChild->mLevelDriver;
 	} else
 		procDbgLog(LOG_LVL, "using parent as driver for %s", childId);
