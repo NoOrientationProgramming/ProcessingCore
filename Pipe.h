@@ -272,7 +272,6 @@ public:
 
 		entry = mEntries.front();
 		mEntries.pop();
-
 		--mSize;
 
 		return true;
@@ -343,6 +342,7 @@ public:
 #endif
 				entry = mEntries.front();
 				mEntries.pop();
+				--mSize;
 			}
 
 			/* transfer entry to all children */
