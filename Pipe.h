@@ -323,9 +323,9 @@ public:
 
 			/* are all children ready for this next entry? */
 			iter = mChildList.begin();
-			while (iter != mChildList.end())
+			for (; iter != mChildList.end(); ++iter)
 			{
-				if (!(*iter++)->isFull())
+				if (!(*iter)->isFull())
 					continue;
 
 				wouldBlock = true;
@@ -347,8 +347,8 @@ public:
 
 			/* transfer entry to all children */
 			iter = mChildList.begin();
-			while (iter != mChildList.end())
-				(*iter++)->commit(entry.particle, entry.t1, entry.t2);
+			for (; iter != mChildList.end(); ++iter)
+				(*iter)->commit(entry.particle, entry.t1, entry.t2);
 
 			somethingPushed = true;
 		}
@@ -357,12 +357,10 @@ public:
 
 		/* inform children that we will no longer send particles */
 		iter = mChildList.begin();
-		while (iter != mChildList.end())
+		for (; iter != mChildList.end(); ++iter)
 		{
 			if (nothingLeft)
 				(*iter)->lastSamplesSet();
-
-			++iter;
 		}
 
 		return somethingPushed;
