@@ -456,10 +456,13 @@ private:
 #if DEBUG_PIPE
 			std::cout << this << "->parentRemove(" << pParent << ") - 1: " << *iter << std::endl;
 #endif
-			if (*iter++ != pParent)
+			if (*iter != pParent)
+			{
+				++iter;
 				continue;
+			}
 
-			mParentList.erase(iter);
+			iter = mParentList.erase(iter);
 #if DEBUG_PIPE
 			std::cout << this << "->parentRemove(" << pParent << ") - 2" << std::endl;
 #endif
