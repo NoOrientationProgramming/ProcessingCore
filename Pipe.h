@@ -221,6 +221,25 @@ public:
 		childRemove(pChild);
 	}
 
+	void parentDisconnect()
+	{
+#if CONFIG_PROC_HAVE_DRIVERS
+		Guard lock(mParentListMtx);
+#endif
+		QueueIter iter = mParentList.begin();
+		while (iter != mParentList.end())
+		{
+			(*iter)->childRemove(this);
+#if DEBUG_PIPE
+			std::cout << this << "->parentDisconnect(" << pParent << ") - 1: " << *iter << std::endl;
+#endif
+			iter = mParentList.erase(iter);
+#if DEBUG_PIPE
+			std::cout << this << "->parentDisconnect(" << pParent << ") - 2" << std::endl;
+#endif
+		}
+	}
+
 	T front()
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
