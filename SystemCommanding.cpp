@@ -1541,17 +1541,17 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 
 		dInfo("  |");
 
-		for (i = 0; i < lenPrinted; ++i, ++pLine, ++pBuf)
+		for (i = 0; i < lenPrinted; ++i, ++pLine)
 		{
 			char c = *pLine;
 
 			if (c < 32 || c > 126)
 			{
-				*pBuf = '.';
+				dInfo(".");
 				continue;
 			}
 
-			*pBuf = c;
+			dInfo("%c", c);
 		}
 
 		dInfo("|\n");
