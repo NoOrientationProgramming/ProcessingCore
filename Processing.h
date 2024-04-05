@@ -308,15 +308,8 @@ inline int16_t logEntryCreateDummy(
 #define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
-#define dInfo(m, ...) \
-{ \
-	int res = snprintf(pBuf, pBufEnd - pBuf, m, ##__VA_ARGS__); \
-	if (res >= 0) \
-	{ \
-		pBuf += res; \
-		pBuf = pBuf > pBufEnd ? pBufEnd : pBuf; \
-	} \
-}
+#define dInfoDebugPrefix
+#define dInfo(m, ...)					dInfoDebugPrefix pBuf = (pBuf += snprintf(pBuf, pBufEnd - pBuf, m, ##__VA_ARGS__), pBuf > pBufEnd ? pBufEnd : pBuf)
 #else
 inline void dInfoDummy(char *pBuf, char *pBufEnd, const char *msg, ...)
 {
