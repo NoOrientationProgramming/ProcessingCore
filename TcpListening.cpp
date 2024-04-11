@@ -258,7 +258,7 @@ string TcpListening::errnoToStr(int num)
 #if defined(_WIN32)
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__APPLE__)
 	int res;
 	res = ::strerror_r(num, buf, len);
 	if (res)
