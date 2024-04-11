@@ -635,7 +635,7 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
-void Processing::internalDriveFuncSet(InternalDriverFunc pFct)
+void Processing::funcInternalDriveSet(InternalDriverFunc pFct)
 {
 	pFctInternalDrive = pFct;
 }

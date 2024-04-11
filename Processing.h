@@ -160,7 +160,7 @@ public:
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 #if CONFIG_PROC_HAVE_DRIVERS
-	static void internalDriveFuncSet(InternalDriverFunc pFct);
+	static void funcInternalDriveSet(InternalDriverFunc pFct);
 	static void numBurstInternalDriveSet(size_t numBurst);
 #endif
 
