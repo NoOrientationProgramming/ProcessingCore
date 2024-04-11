@@ -93,6 +93,7 @@ GlobDestructorFunc *Processing::pGlobalDestructors = NULL;
 
 #if CONFIG_PROC_HAVE_DRIVERS
 InternalDriverFunc Processing::pFctInternalDrive = Processing::internalDrive;
+size_t Processing::numBurstInternalDrive = 13;
 #endif
 
 /* Literature
@@ -638,6 +639,14 @@ void Processing::internalDriveFuncSet(InternalDriverFunc pFct)
 {
 	pFctInternalDrive = pFct;
 }
+
+void Processing::numBurstInternalDriveSet(size_t numBurst)
+{
+	if (!numBurst)
+		return;
+
+	numBurstInternalDrive = numBurst;
+}
 #endif
 
 // This area is used by the concrete processes
@@ -1062,9 +1071,13 @@ void Processing::parentalDrive(Processing *pChild)
 #if CONFIG_PROC_HAVE_DRIVERS
 void Processing::internalDrive(Processing *pChild)
 {
+	size_t i;
+
 	while (1)
 	{
-		pChild->treeTick();
+		for (i = 0; i < numBurstInternalDrive; ++i)
+			pChild->treeTick();
+
 		this_thread::sleep_for(chrono::milliseconds(2));
 
 		if (pChild->progress())

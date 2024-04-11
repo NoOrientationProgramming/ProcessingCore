@@ -161,6 +161,7 @@ public:
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDriveFuncSet(InternalDriverFunc pFct);
+	static void numBurstInternalDriveSet(size_t numBurst);
 #endif
 
 protected:
@@ -238,6 +239,7 @@ private:
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDrive(Processing *pChild);
 	static InternalDriverFunc pFctInternalDrive;
+	static size_t numBurstInternalDrive;
 #endif
 	static uint8_t showAddressInId;
 	static uint8_t disableTreeDefault;
