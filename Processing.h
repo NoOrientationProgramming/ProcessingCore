@@ -127,6 +127,8 @@ enum SuccessState
 	Positive = 1
 };
 
+class Processing;
+typedef void (*InternalDriverFunc)(Processing *);
 typedef void (*GlobDestructorFunc)();
 
 class Processing
@@ -157,6 +159,9 @@ public:
 #endif
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
+#if CONFIG_PROC_HAVE_DRIVERS
+	static void internalDriveFuncSet(InternalDriverFunc pFct);
+#endif
 
 protected:
 	// This area is used by the concrete processes
@@ -232,6 +237,7 @@ private:
 	static void parentalDrive(Processing *pChild);
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDrive(Processing *pChild);
+	static InternalDriverFunc pFctInternalDrive;
 #endif
 	static uint8_t showAddressInId;
 	static uint8_t disableTreeDefault;

@@ -91,6 +91,10 @@ GlobDestructorFunc *Processing::pGlobalDestructors = NULL;
 #endif
 #endif
 
+#if CONFIG_PROC_HAVE_DRIVERS
+InternalDriverFunc Processing::pFctInternalDrive = Processing::internalDrive;
+#endif
+
 /* Literature
  * - http://man7.org/linux/man-pages/man5/proc.5.html
  * - https://stackoverflow.com/questions/6261201/how-to-find-memory-leak-in-a-c-code-project
@@ -629,6 +633,13 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 }
 #endif
 
+#if CONFIG_PROC_HAVE_DRIVERS
+void Processing::internalDriveFuncSet(InternalDriverFunc pFct)
+{
+	pFctInternalDrive = pFct;
+}
+#endif
+
 // This area is used by the concrete processes
 
 Processing::Processing(const char *name)
@@ -736,7 +747,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 #if CONFIG_PROC_HAVE_DRIVERS
 		++pChild->mLevelDriver;
 
-		pChild->mpThread = new (std::nothrow) std::thread(&Processing::internalDrive, pChild);
+		pChild->mpThread = new (std::nothrow) std::thread(pFctInternalDrive, pChild);
 		if (!pChild->mpThread)
 		{
 			procErrLog(-3, "could not allocate internal driver for child");
