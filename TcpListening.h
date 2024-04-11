@@ -31,6 +31,7 @@
 #ifndef TCP_LISTENING_H
 #define TCP_LISTENING_H
 
+#include <string>
 #include <list>
 
 #ifdef _WIN32
