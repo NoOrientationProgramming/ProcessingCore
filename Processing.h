@@ -160,8 +160,11 @@ public:
 	static void showAddressInIdSet(uint8_t val) { showAddressInId = val; }
 	static void disableTreeDefaultSet(uint8_t val) { disableTreeDefault = val; }
 #if CONFIG_PROC_HAVE_DRIVERS
-	static void funcInternalDriveSet(InternalDriverFunc pFct);
+	static void sleepUsInternalDriveSet(size_t delayUs);
+	static void sleepInternalDriveSet(std::chrono::microseconds delay);
+	static void sleepInternalDriveSet(std::chrono::milliseconds delay);
 	static void numBurstInternalDriveSet(size_t numBurst);
+	static void funcInternalDriveSet(InternalDriverFunc pFct);
 #endif
 
 protected:
@@ -236,8 +239,10 @@ private:
 	static void parentalDrive(Processing *pChild);
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDrive(Processing *pChild);
-	static InternalDriverFunc pFctInternalDrive;
+
+	static size_t sleepInternalDriveUs;
 	static size_t numBurstInternalDrive;
+	static InternalDriverFunc pFctInternalDrive;
 #endif
 	static uint8_t showAddressInId;
 	static uint8_t disableTreeDefault;

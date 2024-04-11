@@ -92,8 +92,9 @@ GlobDestructorFunc *Processing::pGlobalDestructors = NULL;
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
-InternalDriverFunc Processing::pFctInternalDrive = Processing::internalDrive;
+size_t Processing::sleepInternalDriveUs = 2000;
 size_t Processing::numBurstInternalDrive = 13;
+InternalDriverFunc Processing::pFctInternalDrive = Processing::internalDrive;
 #endif
 
 /* Literature
@@ -635,9 +636,19 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
-void Processing::funcInternalDriveSet(InternalDriverFunc pFct)
+void Processing::sleepUsInternalDriveSet(size_t delayUs)
 {
-	pFctInternalDrive = pFct;
+	sleepInternalDriveUs = delayUs;
+}
+
+void Processing::sleepInternalDriveSet(chrono::microseconds delay)
+{
+	sleepInternalDriveUs = delay.count();
+}
+
+void Processing::sleepInternalDriveSet(chrono::milliseconds delay)
+{
+	sleepInternalDriveUs = delay.count() * 1000;
 }
 
 void Processing::numBurstInternalDriveSet(size_t numBurst)
@@ -646,6 +657,11 @@ void Processing::numBurstInternalDriveSet(size_t numBurst)
 		return;
 
 	numBurstInternalDrive = numBurst;
+}
+
+void Processing::funcInternalDriveSet(InternalDriverFunc pFct)
+{
+	pFctInternalDrive = pFct;
 }
 #endif
 
@@ -1078,7 +1094,8 @@ void Processing::internalDrive(Processing *pChild)
 		for (i = 0; i < numBurstInternalDrive; ++i)
 			pChild->treeTick();
 
-		this_thread::sleep_for(chrono::milliseconds(2));
+		if (sleepInternalDriveUs)
+			this_thread::sleep_for(chrono::microseconds(sleepInternalDriveUs));
 
 		if (pChild->progress())
 			continue;
