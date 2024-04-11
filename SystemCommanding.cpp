@@ -126,8 +126,6 @@ const KeyUser keyEsc          = 0x1B;
 const KeyUser keyCtrlC        = 0x03;
 const KeyUser keyCtrlD        = 0x04;
 const KeyUser keyTab          = 0x09;
-const KeyUser keyHelp         = '?';
-const KeyUser keyOpt          = '=';
 
 enum KeyExtensions
 {
