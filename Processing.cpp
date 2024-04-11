@@ -712,6 +712,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	pChild->mLevelDriver = mLevelDriver;
 	pChild->mStatParent |= PsbParStarted;
 
+	// Add process to child list
 	procDbgLog(LOG_LVL, "adding %s to child list", childId);
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -728,6 +729,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	}
 	procDbgLog(LOG_LVL, "adding %s to child list: done", childId);
 
+	// Optionally: Create and start new driver
 	if (driver == DrivenByNewInternalDriver)
 	{
 		procDbgLog(LOG_LVL, "creating new internal driver for %s", childId);
