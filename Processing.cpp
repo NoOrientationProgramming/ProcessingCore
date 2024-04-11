@@ -638,17 +638,21 @@ void *Processing::memcpy(void *to, const void *from, size_t cnt)
 #if CONFIG_PROC_HAVE_DRIVERS
 void Processing::sleepUsInternalDriveSet(size_t delayUs)
 {
+#if defined(__linux__) || defined(__FreeBSD__) || defined(_WIN32)
+	if (!delayUs)
+		wrnLog("Sleep time for internal drivers set to zero => Busy loop");
+#endif
 	sleepInternalDriveUs = delayUs;
 }
 
 void Processing::sleepInternalDriveSet(chrono::microseconds delay)
 {
-	sleepInternalDriveUs = delay.count();
+	sleepUsInternalDriveSet(delay.count());
 }
 
 void Processing::sleepInternalDriveSet(chrono::milliseconds delay)
 {
-	sleepInternalDriveUs = delay.count() * 1000;
+	sleepUsInternalDriveSet(delay.count() * 1000);
 }
 
 void Processing::numBurstInternalDriveSet(size_t numBurst)
