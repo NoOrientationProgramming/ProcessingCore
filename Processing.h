@@ -217,12 +217,10 @@ private:
 	Processing **childElemErase(Processing **pChildListElem);
 	Processing **mpChildList;
 #endif
-
 #if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mChildListMtx;
 	std::thread *mpThread;
 #endif
-
 	Success mSuccess;
 	uint16_t mNumChildren;
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
