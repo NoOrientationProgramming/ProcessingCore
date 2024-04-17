@@ -127,9 +127,10 @@ enum SuccessState
 	Positive = 1
 };
 
-class Processing;
-typedef void (*InternalDriverFunc)(Processing *);
-typedef void (*GlobDestructorFunc)();
+typedef void (*FuncGlobDestruct)();
+typedef void (*FuncInternalDrive)(void *pProc);
+typedef void * /* pDriver */ (*FuncDriverInternalCreate)(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver);
+typedef void (*FuncDriverInternalCleanUp)(void *pDriver);
 
 class Processing
 {
@@ -148,11 +149,13 @@ public:
 	bool shutdownDone() const;
 
 	size_t processTreeStr(char *pBuf, char *pBufEnd, bool detailed = true, bool colored = false);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	void configDriverSet(void *pConfigDriver);
+#endif
 	static void undrivenSet(Processing *pChild);
 	static void destroy(Processing *pChild);
 	static void applicationClose();
-	static void globalDestructorRegister(GlobDestructorFunc globDestr);
+	static void globalDestructorRegister(FuncGlobDestruct globDestr);
 #if !CONFIG_PROC_HAVE_LIB_STD_C
 	static const char *strrchr(const char *x, char y);
 	static void *memcpy(void *to, const void *from, size_t cnt);
@@ -164,7 +167,10 @@ public:
 	static void sleepInternalDriveSet(std::chrono::microseconds delay);
 	static void sleepInternalDriveSet(std::chrono::milliseconds delay);
 	static void numBurstInternalDriveSet(size_t numBurst);
-	static void funcInternalDriveSet(InternalDriverFunc pFct);
+	static void internalDriveSet(FuncInternalDrive pFctDrive);
+	static void driverInternalCreateAndCleanUpSet(
+			FuncDriverInternalCreate pFctCreate,
+			FuncDriverInternalCleanUp pFctCleanUp);
 #endif
 
 protected:
@@ -222,7 +228,8 @@ private:
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mChildListMtx;
-	std::thread *mpThread;
+	void *mpDriver;
+	void *mpConfigDriver;
 #endif
 	Success mSuccess;
 	uint16_t mNumChildren;
@@ -238,20 +245,24 @@ private:
 
 	static void parentalDrive(Processing *pChild);
 #if CONFIG_PROC_HAVE_DRIVERS
-	static void internalDrive(Processing *pChild);
+	static void internalDrive(void *pProc);
+	static void *driverInternalCreate(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver);
+	static void driverInternalCleanUp(void *pDriver);
 
 	static size_t sleepInternalDriveUs;
 	static size_t numBurstInternalDrive;
-	static InternalDriverFunc pFctInternalDrive;
+	static FuncInternalDrive pFctInternalDrive;
+	static FuncDriverInternalCreate pFctDriverInternalCreate;
+	static FuncDriverInternalCleanUp pFctDriverInternalCleanUp;
 #endif
 	static uint8_t showAddressInId;
 	static uint8_t disableTreeDefault;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
-	static std::list<GlobDestructorFunc> globalDestructors;
+	static std::list<FuncGlobDestruct> globalDestructors;
 #else
-	static GlobDestructorFunc *pGlobalDestructors;
+	static FuncGlobDestruct *pGlobalDestructors;
 #endif
 #endif
 };
