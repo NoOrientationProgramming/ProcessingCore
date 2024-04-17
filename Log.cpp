@@ -80,8 +80,6 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mtxPrint);
 #endif
-	(void)filename;
-
 	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
 	if (!pBuf)
 		return code;
