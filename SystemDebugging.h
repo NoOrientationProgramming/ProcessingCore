@@ -137,7 +137,7 @@ private:
 	/* static functions */
 	static void procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd);
 	static void procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufEnd);
-	static void logEntryCreated(
+	static void entryLogCreate(
 			const int severity,
 			const char *filename,
 			const char *function,

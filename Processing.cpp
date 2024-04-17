@@ -85,16 +85,18 @@ uint8_t Processing::disableTreeDefault = CONFIG_PROC_DISABLE_TREE_DEFAULT;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
-list<GlobDestructorFunc> Processing::globalDestructors;
+list<FuncGlobDestruct> Processing::globalDestructors;
 #else
-GlobDestructorFunc *Processing::pGlobalDestructors = NULL;
+FuncGlobDestruct *Processing::pGlobalDestructors = NULL;
 #endif
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
 size_t Processing::sleepInternalDriveUs = 2000;
 size_t Processing::numBurstInternalDrive = 13;
-InternalDriverFunc Processing::pFctInternalDrive = Processing::internalDrive;
+FuncInternalDrive Processing::pFctInternalDrive = Processing::internalDrive;
+FuncDriverInternalCreate Processing::pFctDriverInternalCreate = Processing::driverInternalCreate;
+FuncDriverInternalCleanUp Processing::pFctDriverInternalCleanUp = Processing::driverInternalCleanUp;
 #endif
 
 /* Literature
@@ -506,22 +508,15 @@ void Processing::destroy(Processing *pChild)
 		dbgLog(LOG_LVL, "child %s deleting child list: done", childId);
 	}
 #endif
-
 #if CONFIG_PROC_HAVE_DRIVERS
-	if (pChild->mpThread)
+	if (pChild->mpDriver)
 	{
-		dbgLog(LOG_LVL, "thread join()");
-		if (pChild->mpThread->joinable())
-			pChild->mpThread->join();
-		dbgLog(LOG_LVL, "thread join(): done");
-
-		dbgLog(LOG_LVL, "thread delete()");
-		delete pChild->mpThread;
-		pChild->mpThread = NULL;
-		dbgLog(LOG_LVL, "thread delete(): done");
+		dbgLog(LOG_LVL, "driver cleanup");
+		pFctDriverInternalCleanUp(pChild->mpDriver);
+		pChild->mpDriver = NULL;
+		dbgLog(LOG_LVL, "driver cleanup: done");
 	}
 #endif
-
 	dbgLog(LOG_LVL, "child %s delete()", childId);
 	delete pChild;
 	dbgLog(LOG_LVL, "child %s delete(): done", childId);
@@ -536,14 +531,14 @@ void Processing::applicationClose()
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	dbgLog(LOG_LVL, "executing global destructors");
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
-	list<GlobDestructorFunc>::iterator iter = globalDestructors.begin();
+	list<FuncGlobDestruct>::iterator iter = globalDestructors.begin();
 
 	while (iter != globalDestructors.end())
 		(*iter++)();
 
 	globalDestructors.clear();
 #else
-	GlobDestructorFunc *pGlobDestrListElem = pGlobalDestructors;
+	FuncGlobDestruct *pGlobDestrListElem = pGlobalDestructors;
 
 	while (pGlobDestrListElem && *pGlobDestrListElem)
 		(*pGlobDestrListElem++)();
@@ -559,7 +554,7 @@ void Processing::applicationClose()
 	dbgLog(LOG_LVL, "closing application: done");
 }
 
-void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
+void Processing::globalDestructorRegister(FuncGlobDestruct globDestr)
 {
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 	dbgLog(LOG_LVL, "");
@@ -568,14 +563,13 @@ void Processing::globalDestructorRegister(GlobDestructorFunc globDestr)
 	globalDestructors.unique();
 	dbgLog(LOG_LVL, ": done");
 #else
-	GlobDestructorFunc *pGlobDestrListElem = NULL;
+	FuncGlobDestruct *pGlobDestrListElem = NULL;
 
 	if (!pGlobalDestructors)
 	{
 		size_t numDestrElements = CONFIG_PROC_NUM_MAX_GLOBAL_DESTRUCTORS + 1;
 
-		pGlobalDestructors = new (std::nothrow) GlobDestructorFunc[numDestrElements];
-
+		pGlobalDestructors = new (nothrow) FuncGlobDestruct[numDestrElements];
 		if (!pGlobalDestructors)
 		{
 			errLog(-1, "could not allocate global destructor list");
@@ -663,9 +657,23 @@ void Processing::numBurstInternalDriveSet(size_t numBurst)
 	numBurstInternalDrive = numBurst;
 }
 
-void Processing::funcInternalDriveSet(InternalDriverFunc pFct)
+void Processing::internalDriveSet(FuncInternalDrive pFctDrive)
 {
-	pFctInternalDrive = pFct;
+	if (!pFctDrive)
+		return;
+
+	pFctInternalDrive = pFctDrive;
+}
+
+void Processing::driverInternalCreateAndCleanUpSet(
+			FuncDriverInternalCreate pFctCreate,
+			FuncDriverInternalCleanUp pFctCleanUp)
+{
+	if (!pFctCreate || !pFctCleanUp)
+		return;
+
+	pFctDriverInternalCreate = pFctCreate;
+	pFctDriverInternalCleanUp = pFctCleanUp;
 }
 #endif
 
@@ -679,7 +687,8 @@ Processing::Processing(const char *name)
 	, mpChildList(NULL)
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
-	, mpThread(NULL)
+	, mpDriver(NULL)
+	, mpConfigDriver(NULL)
 #endif
 	, mSuccess(Pending)
 	, mNumChildren(0)
@@ -717,7 +726,7 @@ Processing::~Processing()
 {
 	procDbgLog(LOG_LVL, "~Processing()");
 #if CONFIG_PROC_HAVE_DRIVERS
-	procDbgLog(LOG_LVL, "mpThread = 0x%08X", mpThread);
+	procDbgLog(LOG_LVL, "mpDriver = 0x%08X", mpDriver);
 #endif
 }
 
@@ -741,7 +750,6 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 		return NULL;
 	}
 #endif
-
 	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 	procId(childId, childId + sizeof(childId), pChild);
 
@@ -772,25 +780,30 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	// Optionally: Create and start new driver
 	if (driver == DrivenByNewInternalDriver)
 	{
-		procDbgLog(LOG_LVL, "creating new internal driver for %s", childId);
 #if CONFIG_PROC_HAVE_DRIVERS
+		procDbgLog(LOG_LVL, "using new internal driver for %s", childId);
 		++pChild->mLevelDriver;
 
-		pChild->mpThread = new (std::nothrow) std::thread(pFctInternalDrive, pChild);
-		if (!pChild->mpThread)
-		{
-			procErrLog(-3, "could not allocate internal driver for child");
-			return NULL;
-		}
+		procDbgLog(LOG_LVL, "creating new internal driver");
+		pChild->mpDriver = pFctDriverInternalCreate(pFctInternalDrive, pChild, pChild->mpConfigDriver);
+		pChild->mpConfigDriver = NULL;
 
-		procDbgLog(LOG_LVL, "creating new internal driver for %s: done", childId);
+		if (!pChild->mpDriver)
+		{
+			procWrnLog("could not create internal driver. switching back to parental drive");
+
+			pChild->mDriver = DrivenByParent;
+			--pChild->mLevelDriver;
+		} else
+			procDbgLog(LOG_LVL, "creating new internal driver: done");
 #else
-		procWrnLog("can't create new internal driver because system has no drivers");
+		procWrnLog("system does not have internal drivers. switching back to parental drive");
+		pChild->mDriver = DrivenByParent;
 #endif
 	}
 	else if (driver == DrivenByExternalDriver)
 	{
-		procDbgLog(LOG_LVL, "external driver is used for %s", childId);
+		procDbgLog(LOG_LVL, "using external driver for %s", childId);
 		++pChild->mLevelDriver;
 	} else
 		procDbgLog(LOG_LVL, "using parent as driver for %s", childId);
@@ -961,6 +974,13 @@ void Processing::maxChildrenSet(uint16_t cnt)
 DriverMode Processing::driver()	const { return mDriver;		}
 uint8_t Processing::levelDriver()	const { return mLevelDriver;	}
 
+#if CONFIG_PROC_HAVE_DRIVERS
+void Processing::configDriverSet(void *pConfigDriver)
+{
+	mpConfigDriver = pConfigDriver;
+}
+#endif
+
 size_t Processing::procId(char *pBuf, char *pBufEnd, const Processing *pProc)
 {
 	char *pBufStart = pBuf;
@@ -1027,8 +1047,7 @@ Processing **Processing::childElemAdd(Processing *pChild)
 	{
 		size_t numChildElements = mNumChildrenMax + 1;
 
-		mpChildList = new (std::nothrow) Processing *[numChildElements];
-
+		mpChildList = new (nothrow) Processing *[numChildElements];
 		if (!mpChildList)
 		{
 			procErrLog(-2, "could not allocate child list");
@@ -1089,8 +1108,9 @@ void Processing::parentalDrive(Processing *pChild)
 }
 
 #if CONFIG_PROC_HAVE_DRIVERS
-void Processing::internalDrive(Processing *pChild)
+void Processing::internalDrive(void *pProc)
 {
+	Processing *pChild = (Processing *)pProc;
 	size_t i;
 
 	while (1)
@@ -1107,6 +1127,27 @@ void Processing::internalDrive(Processing *pChild)
 		undrivenSet(pChild);
 		break;
 	}
+}
+
+void *Processing::driverInternalCreate(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver)
+{
+	(void)pConfigDriver;
+	return new (nothrow) thread(pFctDrive, pProc);
+}
+
+void Processing::driverInternalCleanUp(void *pDriver)
+{
+	thread *pThread = (thread *)pDriver;
+
+	dbgLog(LOG_LVL, "thread join()");
+	if (pThread->joinable())
+		pThread->join();
+	dbgLog(LOG_LVL, "thread join(): done");
+
+	dbgLog(LOG_LVL, "thread delete()");
+	delete pThread;
+	pThread = NULL;
+	dbgLog(LOG_LVL, "thread delete(): done");
 }
 #endif
 

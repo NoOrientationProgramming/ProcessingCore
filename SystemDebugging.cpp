@@ -138,7 +138,7 @@ Success SystemDebugging::initialize()
 	start(mpLstEnv);
 #endif
 
-	pFctLogEntryCreatedSet(SystemDebugging::logEntryCreated);
+	entryLogCreateSet(SystemDebugging::entryLogCreate);
 
 	return Positive;
 }
@@ -481,7 +481,7 @@ void SystemDebugging::procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufE
 #endif
 }
 
-void SystemDebugging::logEntryCreated(
+void SystemDebugging::entryLogCreate(
 		const int severity,
 		const char *filename,
 		const char *function,

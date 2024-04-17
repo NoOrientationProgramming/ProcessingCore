@@ -127,9 +127,10 @@ enum SuccessState
 	Positive = 1
 };
 
-class Processing;
-typedef void (*InternalDriverFunc)(Processing *);
-typedef void (*GlobDestructorFunc)();
+typedef void (*FuncGlobDestruct)();
+typedef void (*FuncInternalDrive)(void *pProc);
+typedef void * /* pDriver */ (*FuncDriverInternalCreate)(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver);
+typedef void (*FuncDriverInternalCleanUp)(void *pDriver);
 
 class Processing
 {
@@ -148,11 +149,13 @@ public:
 	bool shutdownDone() const;
 
 	size_t processTreeStr(char *pBuf, char *pBufEnd, bool detailed = true, bool colored = false);
-
+#if CONFIG_PROC_HAVE_DRIVERS
+	void configDriverSet(void *pConfigDriver);
+#endif
 	static void undrivenSet(Processing *pChild);
 	static void destroy(Processing *pChild);
 	static void applicationClose();
-	static void globalDestructorRegister(GlobDestructorFunc globDestr);
+	static void globalDestructorRegister(FuncGlobDestruct globDestr);
 #if !CONFIG_PROC_HAVE_LIB_STD_C
 	static const char *strrchr(const char *x, char y);
 	static void *memcpy(void *to, const void *from, size_t cnt);
@@ -164,7 +167,10 @@ public:
 	static void sleepInternalDriveSet(std::chrono::microseconds delay);
 	static void sleepInternalDriveSet(std::chrono::milliseconds delay);
 	static void numBurstInternalDriveSet(size_t numBurst);
-	static void funcInternalDriveSet(InternalDriverFunc pFct);
+	static void internalDriveSet(FuncInternalDrive pFctDrive);
+	static void driverInternalCreateAndCleanUpSet(
+			FuncDriverInternalCreate pFctCreate,
+			FuncDriverInternalCleanUp pFctCleanUp);
 #endif
 
 protected:
@@ -222,7 +228,8 @@ private:
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
 	std::mutex mChildListMtx;
-	std::thread *mpThread;
+	void *mpDriver;
+	void *mpConfigDriver;
 #endif
 	Success mSuccess;
 	uint16_t mNumChildren;
@@ -238,20 +245,24 @@ private:
 
 	static void parentalDrive(Processing *pChild);
 #if CONFIG_PROC_HAVE_DRIVERS
-	static void internalDrive(Processing *pChild);
+	static void internalDrive(void *pProc);
+	static void *driverInternalCreate(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver);
+	static void driverInternalCleanUp(void *pDriver);
 
 	static size_t sleepInternalDriveUs;
 	static size_t numBurstInternalDrive;
-	static InternalDriverFunc pFctInternalDrive;
+	static FuncInternalDrive pFctInternalDrive;
+	static FuncDriverInternalCreate pFctDriverInternalCreate;
+	static FuncDriverInternalCleanUp pFctDriverInternalCleanUp;
 #endif
 	static uint8_t showAddressInId;
 	static uint8_t disableTreeDefault;
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
-	static std::list<GlobDestructorFunc> globalDestructors;
+	static std::list<FuncGlobDestruct> globalDestructors;
 #else
-	static GlobDestructorFunc *pGlobalDestructors;
+	static FuncGlobDestruct *pGlobalDestructors;
 #endif
 #endif
 };
@@ -264,7 +275,7 @@ private:
 #define __PROC_FILENAME__ (procStrrChr(__FILE__, '/') ? procStrrChr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
-typedef void (*LogEntryCreatedFct)(
+typedef void (*FuncEntryLogCreate)(
 			const int severity,
 			const char *filename,
 			const char *function,
@@ -274,7 +285,7 @@ typedef void (*LogEntryCreatedFct)(
 			const size_t len);
 
 void levelLogSet(int lvl);
-void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct);
+void entryLogCreateSet(FuncEntryLogCreate pFct);
 int16_t logEntryCreate(
 				const int severity,
 				const char *filename,
@@ -288,7 +299,7 @@ inline void levelLogSet(int lvl)
 {
 	(void)lvl;
 }
-#define pFctLogEntryCreatedSet(pFct)
+#define entryLogCreateSet(pFct)
 inline int16_t logEntryCreateDummy(
 				const int severity,
 				const char *filename,
@@ -307,16 +318,15 @@ inline int16_t logEntryCreateDummy(
 #define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __PROC_FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #endif
 
-#define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, m, ##__VA_ARGS__) : c)
-#define wrnLog(m, ...)					(genericLog(2, 0, m, ##__VA_ARGS__))
-#define infLog(m, ...)					(genericLog(3, 0, m, ##__VA_ARGS__))
-#define dbgLog(l, m, ...)				(genericLog(4 + l, 0, m, ##__VA_ARGS__))
+#define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__) : c)
+#define wrnLog(m, ...)					(genericLog(2, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define infLog(m, ...)					(genericLog(3, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define dbgLog(l, m, ...)				(genericLog(4 + l, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
 
-#define GLOBAL_PROC_LOG_LEVEL_OFFSET		0
-#define procErrLog(c, m, ...)				(errLog(c, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
-#define procWrnLog(m, ...)				(wrnLog("%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
-#define procInfLog(m, ...)				(infLog("%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
-#define procDbgLog(l, m, ...)				(dbgLog(GLOBAL_PROC_LOG_LEVEL_OFFSET + l, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procErrLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__) : c)
+#define procWrnLog(m, ...)				(genericLog(2, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procInfLog(m, ...)				(genericLog(3, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procDbgLog(l, m, ...)				(genericLog(4 + l, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
 #define dInfoDebugPrefix
