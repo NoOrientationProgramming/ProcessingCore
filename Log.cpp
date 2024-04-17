@@ -42,7 +42,7 @@
 using namespace std;
 using namespace chrono;
 
-typedef void (*LogEntryCreatedFct)(
+typedef void (*FuncEntryLogCreate)(
 			const int severity,
 			const char *filename,
 			const char *function,
@@ -51,16 +51,13 @@ typedef void (*LogEntryCreatedFct)(
 			const char *msg,
 			const size_t len);
 
-static LogEntryCreatedFct pFctLogEntryCreated = NULL;
+static FuncEntryLogCreate pFctEntryLogCreate = NULL;
 
-#if CONFIG_PROC_HAVE_DRIVERS
-static mutex mtxPrint;
-#endif
 static system_clock::time_point tOld;
 
 const string red("\033[0;31m");
 const string yellow("\033[0;33m");
-const string reset("\033[0m");
+const string reset("\033[37m");
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
@@ -70,15 +67,16 @@ void levelLogSet(int lvl)
 	levelLog = lvl;
 }
 
-void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct)
+void entryLogCreateSet(FuncEntryLogCreate pFct)
 {
-	pFctLogEntryCreated = pFct;
+	pFctEntryLogCreate = pFct;
 }
 
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
 {
 #if CONFIG_PROC_HAVE_DRIVERS
-	lock_guard<mutex> lock(mtxPrint);
+	static mutex mtxPrint;
+	Guard lock(mtxPrint);
 #endif
 	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
 	if (!pBuf)
@@ -137,17 +135,17 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 		SetConsoleTextAttribute(hConsole, 7);
 #else
 		if (severity == 1)
-			cerr << "\033[31m" << pBuf << "\033[37m" << "\r\n" << flush;
+			cerr << red << pBuf << reset << "\r\n" << flush;
 		else
 		if (severity == 2)
-			cerr << "\033[33m" << pBuf << "\033[37m" << "\r\n" << flush;
+			cerr << yellow << pBuf << reset << "\r\n" << flush;
 		else
 			cout << pBuf << "\r\n" << flush;
 #endif
 	}
 
-	if (pFctLogEntryCreated)
-		pFctLogEntryCreated(severity, filename, function, line, code, pBuf, pStart - pBuf);
+	if (pFctEntryLogCreate)
+		pFctEntryLogCreate(severity, filename, function, line, code, pBuf, pStart - pBuf);
 
 	delete[] pBuf;
 

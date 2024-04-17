@@ -264,7 +264,7 @@ private:
 #define __PROC_FILENAME__ (procStrrChr(__FILE__, '/') ? procStrrChr(__FILE__, '/') + 1 : __FILE__)
 
 #if CONFIG_PROC_HAVE_LOG
-typedef void (*LogEntryCreatedFct)(
+typedef void (*FuncEntryLogCreate)(
 			const int severity,
 			const char *filename,
 			const char *function,
@@ -274,7 +274,7 @@ typedef void (*LogEntryCreatedFct)(
 			const size_t len);
 
 void levelLogSet(int lvl);
-void pFctLogEntryCreatedSet(LogEntryCreatedFct pFct);
+void entryLogCreateSet(FuncEntryLogCreate pFct);
 int16_t logEntryCreate(
 				const int severity,
 				const char *filename,
@@ -288,7 +288,7 @@ inline void levelLogSet(int lvl)
 {
 	(void)lvl;
 }
-#define pFctLogEntryCreatedSet(pFct)
+#define entryLogCreateSet(pFct)
 inline int16_t logEntryCreateDummy(
 				const int severity,
 				const char *filename,
