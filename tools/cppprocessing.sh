@@ -86,7 +86,7 @@ using namespace std;
 
 ${classname}::${classname}()
 	: Processing("${classname}")
-	, mStartMs(0)
+	//, mStartMs(0)
 {
 	mState = StStart;
 }
@@ -192,7 +192,7 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
-	uint32_t mStartMs;
+	//uint32_t mStartMs;
 
 	/* static functions */
 
