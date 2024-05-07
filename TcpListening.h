@@ -108,13 +108,16 @@ private:
 	bool fileNonBlockingSet(SOCKET fd);
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	uint16_t mPort;
 	size_t mMaxConn;
 	bool mInterrupted;
 	uint32_t mCntSkip;
 
 	SOCKET mListeningFd;
-	struct sockaddr_in mAddress;
+	struct sockaddr_in6 mAddr;
+	std::string mAddress;
+	uint16_t mPort;
+	bool mLocalOnly;
+	bool mIsIPv6;
 
 	// statistics
 	uint32_t mConnCreated;
