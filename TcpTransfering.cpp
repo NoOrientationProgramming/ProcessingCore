@@ -82,6 +82,8 @@ TcpTransfering::TcpTransfering(SOCKET fd)
 	, mHostAddrStr("")
 	, mErrno(0)
 	, mInfoSet(false)
+	, mIsIPv6Local(false)
+	, mIsIPv6Remote(false)
 	, mBytesReceived(0)
 	, mBytesSent(0)
 {
@@ -458,12 +460,13 @@ Success TcpTransfering::socketOptionsSet()
 #if CONFIG_PROC_HAVE_DRIVERS
 	Guard lock(mSocketFdMtx);
 #endif
-	int opt = 1;
+	int opt;
 	int res;
 	bool ok;
 
 	addrInfoSet();
 
+	opt = 1;
 	res = ::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt));
 	if (res)
 		return procErrLog(-2, "setsockopt(SO_KEEPALIVE) failed: %s",
@@ -497,24 +500,37 @@ void TcpTransfering::addrInfoSet()
 	if (mSocketFd == INVALID_SOCKET)
 		return;
 
-	struct sockaddr_in addr;
+	struct sockaddr_storage addr;
 	socklen_t addrLen;
-	char buf[128];
-	size_t len = sizeof(buf) - 1;
+	int res;
 
 	memset(&addr, 0, sizeof(addr));
-
 	addrLen = sizeof(addr);
-	::getsockname(mSocketFd, (struct sockaddr*)&addr, &addrLen);
-	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
-	mAddrLocal = string(buf);
-	mPortLocal = ntohs(addr.sin_port);
 
+	res = ::getsockname(mSocketFd, (struct sockaddr *)&addr, &addrLen);
+#ifdef _WIN32
+	if (res == SOCKET_ERROR)
+		return;
+#else
+	if (res == -1)
+		return;
+#endif
+	sockaddrInfoGet(addr, mAddrLocal, mPortLocal, mIsIPv6Local);
+
+	// -----------------
+
+	memset(&addr, 0, sizeof(addr));
 	addrLen = sizeof(addr);
-	::getpeername(mSocketFd, (struct sockaddr*)&addr, &addrLen);
-	::inet_ntop(addr.sin_family, &addr.sin_addr, buf, len);
-	mAddrRemote = string(buf);
-	mPortRemote = ntohs(addr.sin_port);
+
+	res = ::getpeername(mSocketFd, (struct sockaddr *)&addr, &addrLen);
+#ifdef _WIN32
+	if (res == SOCKET_ERROR)
+		return;
+#else
+	if (res == -1)
+		return;
+#endif
+	sockaddrInfoGet(addr, mAddrRemote, mPortRemote, mIsIPv6Remote);
 
 	mInfoSet = true;
 }
@@ -559,11 +575,57 @@ void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
 	if (!mInfoSet)
 		return;
 
-	dInfo("%s:%d <--> ", mAddrLocal.c_str(), mPortLocal);
-	dInfo("%s:%d\n", mAddrRemote.c_str(), mPortRemote);
+	dInfo("%s%s%s:%d <--> ",
+		mIsIPv6Local ? "[" : "",
+		mAddrLocal.c_str(),
+		mIsIPv6Local ? "]" : "",
+		mPortLocal);
+
+	if (mAddrLocal.size() > INET_ADDRSTRLEN)
+		dInfo("\n");
+
+	dInfo("%s%s%s:%d\n",
+		mIsIPv6Remote ? "[" : "",
+		mAddrRemote.c_str(),
+		mIsIPv6Remote ? "]" : "",
+		mPortRemote);
 }
 
 /* static functions */
+
+void TcpTransfering::sockaddrInfoGet(struct sockaddr_storage &addr,
+								string &strAddr,
+								uint16_t &numPort,
+								bool &isIPv6)
+{
+	char buf[INET6_ADDRSTRLEN];
+	size_t len = sizeof(buf) - 1;
+	const char *pRes;
+
+	if (addr.ss_family == AF_INET)
+	{
+		struct sockaddr_in *pAddr = (struct sockaddr_in *)&addr;
+
+		numPort = ntohs(pAddr->sin_port);
+		isIPv6 = false;
+
+		pRes = ::inet_ntop(pAddr->sin_family, &pAddr->sin_addr, buf, len);
+	}
+	else
+	{
+		struct sockaddr_in6 *pAddr = (struct sockaddr_in6 *)&addr;
+
+		numPort = ntohs(pAddr->sin6_port);
+		isIPv6 = true;
+
+		pRes = ::inet_ntop(pAddr->sin6_family, &pAddr->sin6_addr, buf, len);
+	}
+
+	if (!pRes)
+		return;
+
+	strAddr = string(buf);
+}
 
 uint32_t TcpTransfering::millis()
 {
@@ -574,7 +636,7 @@ uint32_t TcpTransfering::millis()
 
 bool TcpTransfering::fileNonBlockingSet(SOCKET fd)
 {
-	int opt = 1;
+	int opt;
 #ifdef _WIN32
 	unsigned long nonBlockMode = 1;
 

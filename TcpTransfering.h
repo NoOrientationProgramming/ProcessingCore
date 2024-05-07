@@ -87,6 +87,10 @@ public:
 #ifdef _WIN32
 	static bool wsaInit();
 #endif
+	static void sockaddrInfoGet(struct sockaddr_storage &addr,
+							std::string &strAddr,
+							uint16_t &numPort,
+							bool &isIPv6);
 
 protected:
 
@@ -131,6 +135,8 @@ private:
 	uint16_t mHostPort;
 	int mErrno;
 	bool mInfoSet;
+	bool mIsIPv6Local;
+	bool mIsIPv6Remote;
 
 	// statistics
 	size_t mBytesReceived;
