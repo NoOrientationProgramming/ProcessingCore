@@ -111,7 +111,7 @@ Success SystemDebugging::initialize()
 	if (!mpLstLog)
 		return procErrLog(-1, "could not create process");
 
-	mpLstLog->portSet(mPortStart + 1, mListenLocal);
+	mpLstLog->portSet(mPortStart + 2, mListenLocal);
 
 	start(mpLstLog);
 #endif
@@ -120,7 +120,7 @@ Success SystemDebugging::initialize()
 	if (!mpLstCmd)
 		return procErrLog(-1, "could not create process");
 
-	mpLstCmd->portSet(mPortStart + 2, mListenLocal);
+	mpLstCmd->portSet(mPortStart + 4, mListenLocal);
 	mpLstCmd->maxConnSet(4);
 
 	start(mpLstCmd);
