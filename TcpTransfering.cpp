@@ -80,6 +80,8 @@ TcpTransfering::TcpTransfering(SOCKET fd)
 	, mStartMs(0)
 	, mSocketFd(fd)
 	, mHostAddrStr("")
+	, mHostPort(0)
+	, mpHostAddr(NULL)
 	, mErrno(0)
 	, mInfoSet(false)
 	, mIsIPv6Local(false)
@@ -94,7 +96,7 @@ TcpTransfering::TcpTransfering(SOCKET fd)
 
 // strAddrHost can be
 // - IPv4
-// - IPv6 (TODO)
+// - IPv6
 // - Domain (TODO)
 TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
 	: Transfering("TcpTransfering")
@@ -102,8 +104,11 @@ TcpTransfering::TcpTransfering(const string &hostAddr, uint16_t hostPort)
 	, mSocketFd(INVALID_SOCKET)
 	, mHostAddrStr(hostAddr)
 	, mHostPort(hostPort)
+	, mpHostAddr(NULL)
 	, mErrno(0)
 	, mInfoSet(false)
+	, mIsIPv6Local(false)
+	, mIsIPv6Remote(false)
 	, mBytesReceived(0)
 	, mBytesSent(0)
 {
@@ -163,17 +168,19 @@ Success TcpTransfering::process()
 		break;
 	case StCltArgCheck:
 
+		// create local address structure
+
 		if (mHostAddrStr == "localhost")
 			mHostAddrStr = "127.0.0.1";
 
-		memset(&mHostAddr, 0, sizeof(mHostAddr));
-
-		res = inet_pton(AF_INET, mHostAddrStr.c_str(), &mHostAddr.sin_addr);
-		if (res < 1)
-			return procErrLog(-1, "invalid argument. Only IPv4 address supported by now. Given: '%s'",
+		mpHostAddr = addrStringToSock(mHostAddrStr, mHostPort);
+		if (!mpHostAddr)
+			return procErrLog(-1, "could not parse IP address. Given: '%s'",
 					mHostAddrStr.c_str());
 
-		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+		// create and configure socket
+
+		mSocketFd = socket(mpHostAddr->ss_family, SOCK_STREAM, 0);
 		if (mSocketFd == INVALID_SOCKET)
 			return procErrLog(-1, "could not create socket: %s",
 							errnoToStr(errGet()).c_str());
@@ -182,8 +189,7 @@ Success TcpTransfering::process()
 		if (success != Positive)
 			return procErrLog(-1, "could not set socket options");
 
-		mHostAddr.sin_family = AF_INET;
-		mHostAddr.sin_port = htons(mHostPort);
+		// set timeout
 
 		mStartMs = curTimeMs;
 		mState = StCltConnDoneWait;
@@ -194,7 +200,7 @@ Success TcpTransfering::process()
 		if (diffMs > dTmoDefaultConnDoneMs)
 			return procErrLog(-1, "timeout connecting to host");
 
-		res = connect(mSocketFd, (struct sockaddr *)&mHostAddr, sizeof(mHostAddr));
+		res = connect(mSocketFd, (struct sockaddr *)mpHostAddr, sizeof(*mpHostAddr));
 		if (res)
 		{
 			numErr = errGet();
@@ -212,9 +218,10 @@ Success TcpTransfering::process()
 							errnoToStr(numErr).c_str(), numErr);
 		}
 
-		success = socketOptionsSet();
-		if (success != Positive)
-			return procErrLog(-1, "could not set socket options");
+		free(mpHostAddr);
+		mpHostAddr = NULL;
+
+		addrInfoSet();
 
 		mSendReady = true;
 
@@ -250,6 +257,13 @@ Success TcpTransfering::process()
 Success TcpTransfering::shutdown()
 {
 	procDbgLog(LOG_LVL, "shutdown");
+
+	if (mpHostAddr)
+	{
+		free(mpHostAddr);
+		mpHostAddr = NULL;
+	}
+
 #if CONFIG_PROC_HAVE_DRIVERS
 	Guard lock(mSocketFdMtx);
 #endif
@@ -464,8 +478,6 @@ Success TcpTransfering::socketOptionsSet()
 	int res;
 	bool ok;
 
-	addrInfoSet();
-
 	opt = 1;
 	res = ::setsockopt(mSocketFd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&opt, sizeof(opt));
 	if (res)
@@ -533,6 +545,37 @@ void TcpTransfering::addrInfoSet()
 	sockaddrInfoGet(addr, mAddrRemote, mPortRemote, mIsIPv6Remote);
 
 	mInfoSet = true;
+}
+
+struct sockaddr_storage *TcpTransfering::addrStringToSock(const string &strAddr, uint16_t numPort)
+{
+	struct sockaddr_storage *pAddr;
+
+	pAddr = (struct sockaddr_storage *)calloc(1, sizeof(struct sockaddr_storage));
+	if (!pAddr)
+		return NULL;
+
+	struct sockaddr_in *pAddr4 = (struct sockaddr_in *)pAddr;
+	struct sockaddr_in6 *pAddr6 = (struct sockaddr_in6 *)pAddr;
+
+	if (inet_pton(AF_INET, strAddr.c_str(), &pAddr4->sin_addr) == 1)
+	{
+		pAddr4->sin_family = AF_INET;
+		pAddr4->sin_port = htons(numPort);
+	}
+	else
+	if (inet_pton(AF_INET6, strAddr.c_str(), &pAddr6->sin6_addr) == 1)
+	{
+		pAddr6->sin6_family = AF_INET6;
+		pAddr6->sin6_port = htons(numPort);
+	}
+	else
+	{
+		free(pAddr);
+		return NULL;
+	}
+
+	return pAddr;
 }
 
 int TcpTransfering::errGet()
