@@ -87,6 +87,10 @@ public:
 #ifdef _WIN32
 	static bool wsaInit();
 #endif
+	static void sockaddrInfoGet(struct sockaddr_storage &addr,
+							std::string &strAddr,
+							uint16_t &numPort,
+							bool &isIPv6);
 
 protected:
 
@@ -115,6 +119,7 @@ private:
 	void disconnect(int err = 0);
 	Success socketOptionsSet();
 	void addrInfoSet();
+	struct sockaddr_storage *addrStringToSock(const std::string &strAddr, uint16_t numPort);
 
 	int errGet();
 	std::string errnoToStr(int num);
@@ -127,10 +132,12 @@ private:
 #endif
 	SOCKET mSocketFd;
 	std::string mHostAddrStr;
-	struct sockaddr_in mHostAddr;
 	uint16_t mHostPort;
+	struct sockaddr_storage *mpHostAddr;
 	int mErrno;
 	bool mInfoSet;
+	bool mIsIPv6Local;
+	bool mIsIPv6Remote;
 
 	// statistics
 	size_t mBytesReceived;

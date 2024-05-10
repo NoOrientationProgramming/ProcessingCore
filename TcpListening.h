@@ -97,11 +97,12 @@ private:
 		return *this;
 	}
 
-	Success initialize();
 	Success process();
 	Success shutdown();
 
-	Success connectionsAccept();
+	Success socketCreate(bool isIPv6, SOCKET &fdLst, std::string &strAddr);
+	Success connectionsAccept(SOCKET &fdLst);
+	void socketClose(SOCKET &fd);
 
 	int errGet();
 	std::string errnoToStr(int num);
@@ -113,8 +114,13 @@ private:
 	bool mInterrupted;
 	uint32_t mCntSkip;
 
-	SOCKET mListeningFd;
-	struct sockaddr_in mAddress;
+	SOCKET mFdLstIPv4;
+	SOCKET mFdLstIPv6;
+	std::string mAddress;
+	std::string mAddrIPv4;
+	std::string mAddrIPv6;
+	bool mLocalOnly;
+	bool mIsIPv6;
 
 	// statistics
 	uint32_t mConnCreated;
