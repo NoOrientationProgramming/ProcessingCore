@@ -62,6 +62,7 @@ using namespace std;
 TcpListening::TcpListening()
 	: Processing("TcpListening")
 	, mPort(0)
+	, mLocalOnly(false)
 	, mMaxConn(200)
 	, mInterrupted(false)
 	, mCntSkip(0)
@@ -69,7 +70,6 @@ TcpListening::TcpListening()
 	, mFdLstIPv6(INVALID_SOCKET)
 	, mAddrIPv4("")
 	, mAddrIPv6("")
-	, mLocalOnly(false)
 	, mConnCreated(0)
 {
 	mState = StStart;

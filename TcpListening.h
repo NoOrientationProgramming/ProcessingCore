@@ -110,6 +110,7 @@ private:
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	uint16_t mPort;
+	bool mLocalOnly;
 	size_t mMaxConn;
 	bool mInterrupted;
 	uint32_t mCntSkip;
@@ -119,7 +120,6 @@ private:
 	std::string mAddress;
 	std::string mAddrIPv4;
 	std::string mAddrIPv6;
-	bool mLocalOnly;
 
 	// statistics
 	uint32_t mConnCreated;
