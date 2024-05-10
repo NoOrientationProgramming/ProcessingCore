@@ -40,6 +40,19 @@
  */
 #include "TcpTransfering.h"
 
+#define dForEach_ProcState(gen) \
+		gen(StStart) \
+		gen(StMain) \
+		gen(StTmp) \
+
+#define dGenProcStateEnum(s) s,
+dProcessStateEnum(ProcState);
+
+#if 0
+#define dGenProcStateString(s) #s,
+dProcessStateStr(ProcState);
+#endif
+
 using namespace std;
 
 #define LOG_LVL	0
@@ -48,16 +61,19 @@ using namespace std;
 
 TcpListening::TcpListening()
 	: Processing("TcpListening")
+	, mPort(0)
 	, mMaxConn(200)
 	, mInterrupted(false)
 	, mCntSkip(0)
-	, mListeningFd(INVALID_SOCKET)
-	, mAddress("")
-	, mPort(0)
+	, mFdLstIPv4(INVALID_SOCKET)
+	, mFdLstIPv6(INVALID_SOCKET)
+	, mAddrIPv4("")
+	, mAddrIPv6("")
 	, mLocalOnly(false)
 	, mIsIPv6(false)
 	, mConnCreated(0)
 {
+	mState = StStart;
 }
 
 void TcpListening::portSet(uint16_t port, bool localOnly)
@@ -73,6 +89,87 @@ void TcpListening::maxConnSet(size_t maxConn)
 
 /*
 Literature socket programming:
+- http://man7.org/linux/man-pages/man2/poll.2.html
+- http://man7.org/linux/man-pages/man2/accept.2.html
+*/
+Success TcpListening::process()
+{
+	Success success;
+#ifdef _WIN32
+	bool ok;
+#endif
+#if 0
+	dStateTrace;
+#endif
+	switch (mState)
+	{
+	case StStart:
+
+		if (!mPort)
+			return procErrLog(-1, "port not set");
+#ifdef _WIN32
+		ok = TcpTransfering::wsaInit();
+		if (!ok)
+			return procErrLog(-1, "could not init WSA");
+#endif
+		procDbgLog(LOG_LVL, "creating listening sockets");
+
+		success = socketCreate(AF_INET, mFdLstIPv4, mAddrIPv4);
+		if (success != Positive)
+			return procErrLog(-1, "could not create IPv4 socket");
+
+		success = socketCreate(AF_INET6, mFdLstIPv6, mAddrIPv6);
+		if (success != Positive)
+			return procErrLog(-1, "could not create IPv6 socket");
+
+		procDbgLog(LOG_LVL, "creating listening sockets: done");
+
+		mState = StMain;
+
+		break;
+	case StMain:
+
+		++mCntSkip;
+		if (mCntSkip < dCntSkipMax)
+			return Pending;
+		mCntSkip = 0;
+
+		while (1)
+		{
+			success = connectionsAccept(mFdLstIPv4);
+			if (success != Positive)
+				break;
+		}
+
+		if (success != Pending)
+			return success;
+
+		while (1)
+		{
+			success = connectionsAccept(mFdLstIPv6);
+			if (success != Positive)
+				break;
+		}
+
+		if (success != Pending)
+			return success;
+
+		if (mInterrupted)
+			return Positive;
+
+		break;
+	case StTmp:
+
+		break;
+	default:
+		break;
+	}
+
+	return Pending;
+}
+
+/*
+Literature socket programming:
 - http://man7.org/linux/man-pages/man2/socket.2.html
 - http://man7.org/linux/man-pages/man2/setsockopt.2.html
 - http://man7.org/linux/man-pages/man2/bind.2.html
@@ -81,109 +178,86 @@ Literature socket programming:
 - https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
 - https://learn.microsoft.com/en-us/windows/win32/winsock/ipproto-ipv6-socket-options
 */
-Success TcpListening::initialize()
+Success TcpListening::socketCreate(sa_family_t family, SOCKET &fdLst, string &strAddr)
 {
+	// create address structure
+
+	struct sockaddr_storage addr;
+	socklen_t addrLen;
+	uint16_t port;
+	bool isIPv6;
+
+	memset(&addr, 0, sizeof(addr));
+	addrLen = sizeof(addr);
+
+	addr.ss_family = family;
+
+	if (family == AF_INET)
+	{
+		struct sockaddr_in *pAddr4 = (struct sockaddr_in *)&addr;
+
+		pAddr4->sin_port = htons(mPort);
+		pAddr4->sin_addr.s_addr = mLocalOnly ?
+					htonl(INADDR_LOOPBACK) : htonl(INADDR_ANY);
+	}
+	else
+	if (family == AF_INET6)
+	{
+		struct sockaddr_in6 *pAddr6 = (struct sockaddr_in6 *)&addr;
+
+		pAddr6->sin6_port = htons(mPort);
+		pAddr6->sin6_addr = mLocalOnly ? in6addr_loopback : in6addr_any;
+	}
+	else
+		return procErrLog(-1, "unknown address family");
+
+	TcpTransfering::sockaddrInfoGet(addr, strAddr, port, isIPv6);
+
+	// create and configure socket
+
 	bool ok;
 	int opt;
-
-	if (!mPort)
-		return procErrLog(-1, "port not set");
-
-#ifdef _WIN32
-	ok = TcpTransfering::wsaInit();
-	if (!ok)
-		return procErrLog(-2, "could not init WSA");
-#endif
-	procDbgLog(LOG_LVL, "creating listening socket");
-
-	struct sockaddr_in6 addr6;
-
-	addr6.sin6_family = AF_INET6;
-	addr6.sin6_port = htons(mPort);
-
-	if (mLocalOnly)
-		addr6.sin6_addr = in6addr_loopback;
-	else
-		addr6.sin6_addr = in6addr_any;
-
-	mListeningFd = ::socket(addr6.sin6_family, SOCK_STREAM, 0);
-	if (mListeningFd == INVALID_SOCKET)
-		return procErrLog(-3, "socket() failed: %s", errnoToStr(errGet()).c_str());
-
-	procDbgLog(LOG_LVL, "creating listening socket: done -> %d", mListeningFd);
 
 	// IMPORTANT
 	// No need to close socket in case of error
 	// This is done in function shutdown()
 
-	opt = 0;
-	if (::setsockopt(mListeningFd, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-4, "setsockopt(IPV6_V6ONLY) failed: %s", errnoToStr(errGet()).c_str());
+	fdLst = ::socket(addr.ss_family, SOCK_STREAM, 0);
+	if (fdLst == INVALID_SOCKET)
+		return procErrLog(-1, "socket() failed: %s", errnoToStr(errGet()).c_str());
+
+	if (family == AF_INET6)
+	{
+		opt = 1;
+		if (::setsockopt(fdLst, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&opt, sizeof(opt)))
+			return procErrLog(-1, "setsockopt(IPV6_V6ONLY) failed: %s", errnoToStr(errGet()).c_str());
+	}
 
 	opt = 1;
-	if (::setsockopt(mListeningFd, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)))
-		return procErrLog(-4, "setsockopt(SO_REUSEADDR) failed: %s", errnoToStr(errGet()).c_str());
+	if (::setsockopt(fdLst, SOL_SOCKET, SO_REUSEADDR, (const char *)&opt, sizeof(opt)))
+		return procErrLog(-1, "setsockopt(SO_REUSEADDR) failed: %s", errnoToStr(errGet()).c_str());
 
-	if (::bind(mListeningFd, (struct sockaddr *)&addr6, sizeof(addr6)) < 0)
-		return procErrLog(-5, "bind(%u) failed: %s", mPort, errnoToStr(errGet()).c_str());
-
-	if (::listen(mListeningFd, 8192) < 0)
-		return procErrLog(-6, "listen() failed: %s", errnoToStr(errGet()).c_str());
-
-	ok = fileNonBlockingSet(mListeningFd);
+	ok = fileNonBlockingSet(fdLst);
 	if (!ok)
-		return procErrLog(-7, "could not set non blocking mode: %s",
+		return procErrLog(-1, "could not set non blocking mode: %s",
 							errnoToStr(errGet()).c_str());
 
-	struct sockaddr_storage addr;
-	socklen_t addrLen;
-	int res;
+	// bind and listen
 
-	memset(&addr, 0, sizeof(addr));
-	addrLen = sizeof(addr);
+	if (::bind(fdLst, (struct sockaddr *)&addr, addrLen) < 0)
+		return procErrLog(-1, "bind(%u) failed: %s", mPort, errnoToStr(errGet()).c_str());
 
-	res = ::getsockname(mListeningFd, (struct sockaddr *)&addr, &addrLen);
-#ifdef _WIN32
-	if (res == SOCKET_ERROR)
-		return procErrLog(-8, "getsockname() failed: %s", errnoToStr(errGet()).c_str());
-#else
-	if (res == -1)
-		return procErrLog(-8, "getsockname() failed: %s", errnoToStr(errGet()).c_str());
-#endif
-	TcpTransfering::sockaddrInfoGet(addr, mAddress, mPort, mIsIPv6);
+	if (::listen(fdLst, 8192) < 0)
+		return procErrLog(-1, "listen() failed: %s", errnoToStr(errGet()).c_str());
 
 	return Positive;
 }
 
-/*
-Literature socket programming:
-- http://man7.org/linux/man-pages/man2/poll.2.html
-- http://man7.org/linux/man-pages/man2/accept.2.html
-*/
-Success TcpListening::process()
+Success TcpListening::connectionsAccept(SOCKET &fdLst)
 {
-	++mCntSkip;
-	if (mCntSkip < dCntSkipMax)
+	if (fdLst == INVALID_SOCKET)
 		return Pending;
-	mCntSkip = 0;
 
-	Success success;
-
-	while (1)
-	{
-		success = connectionsAccept();
-		if (success != Positive)
-			break;
-	}
-
-	if (mInterrupted)
-		return Positive;
-
-	return success;
-}
-
-Success TcpListening::connectionsAccept()
-{
 	SOCKET peerSocketFd;
 	int numErr = 0;
 	struct sockaddr_storage addr;
@@ -193,7 +267,7 @@ Success TcpListening::connectionsAccept()
 	bool isIPv6;
 	int res;
 
-	peerSocketFd = ::accept(mListeningFd, (struct sockaddr *)&addr, &addrLen);
+	peerSocketFd = ::accept(fdLst, NULL, NULL);
 	if (peerSocketFd == INVALID_SOCKET)
 	{
 		numErr = errGet();
@@ -254,29 +328,28 @@ Success TcpListening::shutdown()
 		peerFd = ppPeerFd.front();
 		ppPeerFd.pop();
 
-		procDbgLog(LOG_LVL, "closing unused peer socket %d", peerFd);
-#ifdef _WIN32
-		::closesocket(peerFd);
-#else
-		::close(peerFd);
-#endif
-		peerFd = INVALID_SOCKET;
-		procDbgLog(LOG_LVL, "closing unused peer socket %d: done", peerFd);
+		socketClose(peerFd);
 	}
 
-	if (mListeningFd != INVALID_SOCKET)
-	{
-		procDbgLog(LOG_LVL, "closing listening socket %d", mListeningFd);
-#ifdef _WIN32
-		::closesocket(mListeningFd);
-#else
-		::close(mListeningFd);
-#endif
-		mListeningFd = INVALID_SOCKET;
-		procDbgLog(LOG_LVL, "closing listening socket %d: done", mListeningFd);
-	}
+	socketClose(mFdLstIPv4);
+	socketClose(mFdLstIPv6);
 
 	return Positive;
+}
+
+void TcpListening::socketClose(SOCKET &fd)
+{
+	if (fd == INVALID_SOCKET)
+		return;
+
+	procDbgLog(LOG_LVL, "closing socket %d", fd);
+#ifdef _WIN32
+	::closesocket(fd);
+#else
+	::close(fd);
+#endif
+	fd = INVALID_SOCKET;
+	procDbgLog(LOG_LVL, "closing socket %d: done", fd);
 }
 
 int TcpListening::errGet()
@@ -341,14 +414,22 @@ bool TcpListening::fileNonBlockingSet(SOCKET fd)
  */
 void TcpListening::processInfo(char *pBuf, char *pBufEnd)
 {
-	if (!mPort)
-		return;
+	//dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 
-	dInfo("%s%s%s:%d\n",
-		mIsIPv6 ? "[" : "",
-		mAddress.c_str(),
-		mIsIPv6 ? "]" : "",
-		mPort);
+	bool hasIPv4 = mAddrIPv4.size();
+
+	if (hasIPv4)
+		dInfo("%s:%d", mAddrIPv4.c_str(), mPort);
+
+	if (mAddrIPv6.size())
+	{
+		if (hasIPv4)
+			dInfo(", ");
+
+		dInfo("[%s]:%d", mAddrIPv6.c_str(), mPort);
+	}
+
+	dInfo("\n");
 
 	dInfo("Connections created\t%d\n", (int)mConnCreated);
 	dInfo("Queue\t\t\t%zu\n", ppPeerFd.size());

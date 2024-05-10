@@ -97,25 +97,28 @@ private:
 		return *this;
 	}
 
-	Success initialize();
 	Success process();
 	Success shutdown();
 
-	Success connectionsAccept();
+	Success socketCreate(sa_family_t family, SOCKET &fdLst, std::string &strAddr);
+	Success connectionsAccept(SOCKET &fdLst);
+	void socketClose(SOCKET &fd);
 
 	int errGet();
 	std::string errnoToStr(int num);
 	bool fileNonBlockingSet(SOCKET fd);
 	void processInfo(char *pBuf, char *pBufEnd);
 
+	uint16_t mPort;
 	size_t mMaxConn;
 	bool mInterrupted;
 	uint32_t mCntSkip;
 
-	SOCKET mListeningFd;
-	struct sockaddr_in6 mAddr;
+	SOCKET mFdLstIPv4;
+	SOCKET mFdLstIPv6;
 	std::string mAddress;
-	uint16_t mPort;
+	std::string mAddrIPv4;
+	std::string mAddrIPv6;
 	bool mLocalOnly;
 	bool mIsIPv6;
 
