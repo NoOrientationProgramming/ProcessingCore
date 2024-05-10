@@ -100,7 +100,7 @@ private:
 	Success process();
 	Success shutdown();
 
-	Success socketCreate(sa_family_t family, SOCKET &fdLst, std::string &strAddr);
+	Success socketCreate(bool isIPv6, SOCKET &fdLst, std::string &strAddr);
 	Success connectionsAccept(SOCKET &fdLst);
 	void socketClose(SOCKET &fd);
 

@@ -114,11 +114,11 @@ Success TcpListening::process()
 #endif
 		procDbgLog(LOG_LVL, "creating listening sockets");
 
-		success = socketCreate(AF_INET, mFdLstIPv4, mAddrIPv4);
+		success = socketCreate(false, mFdLstIPv4, mAddrIPv4);
 		if (success != Positive)
 			return procErrLog(-1, "could not create IPv4 socket");
 
-		success = socketCreate(AF_INET6, mFdLstIPv6, mAddrIPv6);
+		success = socketCreate(true, mFdLstIPv6, mAddrIPv6);
 		if (success != Positive)
 			return procErrLog(-1, "could not create IPv6 socket");
 
@@ -178,21 +178,20 @@ Literature socket programming:
 - https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup
 - https://learn.microsoft.com/en-us/windows/win32/winsock/ipproto-ipv6-socket-options
 */
-Success TcpListening::socketCreate(sa_family_t family, SOCKET &fdLst, string &strAddr)
+Success TcpListening::socketCreate(bool isIPv6, SOCKET &fdLst, string &strAddr)
 {
 	// create address structure
 
 	struct sockaddr_storage addr;
 	socklen_t addrLen;
 	uint16_t port;
-	bool isIPv6;
 
 	memset(&addr, 0, sizeof(addr));
 	addrLen = sizeof(addr);
 
-	addr.ss_family = family;
+	addr.ss_family = isIPv6 ? AF_INET6 : AF_INET;
 
-	if (family == AF_INET)
+	if (addr.ss_family == AF_INET)
 	{
 		struct sockaddr_in *pAddr4 = (struct sockaddr_in *)&addr;
 
@@ -201,7 +200,7 @@ Success TcpListening::socketCreate(sa_family_t family, SOCKET &fdLst, string &st
 					htonl(INADDR_LOOPBACK) : htonl(INADDR_ANY);
 	}
 	else
-	if (family == AF_INET6)
+	if (addr.ss_family == AF_INET6)
 	{
 		struct sockaddr_in6 *pAddr6 = (struct sockaddr_in6 *)&addr;
 
@@ -226,7 +225,7 @@ Success TcpListening::socketCreate(sa_family_t family, SOCKET &fdLst, string &st
 	if (fdLst == INVALID_SOCKET)
 		return procErrLog(-1, "socket() failed: %s", errnoToStr(errGet()).c_str());
 
-	if (family == AF_INET6)
+	if (addr.ss_family == AF_INET6)
 	{
 		opt = 1;
 		if (::setsockopt(fdLst, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&opt, sizeof(opt)))
