@@ -120,7 +120,6 @@ private:
 	std::string mAddrIPv4;
 	std::string mAddrIPv6;
 	bool mLocalOnly;
-	bool mIsIPv6;
 
 	// statistics
 	uint32_t mConnCreated;

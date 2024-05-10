@@ -70,7 +70,6 @@ TcpListening::TcpListening()
 	, mAddrIPv4("")
 	, mAddrIPv6("")
 	, mLocalOnly(false)
-	, mIsIPv6(false)
 	, mConnCreated(0)
 {
 	mState = StStart;
