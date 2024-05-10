@@ -48,7 +48,7 @@
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
 
-#if 1
+#if 0
 #define dGenProcStateString(s) #s,
 dProcessStateStr(ProcState);
 #endif
@@ -612,7 +612,7 @@ string TcpTransfering::errnoToStr(int num)
 
 void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
 {
-	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
+	//dInfo("State\t\t\t%s\n", ProcStateString[mState]);
 	dInfo("Bytes received\t\t%d\n", (int)mBytesReceived);
 
 	if (!mInfoSet)
