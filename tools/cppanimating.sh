@@ -70,7 +70,7 @@ cat > $cppfilename << EOF
 #define dForEach_ProcState(gen) \\
 		gen(StStart) \\
 		gen(StMain) \\
-		gen(StTmp) \\
+		gen(StNop) \\
 
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
@@ -117,7 +117,7 @@ Success ${classname}::animate()
 	case StMain:
 
 		break;
-	case StTmp:
+	case StNop:
 
 		break;
 	default:
