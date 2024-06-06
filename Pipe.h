@@ -105,18 +105,22 @@ public:
 		return mSize >= mSizeMax;
 	}
 
-	void lastSamplesSet()
-	{
-		mLastEntries = true;
-	}
+	// used by sender
+	void sourceDoneSet()	{ mSourceDone = true;	}
+	bool sinkDone() const	{ return mSinkDone;		}
 
-	bool noSamplesLeft()
+	// used by receiver
+	void sinkDoneSet()		{ mSinkDone = true;		}
+	bool entriesLeft()
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mEntryMtx);
 #endif
-		return !mSize && mLastEntries;
+		return mSize || !mSourceDone;
 	}
+
+	// optional
+	bool sourceDone() const	{ return mSourceDone;	}
 
 	void dataBlockingSet(bool block)
 	{
@@ -129,7 +133,8 @@ protected:
 	PipeBase(std::size_t size)
 		: mSize(0)
 		, mSizeMax(size)
-		, mLastEntries(false)
+		, mSourceDone(false)
+		, mSinkDone(false)
 		, mDataBlocking(true)
 	{}
 
@@ -144,7 +149,8 @@ protected:
 	std::size_t mSize;
 	std::size_t mSizeMax;
 
-	bool mLastEntries;
+	bool mSourceDone;
+	bool mSinkDone;
 	bool mDataBlocking;
 
 private:
@@ -245,6 +251,9 @@ public:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mEntryMtx);
 #endif
+		if (!mSize)
+			return T();
+
 		PipeEntry<T> entry = mEntries.front();
 		return entry.particle;
 	}
@@ -372,14 +381,14 @@ public:
 			somethingPushed = true;
 		}
 
-		bool nothingLeft = noSamplesLeft();
+		bool nothingLeft = not entriesLeft();
 
 		/* inform children that we will no longer send particles */
 		iter = mChildList.begin();
 		for (; iter != mChildList.end(); ++iter)
 		{
 			if (nothingLeft)
-				(*iter)->lastSamplesSet();
+				(*iter)->sourceDoneSet();
 		}
 
 		return somethingPushed;
