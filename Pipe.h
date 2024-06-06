@@ -381,7 +381,7 @@ public:
 			somethingPushed = true;
 		}
 
-		bool nothingLeft = not entriesLeft();
+		bool nothingLeft = !entriesLeft();
 
 		/* inform children that we will no longer send particles */
 		iter = mChildList.begin();
