@@ -65,6 +65,18 @@ struct PipeEntry
 	T particle;
 	ParticleTime t1;
 	ParticleTime t2;
+
+	PipeEntry()
+		: particle()
+		, t1()
+		, t2()
+	{}
+
+	PipeEntry(T p, ParticleTime pt1, ParticleTime pt2)
+		: particle(std::move(p))
+		, t1(pt1)
+		, t2(pt2)
+	{}
 };
 
 class PipeBase
@@ -105,12 +117,42 @@ public:
 		return mSize >= mSizeMax;
 	}
 
+	void dataBlockingSet(bool block)
+	{
+		mDataBlocking = block;
+	}
+
+	virtual bool toPushTry() = 0;
+
+	// optional
+	bool sourceDone() const
+	{
+		return mSourceDone;
+	}
+
 	// used by sender
-	void sourceDoneSet()	{ mSourceDone = true;	}
-	bool sinkDone() const	{ return mSinkDone;		}
+	void sourceDoneSet()
+	{
+#if CONFIG_PROC_HAVE_DRIVERS
+		Guard lock(mEntryMtx);
+#endif
+		mSourceDone = true;
+	}
+
+	bool sinkDone() const
+	{
+		return mSinkDone;
+	}
 
 	// used by receiver
-	void sinkDoneSet()		{ mSinkDone = true;		}
+	void sinkDoneSet()
+	{
+#if CONFIG_PROC_HAVE_DRIVERS
+		Guard lock(mEntryMtx);
+#endif
+		mSinkDone = true;
+	}
+
 	bool entriesLeft()
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -118,16 +160,6 @@ public:
 #endif
 		return mSize || !mSourceDone;
 	}
-
-	// optional
-	bool sourceDone() const	{ return mSourceDone;	}
-
-	void dataBlockingSet(bool block)
-	{
-		mDataBlocking = block;
-	}
-
-	virtual bool toPushTry() = 0;
 
 protected:
 	PipeBase(std::size_t size)
@@ -246,83 +278,39 @@ public:
 		}
 	}
 
-	T front()
+	ssize_t get(PipeEntry<T> &entry)
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mEntryMtx);
 #endif
+		if (!mSize && mSourceDone)
+			return -1;
+
 		if (!mSize)
-			return T();
-
-		PipeEntry<T> entry = mEntries.front();
-		return entry.particle;
-	}
-
-	ParticleTime frontT1()
-	{
-#if CONFIG_PROC_HAVE_DRIVERS
-		Guard lock(mEntryMtx);
-#endif
-		PipeEntry<T> entry = mEntries.front();
-		return entry.t1;
-	}
-
-	ParticleTime frontT2()
-	{
-#if CONFIG_PROC_HAVE_DRIVERS
-		Guard lock(mEntryMtx);
-#endif
-		PipeEntry<T> entry = mEntries.front();
-		return entry.t2;
-	}
-
-	bool pop()
-	{
-#if CONFIG_PROC_HAVE_DRIVERS
-		Guard lock(mEntryMtx);
-#endif
-		if (!mSize)
-			return false;
-
-		mEntries.pop();
-		--mSize;
-
-		return true;
-	}
-
-	bool get(PipeEntry<T> &entry)
-	{
-#if CONFIG_PROC_HAVE_DRIVERS
-		Guard lock(mEntryMtx);
-#endif
-		if (!mSize)
-			return false;
+			return 0;
 
 		entry = mEntries.front();
 		mEntries.pop();
 		--mSize;
 
-		return true;
+		return 1;
 	}
 
-	bool commit(T particle, ParticleTime t1 = 0, ParticleTime t2 = 0)
+	ssize_t commit(T particle, ParticleTime t1 = 0, ParticleTime t2 = 0)
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mEntryMtx);
 #endif
+		if (mSourceDone || mSinkDone)
+			return -1;
+
 		if (mSize >= mSizeMax)
-			return false;
+			return 0;
 
-		PipeEntry<T> entry;
-
-		entry.particle = particle;
-		entry.t1 = t1;
-		entry.t2 = t2;
-
-		mEntries.push(entry);
+		mEntries.emplace(std::move(particle), t1, t2);
 		++mSize;
 
-		return true;
+		return 1;
 	}
 
 	bool toPushTry()

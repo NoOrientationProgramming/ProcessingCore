@@ -319,15 +319,10 @@ Success TcpListening::connectionsAccept(SOCKET &fdLst)
 
 Success TcpListening::shutdown()
 {
-	SOCKET peerFd;
+	PipeEntry<SOCKET> peerFd;
 
-	while (!ppPeerFd.isEmpty())
-	{
-		peerFd = ppPeerFd.front();
-		ppPeerFd.pop();
-
-		socketClose(peerFd);
-	}
+	while (ppPeerFd.get(peerFd) > 0)
+		socketClose(peerFd.particle);
 
 	socketClose(mFdLstIPv4);
 	socketClose(mFdLstIPv6);

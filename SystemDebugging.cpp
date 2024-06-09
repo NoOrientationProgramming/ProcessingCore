@@ -248,21 +248,18 @@ void SystemDebugging::peerRemove()
 
 void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc)
 {
-	SOCKET peerFd;
+	PipeEntry<SOCKET> peerFd;
 	Processing *pProc = NULL;
 	struct SystemDebuggingPeer peer;
 
 	while (1)
 	{
-		if (pListener->ppPeerFd.isEmpty())
+		if (pListener->ppPeerFd.get(peerFd) < 1)
 			break;
-
-		peerFd = pListener->ppPeerFd.front();
-		pListener->ppPeerFd.pop();
 
 		if (peerType == PeerCmd)
 		{
-			pProc = SystemCommanding::create(peerFd);
+			pProc = SystemCommanding::create(peerFd.particle);
 			if (!pProc)
 			{
 				procErrLog(-1, "could not create process");
@@ -274,7 +271,7 @@ void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, c
 			continue;
 		}
 
-		pProc = TcpTransfering::create(peerFd);
+		pProc = TcpTransfering::create(peerFd.particle);
 		if (!pProc)
 		{
 			procErrLog(-1, "could not create process");
