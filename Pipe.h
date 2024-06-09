@@ -289,7 +289,7 @@ public:
 		if (!mSize)
 			return 0;
 
-		entry = mEntries.front();
+		entry = std::move(mEntries.front());
 		mEntries.pop();
 		--mSize;
 
