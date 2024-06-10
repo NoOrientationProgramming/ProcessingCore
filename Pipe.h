@@ -66,6 +66,8 @@ struct PipeEntry
 	ParticleTime t1;
 	ParticleTime t2;
 
+	// construct / destruct
+
 	PipeEntry()
 		: particle()
 		, t1()
@@ -77,6 +79,60 @@ struct PipeEntry
 		, t1(pt1)
 		, t2(pt2)
 	{}
+
+	~PipeEntry()
+	{}
+
+	// copy
+
+	PipeEntry(const PipeEntry& other)
+		: particle(other.particle)
+		, t1(other.t1)
+		, t2(other.t2)
+	{}
+
+	PipeEntry& operator=(const PipeEntry& other)
+	{
+		if (this == &other)
+			return *this;
+
+		// delete own data
+
+		particle = other.particle;
+		t1 = other.t1;
+		t2 = other.t2;
+
+		return *this;
+	}
+
+	// move
+
+	PipeEntry(PipeEntry&& other) noexcept
+		: particle(std::move(other.particle))
+		, t1(other.t1)
+		, t2(other.t1)
+	{
+		other.t1 = 0;
+		other.t2 = 0;
+	}
+
+	PipeEntry& operator=(PipeEntry&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		// delete own data
+
+		particle = std::move(other.particle);
+		t1 = other.t1;
+		t2 = other.t2;
+
+		other.t1 = 0;
+		other.t2 = 0;
+
+		return *this;
+	}
+
 };
 
 class PipeBase
