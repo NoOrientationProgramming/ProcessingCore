@@ -48,10 +48,12 @@
   - With up to one parent and multiple children
   - Thread safe
   - EOF signals can be sent
+    - Sender:   sourceDoneSet()
+    - Receiver: sinkDoneSet()
   - Main functions
     - connect() / disconnect()     .. Create pipe structure
-    - front()/pop()                .. Get information about-/remove an entry
     - commit()                     .. Add an entry to the queue
+    - get()                        .. Get an entry from the queue
     - toPushTry()                  .. Try to push particles to children
 */
 
