@@ -59,6 +59,9 @@
 
 typedef uint32_t ParticleTime;
 
+/* Literature
+ * - https://en.cppreference.com/w/cpp/language/rule_of_three
+ */
 template<typename T>
 struct PipeEntry
 {
