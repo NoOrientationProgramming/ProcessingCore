@@ -40,7 +40,7 @@
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
 		gen(StSendReadyWait) \
-		gen(StAutoModeInitWait) \
+		gen(StCmdAutoReceiveWait) \
 		gen(StTelnetInit) \
 		gen(StWelcomeSend) \
 		gen(StMain) \
@@ -157,7 +157,7 @@ const string cWelcomeMsg = "\r\n" dPackageName "\r\n" \
 const string cSeqCtrlC = "\xff\xf4\xff\xfd\x06";
 const size_t cLenSeqCtrlC = cSeqCtrlC.size();
 
-const uint32_t cTmoAutoModeMs = 40;
+const uint32_t cTmoCmdAuto = 200;
 const int cSizeCmdIdMax = 16;
 const long int cLenHexDumpStd = 16;
 
@@ -179,6 +179,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mpTrans(NULL)
 	, mStateKey(StKeyMain)
 	, mStartMs(0)
+	, mModeAuto(false)
 	, mCursorHidden(false)
 	, mDone(false)
 	, mLastKeyWasTab(false)
@@ -237,25 +238,25 @@ Success SystemCommanding::process()
 		if (!mpTrans->mSendReady)
 			break;
 
+		if (mModeAuto)
+		{
+			mStartMs = curTimeMs;
+			mState = StCmdAutoReceiveWait;
+			break;
+		}
+
 		mStartMs = curTimeMs;
 		mState = StTelnetInit;
 
 		break;
-	case StAutoModeInitWait:
+	case StCmdAutoReceiveWait:
 
-		if (diffMs > cTmoAutoModeMs)
-		{
-			mState = StTelnetInit;
-			break;
-		}
+		if (diffMs > cTmoCmdAuto)
+			return procErrLog(-1, "timeout receiving command");
 
 		success = autoCommandReceive();
 		if (success == Pending)
 			break;
-
-		msg += "Auto command executed";
-
-		mpTrans->send(msg.c_str(), msg.size());
 
 		return success;
 
@@ -335,27 +336,37 @@ Success SystemCommanding::shutdown()
 
 Success SystemCommanding::autoCommandReceive()
 {
-	ssize_t lenReq, lenPlanned, lenDone;
-	char buf[8];
+	ssize_t lenReq, lenDone;
+	char *pEdit= mCmdInBuf[mIdxLineEdit];
 
-	buf[0] = 0;
+	*pEdit = 0;
 
-	lenReq = sizeof(buf) - 1;
-	lenPlanned = lenReq;
+	lenReq = cSizeBufCmdIn;
 
-	lenDone = mpTrans->read(buf, lenPlanned);
+	lenDone = mpTrans->read(mCmdInBuf[0], lenReq);
 	if (!lenDone)
 		return Pending;
 
 	if (lenDone < 0)
-		return procErrLog(-1, "could not receive auto command");
+		return procErrLog(-1, "could not receive command");
 
-	buf[lenDone] = 0;
+	pEdit[lenDone] = 0;
 
+	// remove newline
+
+	if (lenDone && pEdit[lenDone - 1] == '\n')
+		pEdit[--lenDone] = 0;
+
+	if (lenDone && pEdit[lenDone - 1] == '\r')
+		pEdit[--lenDone] = 0;
+#if 0
 	procInfLog("auto bytes received: %d", lenDone);
+	procInfLog("auto command received: %s", pEdit);
 
 	for (ssize_t i = 0; i < lenDone; ++i)
-		procInfLog("byte: %3u %02x '%c'", buf[i], buf[i], buf[i]);
+		procInfLog("byte: %3u %02x '%c'", pEdit[i], pEdit[i], pEdit[i]);
+#endif
+	commandExecute();
 
 	return Positive;
 }
@@ -647,7 +658,7 @@ void SystemCommanding::commandExecute()
 
 		lfToCrLf(mBufOut, msg);
 
-		if (msg.size() && msg.back() != '\n')
+		if (!mModeAuto)
 			msg += "\r\n";
 
 		mpTrans->send(msg.c_str(), msg.size());
@@ -658,7 +669,9 @@ void SystemCommanding::commandExecute()
 	msg = "Command not found";
 	procWrnLog("%s", msg.c_str());
 
-	msg += "\r\n";
+	if (!mModeAuto)
+		msg += "\r\n";
+
 	mpTrans->send(msg.c_str(), msg.size());
 }
 
@@ -968,9 +981,9 @@ bool SystemCommanding::keyIsAlphaNum(uint16_t key)
 
 void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 {
-	size_t lenBuf = strlen(pBuf) + 1;
+	size_t lenBuf = strlen(pBuf);
 	char *pBufLineStart, *pBufIter;
-	int8_t lastLine;
+	char *pBufEnd;
 
 	str.clear();
 
@@ -979,26 +992,18 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 	str.reserve(lenBuf);
 
+	pBufEnd = pBuf + lenBuf;
 	pBufLineStart = pBufIter = pBuf;
-	lastLine = 0;
 
 	while (1)
 	{
-		if (pBufIter >= pBuf + lenBuf)
+		if (pBufIter >= pBufEnd)
 			break;
 
-		if (*pBufIter && *pBufIter != '\n')
+		if (*pBufIter != '\n')
 		{
 			++pBufIter;
 			continue;
-		}
-
-		if (!*pBufIter)
-		{
-			if (!*(pBufIter - 1)) // last line drawn already
-				break;
-
-			lastLine = 1;
 		}
 
 		*pBufIter = 0; // terminate current line starting at pBufLineStart
@@ -1008,10 +1013,9 @@ void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 
 		++pBufIter;
 		pBufLineStart = pBufIter;
-
-		if (lastLine)
-			break;
 	}
+
+	str += pBufLineStart;
 }
 
 void SystemCommanding::processInfo(char *pBuf, char *pBufEnd)
@@ -1458,8 +1462,6 @@ void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 
 		dInfo("\n");
 	}
-
-	dInfo("\n");
 }
 
 void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)

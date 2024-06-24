@@ -90,6 +90,8 @@ public:
 		return new (std::nothrow) SystemCommanding(fd);
 	}
 
+	void modeAutoSet() { mModeAuto = true; }
+
 protected:
 
 	SystemCommanding() : Processing("SystemCommanding") {}
@@ -145,6 +147,7 @@ private:
 	TcpTransfering *mpTrans;
 	uint32_t mStateKey;
 	uint32_t mStartMs;
+	bool mModeAuto;
 	bool mCursorHidden;
 	bool mDone;
 	bool mLastKeyWasTab;
