@@ -184,6 +184,7 @@ Success TcpListening::socketCreate(bool isIPv6, SOCKET &fdLst, string &strAddr)
 	struct sockaddr_storage addr;
 	socklen_t addrLen;
 	uint16_t port;
+	bool ok;
 
 	memset(&addr, 0, sizeof(addr));
 	addrLen = sizeof(addr);
@@ -209,11 +210,12 @@ Success TcpListening::socketCreate(bool isIPv6, SOCKET &fdLst, string &strAddr)
 	else
 		return procErrLog(-1, "unknown address family");
 
-	TcpTransfering::sockaddrInfoGet(addr, strAddr, port, isIPv6);
+	ok = TcpTransfering::sockaddrInfoGet(addr, strAddr, port, isIPv6);
+	if (!ok)
+		return procErrLog(-1, "could not get socket address info");
 
 	// create and configure socket
 
-	bool ok;
 	int opt;
 
 	// IMPORTANT
@@ -262,7 +264,7 @@ Success TcpListening::connectionsAccept(SOCKET &fdLst)
 	socklen_t addrLen;
 	string strAddr;
 	uint16_t numPort;
-	bool isIPv6;
+	bool isIPv6, ok;
 	int res;
 
 	peerSocketFd = ::accept(fdLst, NULL, NULL);
@@ -289,7 +291,9 @@ Success TcpListening::connectionsAccept(SOCKET &fdLst)
 	res = ::getpeername(peerSocketFd, (struct sockaddr *)&addr, &addrLen);
 	if (!res)
 	{
-		TcpTransfering::sockaddrInfoGet(addr, strAddr, numPort, isIPv6);
+		ok = TcpTransfering::sockaddrInfoGet(addr, strAddr, numPort, isIPv6);
+		if (!ok)
+			return procErrLog(-1, "could not get socket address info");
 
 		procDbgLog(LOG_LVL, "got peer %s%s%s:%u",
 				isIPv6 ? "[" : "",

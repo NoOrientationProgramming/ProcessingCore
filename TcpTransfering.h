@@ -87,7 +87,7 @@ public:
 #ifdef _WIN32
 	static bool wsaInit();
 #endif
-	static void sockaddrInfoGet(struct sockaddr_storage &addr,
+	static bool sockaddrInfoGet(struct sockaddr_storage &addr,
 							std::string &strAddr,
 							uint16_t &numPort,
 							bool &isIPv6);

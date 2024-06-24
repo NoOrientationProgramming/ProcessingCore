@@ -580,6 +580,7 @@ void TcpTransfering::addrInfoSet()
 	struct sockaddr_storage addr;
 	socklen_t addrLen;
 	int res;
+	bool ok;
 
 	memset(&addr, 0, sizeof(addr));
 	addrLen = sizeof(addr);
@@ -592,7 +593,9 @@ void TcpTransfering::addrInfoSet()
 	if (res == -1)
 		return;
 #endif
-	sockaddrInfoGet(addr, mAddrLocal, mPortLocal, mIsIPv6Local);
+	ok = sockaddrInfoGet(addr, mAddrLocal, mPortLocal, mIsIPv6Local);
+	if (!ok)
+		return;
 
 	// -----------------
 
@@ -608,6 +611,8 @@ void TcpTransfering::addrInfoSet()
 		return;
 #endif
 	sockaddrInfoGet(addr, mAddrRemote, mPortRemote, mIsIPv6Remote);
+	if (!ok)
+		return;
 
 	mInfoSet = true;
 }
@@ -701,7 +706,7 @@ void TcpTransfering::processInfo(char *pBuf, char *pBufEnd)
 
 /* static functions */
 
-void TcpTransfering::sockaddrInfoGet(struct sockaddr_storage &addr,
+bool TcpTransfering::sockaddrInfoGet(struct sockaddr_storage &addr,
 								string &strAddr,
 								uint16_t &numPort,
 								bool &isIPv6)
@@ -730,9 +735,11 @@ void TcpTransfering::sockaddrInfoGet(struct sockaddr_storage &addr,
 	}
 
 	if (!pRes)
-		return;
+		return false;
 
 	strAddr = string(buf);
+
+	return true;
 }
 
 uint32_t TcpTransfering::millis()
