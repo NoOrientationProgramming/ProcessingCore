@@ -187,7 +187,6 @@ Success TcpListening::socketCreate(bool isIPv6, SOCKET &fdLst, string &strAddr)
 	bool ok;
 
 	memset(&addr, 0, sizeof(addr));
-	addrLen = sizeof(addr);
 
 	addr.ss_family = isIPv6 ? AF_INET6 : AF_INET;
 
@@ -243,6 +242,16 @@ Success TcpListening::socketCreate(bool isIPv6, SOCKET &fdLst, string &strAddr)
 							errnoToStr(errGet()).c_str());
 
 	// bind and listen
+
+	// Important for MacOS
+	// Literature
+	// - https://stackoverflow.com/questions/73707162/socket-bind-failed-with-invalid-argument-error-for-program-running-on-macos
+	// Thx to Bananabaer!
+	if (addr.ss_family == AF_INET)
+		addrLen = sizeof(sockaddr_in);
+	else
+		addrLen = sizeof(sockaddr_in6);
+	// Important for MacOS: End
 
 	if (::bind(fdLst, (struct sockaddr *)&addr, addrLen) < 0)
 		return procErrLog(-1, "bind(%u) failed: %s", mPort, errnoToStr(errGet()).c_str());
