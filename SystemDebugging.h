@@ -94,6 +94,7 @@ private:
 	Success shutdown();
 
 	void peerListUpdate();
+	void commandAutoProcess();
 	bool disconnectRequestedCheck(TcpTransfering *pTrans);
 	void peerRemove();
 	void peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc);
@@ -112,6 +113,7 @@ private:
 	TcpListening *mpLstProc;
 	TcpListening *mpLstLog;
 	TcpListening *mpLstCmd;
+	TcpListening *mpLstCmdAuto;
 
 	std::string mProcTree;
 	bool mProcTreeChanged;

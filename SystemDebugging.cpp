@@ -62,6 +62,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpLstProc(NULL)
 	, mpLstLog(NULL)
 	, mpLstCmd(NULL)
+	, mpLstCmdAuto(NULL)
 	, mProcTree("")
 	, mProcTreeChanged(false)
 	, mProcTreePeerAdded(false)
@@ -117,6 +118,15 @@ Success SystemDebugging::initialize()
 
 	start(mpLstCmd);
 
+	mpLstCmdAuto = TcpListening::create();
+	if (!mpLstCmdAuto)
+		return procErrLog(-1, "could not create process");
+
+	mpLstCmdAuto->portSet(mPortStart + 6, mListenLocal);
+	mpLstCmdAuto->maxConnSet(4);
+
+	start(mpLstCmdAuto);
+
 	cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "d", "toggle detailed process tree output", cInternalCmdCls);
 	cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
 
@@ -128,6 +138,7 @@ Success SystemDebugging::initialize()
 Success SystemDebugging::process()
 {
 	peerListUpdate();
+	commandAutoProcess();
 
 	processTreeSend();
 #if CONFIG_PROC_HAVE_LOG
@@ -149,6 +160,29 @@ void SystemDebugging::peerListUpdate()
 	peerAdd(mpLstLog, PeerLog, "log");
 #endif
 	peerAdd(mpLstCmd, PeerCmd, "command");
+}
+
+void SystemDebugging::commandAutoProcess()
+{
+	PipeEntry<SOCKET> peerFd;
+	SystemCommanding *pCmd;
+
+	while (1)
+	{
+		if (mpLstCmdAuto->ppPeerFd.get(peerFd) < 1)
+			break;
+
+		pCmd = SystemCommanding::create(peerFd.particle);
+		if (!pCmd)
+		{
+			procErrLog(-1, "could not create process");
+			continue;
+		}
+
+		pCmd->modeAutoSet();
+
+		whenFinishedRepel(start(pCmd));
+	}
 }
 
 bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
