@@ -644,8 +644,6 @@ void SystemCommanding::commandExecute()
 	size_t lenBuf = sizeof(mBufOut) - 1;
 	string msg;
 
-	mBufOut[0] = 0;
-
 	iter = cmds.begin();
 	for (; iter != cmds.end(); ++iter)
 	{
@@ -653,6 +651,7 @@ void SystemCommanding::commandExecute()
 			strcmp(pEdit, iter->shortcut.c_str()))
 			continue;
 
+		mBufOut[0] = 0;
 		iter->func(pArgs, mBufOut, mBufOut + lenBuf);
 		mBufOut[lenBuf] = 0;
 
