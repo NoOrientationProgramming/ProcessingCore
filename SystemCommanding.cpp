@@ -657,7 +657,7 @@ void SystemCommanding::commandExecute()
 
 		lfToCrLf(mBufOut, msg);
 
-		if (!mModeAuto)
+		if (!mModeAuto && msg.size())
 			msg += "\r\n";
 
 		mpTrans->send(msg.c_str(), msg.size());
@@ -668,7 +668,7 @@ void SystemCommanding::commandExecute()
 	msg = "Command not found";
 	procWrnLog("%s", msg.c_str());
 
-	if (!mModeAuto)
+	if (!mModeAuto && msg.size())
 		msg += "\r\n";
 
 	mpTrans->send(msg.c_str(), msg.size());
