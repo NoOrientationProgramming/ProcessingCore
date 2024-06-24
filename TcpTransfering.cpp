@@ -32,6 +32,7 @@
 #include <chrono>
 #ifndef _WIN32
 #include <unistd.h>
+#include <poll.h>
 #endif
 
 #include "TcpTransfering.h"
@@ -42,6 +43,7 @@
 		gen(StCltStart) \
 		gen(StCltArgCheck) \
 		gen(StCltConnDoneWait) \
+		gen(StCltConnDone) \
 		gen(StConnMain) \
 		gen(StTmp) \
 
@@ -189,10 +191,31 @@ Success TcpTransfering::process()
 		if (success != Positive)
 			return procErrLog(-1, "could not set socket options");
 
-		// set timeout
+		res = connect(mSocketFd, (struct sockaddr *)mpHostAddr, sizeof(*mpHostAddr));
 
-		mStartMs = curTimeMs;
-		mState = StCltConnDoneWait;
+		free(mpHostAddr);
+		mpHostAddr = NULL;
+
+		if (!res)
+		{
+			mState = StCltConnDone;
+			break;
+		}
+
+		numErr = errGet();
+#ifdef _WIN32
+		if (numErr == WSAEINPROGRESS)
+#else
+		if (numErr == EINPROGRESS)
+#endif
+		{
+			mStartMs = curTimeMs;
+			mState = StCltConnDoneWait;
+			break;
+		}
+
+		return procErrLog(-1, "could not connect to host: %s (%d)",
+						errnoToStr(numErr).c_str(), numErr);
 
 		break;
 	case StCltConnDoneWait:
@@ -200,29 +223,19 @@ Success TcpTransfering::process()
 		if (diffMs > dTmoDefaultConnDoneMs)
 			return procErrLog(-1, "timeout connecting to host");
 
-		res = connect(mSocketFd, (struct sockaddr *)mpHostAddr, sizeof(*mpHostAddr));
-		if (res)
-		{
-			numErr = errGet();
-#ifdef _WIN32
-			if (numErr == WSAEWOULDBLOCK || numErr == WSAEINPROGRESS)
-				break;
-#else
-			if (numErr == EWOULDBLOCK ||
-				numErr == EALREADY ||
-				numErr == EINPROGRESS ||
-				numErr == EAGAIN)
-				break;
-#endif
-			return procErrLog(-1, "could not connect to host: %s (%d)",
-							errnoToStr(numErr).c_str(), numErr);
-		}
+		success = connClientDone();
+		if (success == Pending)
+			break;
 
-		free(mpHostAddr);
-		mpHostAddr = NULL;
+		if (success != Positive)
+			return procErrLog(-1, "client connect failed");
+
+		mState = StCltConnDone;
+
+		break;
+	case StCltConnDone:
 
 		addrInfoSet();
-
 		mSendReady = true;
 
 		mState = StConnMain;
@@ -490,6 +503,58 @@ Success TcpTransfering::socketOptionsSet()
 							errnoToStr(errGet()).c_str());
 
 	mReadReady = true;
+
+	return Positive;
+}
+
+/* Literature
+ * - https://man7.org/linux/man-pages/man2/connect.2.html
+ * - https://man7.org/linux/man-pages/man2/poll.2.html
+ * - https://man7.org/linux/man-pages/man2/getsockopt.2.html
+ * - https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsapoll
+ * - https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getsockopt
+ */
+Success TcpTransfering::connClientDone()
+{
+#ifdef _WIN32
+	WSAPOLLFD fds[1];
+#else
+	struct pollfd fds[1];
+#endif
+	int res;
+
+	fds[0].fd = mSocketFd;
+	fds[0].events = POLLOUT;
+#ifdef _WIN32
+	res = WSAPoll(fds, 1, 0);
+#else
+	res = poll(fds, 1, 0);
+#endif
+	if (!res)
+		return Pending;
+
+	if (res < 0)
+		return procErrLog(-1, "could not poll socket: %s",
+						errnoToStr(errGet()).c_str());
+
+	if (!(fds[0].revents & POLLOUT))
+		return procErrLog(-1, "didn't get POLLOUT event");
+
+	int errSock;
+#ifdef _WIN32
+	int len = sizeof(errSock);
+	res = ::getsockopt(mSocketFd, SOL_SOCKET, SO_ERROR, (char *)&errSock, &len);
+#else
+	socklen_t len = sizeof(errSock);
+	res = ::getsockopt(mSocketFd, SOL_SOCKET, SO_ERROR, &errSock, &len);
+#endif
+	if (res)
+		return procErrLog(-2, "getsockopt(SO_ERROR) failed: %s",
+							errnoToStr(errGet()).c_str());
+
+	if (errSock)
+		return procErrLog(-2, "socket error: %s",
+							errnoToStr(errSock).c_str());
 
 	return Positive;
 }

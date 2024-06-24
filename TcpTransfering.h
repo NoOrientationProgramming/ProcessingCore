@@ -118,6 +118,7 @@ private:
 
 	void disconnect(int err = 0);
 	Success socketOptionsSet();
+	Success connClientDone();
 	void addrInfoSet();
 	struct sockaddr_storage *addrStringToSock(const std::string &strAddr, uint16_t numPort);
 
