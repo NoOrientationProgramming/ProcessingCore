@@ -31,10 +31,6 @@
 #ifndef SYSTEM_DEBUGGING_H
 #define SYSTEM_DEBUGGING_H
 
-#ifndef CONFIG_DBG_HAVE_ENVIRONMENT
-#define CONFIG_DBG_HAVE_ENVIRONMENT			0
-#endif
-
 #include <string>
 #include <list>
 #include <queue>
@@ -105,10 +101,6 @@ private:
 #if CONFIG_PROC_HAVE_LOG
 	void logEntriesSend();
 #endif
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	void environmentSend();
-#endif
-
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
@@ -120,12 +112,6 @@ private:
 	TcpListening *mpLstProc;
 	TcpListening *mpLstLog;
 	TcpListening *mpLstCmd;
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	TcpListening *mpLstEnv;
-	std::string mEnvironment;
-	bool mEnvironmentChanged;
-	clock_t mEnvironmentChangedTime;
-#endif
 
 	std::string mProcTree;
 	bool mProcTreeChanged;

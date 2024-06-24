@@ -31,9 +31,6 @@
 #include <string.h>
 
 #include "SystemDebugging.h"
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-#include "env.h"
-#endif
 
 using namespace std;
 
@@ -65,11 +62,6 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpLstProc(NULL)
 	, mpLstLog(NULL)
 	, mpLstCmd(NULL)
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	, mpLstEnv(NULL)
-	, mEnvironment("")
-	, mEnvironmentChanged(false)
-#endif
 	, mProcTree("")
 	, mProcTreeChanged(false)
 	, mProcTreePeerAdded(false)
@@ -128,16 +120,6 @@ Success SystemDebugging::initialize()
 	cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "d", "toggle detailed process tree output", cInternalCmdCls);
 	cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
 
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	mpLstEnv = TcpListening::create();
-	if (!mpLstEnv)
-		return procErrLog(-1, "could not create process");
-
-	mpLstEnv->portSet(mPortStart + 3);
-
-	start(mpLstEnv);
-#endif
-
 	entryLogCreateSet(SystemDebugging::entryLogCreate);
 
 	return Positive;
@@ -151,10 +133,6 @@ Success SystemDebugging::process()
 #if CONFIG_PROC_HAVE_LOG
 	logEntriesSend();
 #endif
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	environmentSend();
-#endif
-
 	return Pending;
 }
 
@@ -171,9 +149,6 @@ void SystemDebugging::peerListUpdate()
 	peerAdd(mpLstLog, PeerLog, "log");
 #endif
 	peerAdd(mpLstCmd, PeerCmd, "command");
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-	peerAdd(mpLstEnv, PeerEnv, "environment");
-#endif
 }
 
 bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
@@ -293,14 +268,6 @@ void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, c
 			mProcTreeChangedTime -= mUpdateMs;
 			mProcTreePeerAdded = true;
 		}
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-		else
-		if (peerType == PeerEnv)
-		{
-			mEnvironment = "";
-			mEnvironmentChangedTime -= mUpdateMs;
-		}
-#endif
 	}
 }
 
@@ -402,53 +369,6 @@ void SystemDebugging::logEntriesSend()
 				pTrans->send(msg.c_str(), msg.size());
 		}
 	}
-}
-#endif
-
-#if CONFIG_DBG_HAVE_ENVIRONMENT
-void SystemDebugging::environmentSend()
-{
-	if (mEnvironmentChanged)
-	{
-		uint32_t diffMs = nowMs() - mEnvironmentChangedTime;
-
-		if (diffMs < mUpdateMs)
-			return;
-
-		mEnvironmentChanged = false;
-	}
-#if CONFIG_PROC_HAVE_DRIVERS
-	Guard lock(envMtx);
-#endif
-	StreamWriterBuilder envBuilder;
-	envBuilder["indentation"] = "    ";
-	string environment = writeString(envBuilder, env);
-
-	if (environment == mEnvironment)
-		return;
-
-	string msg("\033[2J\033[H");
-
-	msg += environment;
-
-	PeerIter iter;
-	struct SystemDebuggingPeer peer;
-	TcpTransfering *pTrans = NULL;
-
-	iter = mPeerList.begin();
-	while (iter != mPeerList.end())
-	{
-		peer = *iter++;
-		pTrans = (TcpTransfering *)peer.pProc;
-
-		if (peer.type == PeerEnv)
-			pTrans->send(msg.c_str(), msg.size());
-	}
-
-	mEnvironment = environment;
-
-	mEnvironmentChanged = true;
-	mEnvironmentChangedTime = nowMs();
 }
 #endif
 
