@@ -509,8 +509,10 @@ Success TcpTransfering::socketOptionsSet()
 
 /* Literature
  * - https://man7.org/linux/man-pages/man2/connect.2.html
+ * - https://man7.org/linux/man-pages/man2/select.2.html
  * - https://man7.org/linux/man-pages/man2/poll.2.html
  * - https://man7.org/linux/man-pages/man2/getsockopt.2.html
+ * - https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-select
  * - https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsapoll
  * - https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getsockopt
  */
