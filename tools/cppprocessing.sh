@@ -179,8 +179,8 @@ protected:
 
 private:
 
-	${classname}(const ${classname} &) : Processing("") {}
-	${classname} &operator=(const ${classname} &) { return *this; }
+	${classname}(const ${classname} &) = delete;
+	${classname} &operator=(const ${classname} &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()

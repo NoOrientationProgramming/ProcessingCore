@@ -187,8 +187,8 @@ protected:
 
 private:
 
-	${classname}(const ${classname} &) : PhyAnimating("") {}
-	${classname} &operator=(const ${classname} &) { return *this; }
+	${classname}(const ${classname} &) = delete;
+	${classname} &operator=(const ${classname} &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()
