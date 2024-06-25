@@ -322,7 +322,10 @@ Success SystemCommanding::shutdown()
 	if (!mpTrans)
 		return Positive;
 
-	string msg = "\r\n";
+	string msg;
+
+	if (!mModeAuto)
+		msg += "\r\n";
 
 	if (mCursorHidden)
 		msg += "\033[?25h"; // Show cursor
