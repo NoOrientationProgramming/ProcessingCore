@@ -248,7 +248,7 @@ Q: Isn't this some kind of operating system?
 A: No. There is no such thing as an operating system. Every piece of software should be structured this way.
 
 Q: Aren't these micro services?  
-A: Not exactly. These processes reside in the application itself. They are more similar to Go-/co-routines, tasklets or async-wait structures.
+A: Not exactly. These processes reside in the application itself. They are more similar to Go-/co-routines, tasklets or async-await structures.
 
 Q: Isn't it ineffective to poll for the result of a child process instead of using callbacks and event driven design?  
 A: No. Because: TODO
