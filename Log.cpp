@@ -61,6 +61,7 @@ const string reset("\033[37m");
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
+static mutex mtxPrint;
 
 void levelLogSet(int lvl)
 {
@@ -75,7 +76,6 @@ void entryLogCreateSet(FuncEntryLogCreate pFct)
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
 {
 #if CONFIG_PROC_HAVE_DRIVERS
-	static mutex mtxPrint;
 	lock_guard<mutex> lock(mtxPrint); // Guard not defined!
 #endif
 	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
