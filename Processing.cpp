@@ -734,7 +734,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 {
 	if (!pChild)
 	{
-		procErrLog(-1, "could not start child. NULL pointer");
+		procDbgLog(LOG_LVL, "could not start child. NULL pointer");
 		return NULL;
 	}
 
