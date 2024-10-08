@@ -123,6 +123,8 @@ private:
 	uint16_t mPortStart;
 
 	/* static functions */
+	static void cmdLevelLogSet(char *pArgs, char *pBuf, char *pBufEnd);
+	static void cmdLevelLogSysSet(char *pArgs, char *pBuf, char *pBufEnd);
 	static void procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd);
 	static void procTreeColoredToggle(char *pArgs, char *pBuf, char *pBufEnd);
 	static void entryLogCreate(

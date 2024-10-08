@@ -129,6 +129,8 @@ Success SystemDebugging::initialize()
 
 	//cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "", "toggle detailed process tree output", cInternalCmdCls);
 	//cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
+	cmdReg("levelLog", &SystemDebugging::cmdLevelLogSet, "", "set the log level for stdout", cInternalCmdCls);
+	cmdReg("levelLogSys", &SystemDebugging::cmdLevelLogSysSet, "", "set the log level for socket", cInternalCmdCls);
 
 	entryLogCreateSet(SystemDebugging::entryLogCreate);
 
@@ -412,6 +414,30 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+void SystemDebugging::cmdLevelLogSet(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	const int lvlDefault = 2;
+	int lvl = pArgs ? atoi(pArgs) : lvlDefault;
+
+	if (lvl < 0)
+		lvl = lvlDefault;
+
+	::levelLogSet(lvl);
+	dInfo("Log level set to %d", lvl);
+}
+
+void SystemDebugging::cmdLevelLogSysSet(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	const int lvlDefault = 2;
+	int lvl = pArgs ? atoi(pArgs) : lvlDefault;
+
+	if (lvl < 0)
+		lvl = lvlDefault;
+
+	levelLogSet(lvl);
+	dInfo("System log level set to %d", lvl);
+}
+
 void SystemDebugging::procTreeDetailedToggle(char *pArgs, char *pBuf, char *pBufEnd)
 {
 	(void)pArgs;
