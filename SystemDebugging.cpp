@@ -127,8 +127,8 @@ Success SystemDebugging::initialize()
 
 	start(mpLstCmdAuto);
 
-	cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "", "toggle detailed process tree output", cInternalCmdCls);
-	cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
+	//cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "", "toggle detailed process tree output", cInternalCmdCls);
+	//cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
 
 	entryLogCreateSet(SystemDebugging::entryLogCreate);
 
