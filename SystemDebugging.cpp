@@ -210,13 +210,13 @@ bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 
 	if ((buf[0] == 0x03) || (buf[0] == 0x04))
 	{
-		procInfLog("end of transmission");
+		procDbgLog(LOG_LVL, "end of transmission");
 		return true;
 	}
 
 	if (!strncmp(buf, cSeqCtrlC.c_str(), cLenSeqCtrlC))
 	{
-		procInfLog("transmission cancelled");
+		procDbgLog(LOG_LVL, "transmission cancelled");
 		return true;
 	}
 
