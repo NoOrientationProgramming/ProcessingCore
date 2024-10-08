@@ -1101,7 +1101,7 @@ void SystemCommanding::globalInit()
 	/* register standard commands here */
 	cmdReg("help",
 		cmdHelpPrint,
-		"h", "this help screen",
+		"h", "This help screen",
 		cInternalCmdCls);
 	cmdReg("hd",
 		cmdHexDump,
