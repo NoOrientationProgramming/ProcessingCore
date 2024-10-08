@@ -129,8 +129,8 @@ Success SystemDebugging::initialize()
 
 	//cmdReg("detailed", &SystemDebugging::procTreeDetailedToggle, "", "toggle detailed process tree output", cInternalCmdCls);
 	//cmdReg("colored", &SystemDebugging::procTreeColoredToggle, "", "toggle colored process tree output", cInternalCmdCls);
-	cmdReg("levelLog", &SystemDebugging::cmdLevelLogSet, "", "set the log level for stdout", cInternalCmdCls);
-	cmdReg("levelLogSys", &SystemDebugging::cmdLevelLogSysSet, "", "set the log level for socket", cInternalCmdCls);
+	cmdReg("levelLog", &SystemDebugging::cmdLevelLogSet, "", "Set the log level for stdout", cInternalCmdCls);
+	cmdReg("levelLogSys", &SystemDebugging::cmdLevelLogSysSet, "", "Set the log level for socket", cInternalCmdCls);
 
 	entryLogCreateSet(SystemDebugging::entryLogCreate);
 
