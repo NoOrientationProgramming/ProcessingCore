@@ -148,7 +148,7 @@ private:
 	uint32_t mStateKey;
 	uint32_t mStartMs;
 	bool mModeAuto;
-	bool mCursorHidden;
+	bool mTermChanged;
 	bool mDone;
 	bool mLastKeyWasTab;
 	char mCmdInBuf[cNumCmdInBuffer][cSizeBufCmdIn];

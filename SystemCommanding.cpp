@@ -180,7 +180,7 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mStateKey(StKeyMain)
 	, mStartMs(0)
 	, mModeAuto(false)
-	, mCursorHidden(false)
+	, mTermChanged(false)
 	, mDone(false)
 	, mLastKeyWasTab(false)
 	, mIdxLineEdit(0)
@@ -275,12 +275,15 @@ Success SystemCommanding::process()
 		// Hide cursor
 		msg += "\033[?25l";
 
+		// Alternative screen buffer
+		msg += "\033[?1049h";
+
 		// Set terminal title
 		msg += "\033]2;SystemCommanding()\a";
 
 		mpTrans->send(msg.c_str(), msg.size());
 
-		mCursorHidden = true;
+		mTermChanged = true;
 
 		mState = StWelcomeSend;
 
@@ -327,8 +330,14 @@ Success SystemCommanding::shutdown()
 	if (!mModeAuto)
 		msg += "\r\n";
 
-	if (mCursorHidden)
-		msg += "\033[?25h"; // Show cursor
+	if (mTermChanged)
+	{
+		// Show cursor
+		msg += "\033[?25h";
+
+		// Restore screen buffer
+		msg += "\033[?1049l";
+	}
 
 	mpTrans->send(msg.c_str(), msg.size());
 	mpTrans->doneSet();
