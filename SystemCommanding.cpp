@@ -272,11 +272,14 @@ Success SystemCommanding::process()
 		// IAC WONT LINEMODE
 		msg += "\xFF\xFC\x22";
 
+		// Alternative screen buffer
+		msg += "\033[?1049h";
+
 		// Hide cursor
 		msg += "\033[?25l";
 
-		// Alternative screen buffer
-		msg += "\033[?1049h";
+		// Clear screen
+		msg += "\033[2J\033[H";
 
 		// Set terminal title
 		msg += "\033]2;SystemCommanding()\a";
