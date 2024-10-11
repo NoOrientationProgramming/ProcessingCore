@@ -7,7 +7,7 @@
 
   File created on 30.01.2024
 
-  Copyright (C) 2024-now Authors and www.dsp-crowd.com
+  Copyright (C) 2024, Johannes Natter
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
