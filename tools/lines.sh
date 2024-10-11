@@ -8,7 +8,7 @@
 #
 #  File created on 09.03.2023
 #
-#  Copyright (C) 2023-now Authors and www.dsp-crowd.com
+#  Copyright (C) 2023, Johannes Natter
 
 modLineSet()
 {

@@ -5,7 +5,7 @@
   Author(s):
       - Johannes Natter, office@dsp-crowd.com
 
-  Copyright (C) 2017 Authors and www.dsp-crowd.com
+  Copyright (C) 2017, Johannes Natter
 */
 
 #include <iostream>
