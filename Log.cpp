@@ -61,7 +61,9 @@ const string reset("\033[37m");
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
+#if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxPrint;
+#endif
 
 void levelLogSet(int lvl)
 {
