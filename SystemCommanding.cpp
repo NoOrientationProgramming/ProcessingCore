@@ -902,18 +902,23 @@ bool SystemCommanding::cursorJump(uint16_t key)
 	bool changed = false;
 
 	const char *pCursor = &mCmdInBuf[mIdxLineEdit][mIdxColCursor];
-	const char *pPrev = pCursor - 1;
+	const char *pPrev = NULL;
 
 	while (true)
 	{
 		if (mIdxColCursor == idxStop)
 			break;
 
-		mIdxColCursor += direction;
 		changed = true;
 
-		pPrev += direction;
 		pCursor += direction;
+		mIdxColCursor += direction;
+
+		if (mIdxColCursor)
+			pPrev = pCursor - 1;
+
+		if (!pPrev)
+			continue;
 
 		if (keyIsAlphaNum(*pPrev) == statePrev &&
 			keyIsAlphaNum(*pCursor) == stateCursor)
