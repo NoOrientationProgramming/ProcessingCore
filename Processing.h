@@ -104,15 +104,15 @@
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 #include <new>
 #include <list>
+#define dNoThrow (std::nothrow)
+#else
+#define dNoThrow
 #endif
 
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <thread>
 #include <mutex>
 typedef std::lock_guard<std::mutex> Guard;
-#define dNoThrow (std::nothrow)
-#else
-#define dNoThrow
 #endif
 
 enum DriverMode
