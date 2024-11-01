@@ -51,19 +51,9 @@ ${classname}::${classname}()
 
 /* member functions */
 
-Success ${classname}::initialize()
-{
-	return Positive;
-}
-
 Success ${classname}::process()
 {
 	return Pending;
-}
-
-Success ${classname}::shutdown()
-{
-	return Positive;
 }
 
 void ${classname}::processInfo(char *pBuf, char *pBufEnd)
@@ -110,9 +100,7 @@ private:
 	 */
 
 	/* member functions */
-	Success initialize();
 	Success process();
-	Success shutdown();
 	void processInfo(char *pBuf, char *pBufEnd);
 
 	/* member variables */
