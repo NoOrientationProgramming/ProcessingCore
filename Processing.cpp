@@ -686,7 +686,7 @@ Processing::Processing(const char *name)
 	, mLevelDriver(0)
 	, mName(name)
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
-	, mpChildList()
+	, mChildList()
 #else
 	, mpChildList(NULL)
 #endif
