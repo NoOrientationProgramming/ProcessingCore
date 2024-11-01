@@ -105,7 +105,9 @@
 #include <new>
 #include <list>
 #define dNoThrow (std::nothrow)
-#else
+#endif
+
+#ifndef dNoThrow
 #define dNoThrow
 #endif
 
