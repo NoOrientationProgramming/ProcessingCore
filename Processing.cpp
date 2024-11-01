@@ -220,7 +220,7 @@ void Processing::treeTick()
 		if (success != Positive)
 		{
 			mSuccess = success;
-			procDbgLog(LOG_LVL, "initializing(): failed. success = %d", mSuccess);
+			procDbgLog(LOG_LVL, "initializing(): failed. success = %d", int(mSuccess));
 			procDbgLog(LOG_LVL, "downShutting()");
 			mStateAbstract = PsDownShutting;
 			break;
@@ -250,7 +250,7 @@ void Processing::treeTick()
 
 		mSuccess = success;
 
-		procDbgLog(LOG_LVL, "processing(): done. success = %d", mSuccess);
+		procDbgLog(LOG_LVL, "processing(): done. success = %d", int(mSuccess));
 		mStatDrv |= PsbDrvProcessDone;
 
 		procDbgLog(LOG_LVL, "downShutting()");
