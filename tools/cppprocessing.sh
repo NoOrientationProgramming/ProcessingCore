@@ -169,7 +169,7 @@ public:
 
 	static ${classname} *create()
 	{
-		return new (std::nothrow) ${classname};
+		return new dNoThrow ${classname};
 	}
 
 protected:
