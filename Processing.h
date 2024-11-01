@@ -96,9 +96,9 @@
 #endif
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #endif
 
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
