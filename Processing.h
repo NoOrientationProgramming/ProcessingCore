@@ -220,6 +220,12 @@ private:
 		return *this;
 	}
 
+	/* member functions */
+
+	/* member variables */
+	uint8_t mLevelTree;
+	uint8_t mLevelDriver;
+
 	const char *mName;
 
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
@@ -236,22 +242,22 @@ private:
 #endif
 	Success mSuccess;
 	uint16_t mNumChildren;
+	uint8_t mStateAbstract;
+	uint8_t mStatParent;
+	DriverMode mDriver;
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	uint16_t mNumChildrenMax;
 #endif
-	uint8_t mStateAbstract;
-	DriverMode mDriver;
-	uint8_t mStatParent;
 	uint8_t mStatDrv;
-	uint8_t mLevelTree;
-	uint8_t mLevelDriver;
 
+	/* static functions */
 	static void parentalDrive(Processing *pChild);
 #if CONFIG_PROC_HAVE_DRIVERS
 	static void internalDrive(void *pProc);
 	static void *driverInternalCreate(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver);
 	static void driverInternalCleanUp(void *pDriver);
 
+	/* static variables */
 	static size_t sleepInternalDriveUs;
 	static size_t numBurstInternalDrive;
 	static FuncInternalDrive pFctInternalDrive;

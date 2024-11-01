@@ -682,24 +682,28 @@ void Processing::driverInternalCreateAndCleanUpSet(
 Processing::Processing(const char *name)
 	: mState(0)
 	, mStateOld(0)
+	, mLevelTree(0)
+	, mLevelDriver(0)
 	, mName(name)
-#if !CONFIG_PROC_HAVE_LIB_STD_CPP
+#if CONFIG_PROC_HAVE_LIB_STD_CPP
+	, mpChildList()
+#else
 	, mpChildList(NULL)
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
+	, mChildListMtx()
 	, mpDriver(NULL)
 	, mpConfigDriver(NULL)
 #endif
 	, mSuccess(Pending)
 	, mNumChildren(0)
+	, mStateAbstract(PsExistent)
+	, mStatParent(0)
+	, mDriver(DrivenByExternalDriver)
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	, mNumChildrenMax(CONFIG_PROC_NUM_MAX_CHILDREN_DEFAULT)
 #endif
-	, mStateAbstract(PsExistent)
-	, mDriver(DrivenByExternalDriver)
-	, mStatParent(0)
-	, mLevelTree(0)
-	, mLevelDriver(0)
+	//, mStatDrv(0) <- Initialized below
 {
 	procDbgLog(LOG_LVL, "Processing()");
 
