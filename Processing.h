@@ -122,7 +122,7 @@ enum DriverMode
 	DrivenByExternalDriver
 };
 
-typedef int Success;
+typedef int16_t Success;
 
 enum SuccessState
 {
