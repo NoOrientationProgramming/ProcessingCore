@@ -569,7 +569,7 @@ void Processing::globalDestructorRegister(FuncGlobDestruct globDestr)
 	{
 		size_t numDestrElements = CONFIG_PROC_NUM_MAX_GLOBAL_DESTRUCTORS + 1;
 
-		pGlobalDestructors = new (nothrow) FuncGlobDestruct[numDestrElements];
+		pGlobalDestructors = new dNoThrow FuncGlobDestruct[numDestrElements];
 		if (!pGlobalDestructors)
 		{
 			errLog(-1, "could not allocate global destructor list");
@@ -1047,7 +1047,7 @@ Processing **Processing::childElemAdd(Processing *pChild)
 	{
 		size_t numChildElements = mNumChildrenMax + 1;
 
-		mpChildList = new (nothrow) Processing *[numChildElements];
+		mpChildList = new dNoThrow Processing *[numChildElements];
 		if (!mpChildList)
 		{
 			procErrLog(-2, "could not allocate child list");
@@ -1132,7 +1132,7 @@ void Processing::internalDrive(void *pProc)
 void *Processing::driverInternalCreate(FuncInternalDrive pFctDrive, void *pProc, void *pConfigDriver)
 {
 	(void)pConfigDriver;
-	return new (nothrow) thread(pFctDrive, pProc);
+	return new dNoThrow thread(pFctDrive, pProc);
 }
 
 void Processing::driverInternalCleanUp(void *pDriver)

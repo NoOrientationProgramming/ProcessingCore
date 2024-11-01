@@ -110,6 +110,9 @@
 #include <thread>
 #include <mutex>
 typedef std::lock_guard<std::mutex> Guard;
+#define dNoThrow (std::nothrow)
+#else
+#define dNoThrow
 #endif
 
 enum DriverMode
