@@ -67,6 +67,9 @@ public:
 
 	void listenLocalSet();
 	void portStartSet(uint16_t port);
+
+	bool ready();
+
 	static void levelLogSet(int lvl);
 
 protected:
@@ -96,7 +99,7 @@ private:
 	void peerListUpdate();
 	void commandAutoProcess();
 	bool disconnectRequestedCheck(TcpTransfering *pTrans);
-	void peerRemove();
+	void peerCheck();
 	void peerAdd(TcpListening *pListener, enum PeerType peerType, const char *pTypeDesc);
 	void processTreeSend();
 #if CONFIG_PROC_HAVE_LOG
@@ -106,20 +109,21 @@ private:
 
 	/* member variables */
 	Processing *mpTreeRoot;
-	bool mListenLocal;
-	std::list<struct SystemDebuggingPeer> mPeerList;
-	uint32_t mUpdateMs;
-
 	TcpListening *mpLstProc;
 	TcpListening *mpLstLog;
 	TcpListening *mpLstCmd;
 	TcpListening *mpLstCmdAuto;
 
-	std::string mProcTree;
-	bool mProcTreeChanged;
-	uint32_t mProcTreeChangedTime;
-	bool mProcTreePeerAdded;
+	std::list<struct SystemDebuggingPeer> mPeerList;
 
+	std::string mProcTree;
+	bool mListenLocal;
+	bool mProcTreeChanged;
+	bool mProcTreePeerAdded;
+	bool mPeerLogOnceConnected;
+
+	uint32_t mUpdateMs;
+	uint32_t mProcTreeChangedTime;
 	uint16_t mPortStart;
 
 	/* static functions */

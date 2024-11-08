@@ -57,15 +57,18 @@ static char buffProcTree[8192];
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
-	, mListenLocal(false)
-	, mUpdateMs(500)
 	, mpLstProc(NULL)
 	, mpLstLog(NULL)
 	, mpLstCmd(NULL)
 	, mpLstCmdAuto(NULL)
+	, mPeerList()
 	, mProcTree("")
+	, mListenLocal(false)
 	, mProcTreeChanged(false)
 	, mProcTreePeerAdded(false)
+	, mPeerLogOnceConnected(false)
+	, mUpdateMs(500)
+	, mProcTreeChangedTime(0)
 	, mPortStart(3000)
 {
 }
@@ -84,6 +87,11 @@ void SystemDebugging::portStartSet(uint16_t port)
 void SystemDebugging::levelLogSet(int lvl)
 {
 	levelLog = lvl;
+}
+
+bool SystemDebugging::ready()
+{
+	return mPeerLogOnceConnected;
 }
 
 Success SystemDebugging::initialize()
@@ -156,7 +164,7 @@ Success SystemDebugging::shutdown()
 
 void SystemDebugging::peerListUpdate()
 {
-	peerRemove();
+	peerCheck();
 	peerAdd(mpLstProc, PeerProc, "process tree");
 #if CONFIG_PROC_HAVE_LOG
 	peerAdd(mpLstLog, PeerLog, "log");
@@ -225,7 +233,7 @@ bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 	return false;
 }
 
-void SystemDebugging::peerRemove()
+void SystemDebugging::peerCheck()
 {
 	PeerIter iter;
 	struct SystemDebuggingPeer peer;
@@ -238,8 +246,15 @@ void SystemDebugging::peerRemove()
 		peer = *iter;
 		pProc = peer.pProc;
 
-		if (peer.type == PeerProc || peer.type == PeerLog)
+		if (peer.type == PeerProc)
 			disconnectReq = disconnectRequestedCheck((TcpTransfering *)pProc);
+		else
+		if (peer.type == PeerLog)
+		{
+			TcpTransfering *pTrans = (TcpTransfering *)pProc;
+			disconnectReq = disconnectRequestedCheck(pTrans);
+			mPeerLogOnceConnected |= pTrans->mSendReady;
+		}
 		else
 			disconnectReq = false;
 
