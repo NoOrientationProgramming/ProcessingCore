@@ -105,6 +105,8 @@ Success ${classname}::process()
 	{
 	case StStart:
 
+		mState = StMain;
+
 		break;
 	case StMain:
 
