@@ -123,7 +123,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #else
 	::localtime_r(&tt_t, &bt);
 #endif
-	strftime(timeBuf, sizeof(timeBuf), "%d.%m.%y %H:%M:%S", &bt);
+	strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d  %H:%M:%S", &bt);
 
 	if (tDiffSec > cTimeDiffMax)
 	{
