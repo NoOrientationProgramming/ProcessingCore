@@ -109,7 +109,6 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// get time
 	system_clock::time_point t = system_clock::now();
 	milliseconds durDiffMs = duration_cast<milliseconds>(t - tOld);
-	tOld = t;
 
 	// build day
 	time_t tTt = system_clock::to_time_t(t);
@@ -171,6 +170,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// Creating log entry
 	if (severity <= levelLog)
 	{
+		tOld = t;
 #ifdef _WIN32
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
