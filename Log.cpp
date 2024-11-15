@@ -58,7 +58,8 @@ static system_clock::time_point tOld;
 const string red("\033[0;31m");
 const string yellow("\033[0;33m");
 const string reset("\033[37m");
-const double cTimeDiffMax = 9.999;
+const int cDiffSecMax = 9;
+const int cDiffMsMax = 999;
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
@@ -145,9 +146,11 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	int tDiffMs = int(tDiff % 1000);
 	bool diffMaxed = false;
 
-	if (tDiffSec > cTimeDiffMax)
+	if (tDiffSec > cDiffSecMax)
 	{
-		tDiffSec = cTimeDiffMax;
+		tDiffSec = cDiffSecMax;
+		tDiffMs = cDiffMsMax;
+
 		diffMaxed = true;
 	}
 
