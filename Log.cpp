@@ -28,9 +28,9 @@
   SOFTWARE.
 */
 
+#include <cinttypes>
 #include <iostream>
 #include <chrono>
-#include <time.h>
 #include <stdarg.h>
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
@@ -80,16 +80,11 @@ static const char *severityToStr(const int severity)
 {
 	switch (severity)
 	{
-	case 1:
-		return "ERR";
-	case 2:
-		return "WRN";
-	case 3:
-		return "INF";
-	default:
-		break;
+	case 1: return "ERR";
+	case 2: return "WRN";
+	case 3: return "INF";
+	default: break;
 	}
-
 	return "DBG";
 }
 
@@ -110,20 +105,45 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 
 	va_list args;
 
+	// get time
 	system_clock::time_point t = system_clock::now();
-	duration<long, nano> tDiff = t - tOld;
-	double tDiffSec = tDiff.count() / 10e9;
-	bool diffMaxed = false;
-	time_t tt_t = system_clock::to_time_t(t);
-	tm bt {};
-	char timeBuf[32];
+	milliseconds durDiffMs = duration_cast<milliseconds>(t - tOld);
+	tOld = t;
 
+	// build day
+	time_t tTt = system_clock::to_time_t(t);
+	char timeBuf[32];
+	tm tTm {};
 #ifdef _WIN32
-	::localtime_s(&bt, &tt_t);
+	::localtime_s(&tTm, &tTt);
 #else
-	::localtime_r(&tt_t, &bt);
+	::localtime_r(&tTt, &tTm);
 #endif
-	strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d  %H:%M:%S", &bt);
+	strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d", &tTm);
+
+	// build time
+	system_clock::duration dur = t.time_since_epoch();
+
+	hours durDays = duration_cast<hours>(dur) / 24;
+	dur -= durDays * 24;
+
+	hours durHours = duration_cast<hours>(dur);
+	dur -= durHours;
+
+	minutes durMinutes = duration_cast<minutes>(dur);
+	dur -= durMinutes;
+
+	seconds durSecs = duration_cast<seconds>(dur);
+	dur -= durSecs;
+
+	milliseconds durMillis = duration_cast<milliseconds>(dur);
+	dur -= durMillis;
+
+	// build diff
+	long long tDiff = durDiffMs.count();
+	int tDiffSec = int(tDiff / 1000);
+	int tDiffMs = int(tDiff % 1000);
+	bool diffMaxed = false;
 
 	if (tDiffSec > cTimeDiffMax)
 	{
@@ -131,8 +151,12 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 		diffMaxed = true;
 	}
 
-	pStart += snprintf(pStart, pEnd - pStart, "%s.000 %c%3.3f  %4d  %s  %-24s ",
-					timeBuf, diffMaxed ? '>' : '+', tDiffSec,
+	// merge
+	pStart += snprintf(pStart, pEnd - pStart,
+					"%s  %02" PRId64 ":%02" PRId64 ":%02" PRId64 ".%03" PRId64
+					" %c%d.%03d  %4d  %s  %-24s ",
+					timeBuf, durHours.count(), durMinutes.count(), durSecs.count(), durMillis.count(),
+					diffMaxed ? '>' : '+', tDiffSec, tDiffMs,
 					line, severityToStr(severity), function);
 
 	va_start(args, msg);
@@ -142,7 +166,6 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// Creating log entry
 	if (severity <= levelLog)
 	{
-		tOld = t;
 #ifdef _WIN32
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
