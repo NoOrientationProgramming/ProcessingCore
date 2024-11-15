@@ -58,6 +58,7 @@ static system_clock::time_point tOld;
 const string red("\033[0;31m");
 const string yellow("\033[0;33m");
 const string reset("\033[37m");
+const double cTimeDiffMax = 9.999;
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 2;
@@ -112,11 +113,11 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	system_clock::time_point t = system_clock::now();
 	duration<long, nano> tDiff = t - tOld;
 	double tDiffSec = tDiff.count() / 10e9;
+	bool diffMaxed = false;
 	time_t tt_t = system_clock::to_time_t(t);
 	tm bt {};
 	char timeBuf[32];
 
-	tOld = t;
 #ifdef _WIN32
 	::localtime_s(&bt, &tt_t);
 #else
@@ -124,9 +125,15 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #endif
 	strftime(timeBuf, sizeof(timeBuf), "%d.%m.%y %H:%M:%S", &bt);
 
-	// "%03d"
-	pStart += snprintf(pStart, pEnd - pStart, "%s.000 +%3.3f  %4d  %s  %-24s ",
-					timeBuf, tDiffSec, line, severityToStr(severity), function);
+	if (tDiffSec > cTimeDiffMax)
+	{
+		tDiffSec = cTimeDiffMax;
+		diffMaxed = true;
+	}
+
+	pStart += snprintf(pStart, pEnd - pStart, "%s.000 %c%3.3f  %4d  %s  %-24s ",
+					timeBuf, diffMaxed ? '>' : '+', tDiffSec,
+					line, severityToStr(severity), function);
 
 	va_start(args, msg);
 	pStart += vsnprintf(pStart, pEnd - pStart, msg, args);
@@ -135,6 +142,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// Creating log entry
 	if (severity <= levelLog)
 	{
+		tOld = t;
 #ifdef _WIN32
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
