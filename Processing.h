@@ -329,15 +329,15 @@ inline int16_t logEntryCreateDummy(
 #define genericLog(l, c, m, ...)	(logEntryCreateDummy(l, __PROC_FILENAME__, __func__, __LINE__, c, m, ##__VA_ARGS__))
 #endif
 
-#define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__) : c)
-#define wrnLog(m, ...)					(genericLog(2, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
-#define infLog(m, ...)					(genericLog(3, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
-#define dbgLog(l, m, ...)				(genericLog(4 + l, 0, "%-49s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__) : c)
+#define wrnLog(m, ...)					(genericLog(2, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define infLog(m, ...)					(genericLog(3, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define dbgLog(l, m, ...)				(genericLog(4 + l, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
 
-#define procErrLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__) : c)
-#define procWrnLog(m, ...)				(genericLog(2, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
-#define procInfLog(m, ...)				(genericLog(3, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
-#define procDbgLog(l, m, ...)				(genericLog(4 + l, 0, "%p %-34s " m, this, this->procName(), ##__VA_ARGS__))
+#define procErrLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__) : c)
+#define procWrnLog(m, ...)				(genericLog(2, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
+#define procInfLog(m, ...)				(genericLog(3, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
+#define procDbgLog(l, m, ...)				(genericLog(4 + l, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
 #define dInfoDebugPrefix

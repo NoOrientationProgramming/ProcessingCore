@@ -157,7 +157,7 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	// merge
 	pStart += snprintf(pStart, pEnd - pStart,
 					"%s  %02d:%02d:%02d.%03d "
-					"%c%d.%03d  %4d  %s  %-18s  ",
+					"%c%d.%03d  %4d  %s  %-20s  ",
 					timeBuf,
 					int(durHours.count()), int(durMinutes.count()),
 					int(durSecs.count()), int(durMillis.count()),
