@@ -153,9 +153,11 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 
 	// merge
 	pStart += snprintf(pStart, pEnd - pStart,
-					"%s  %02" PRId64 ":%02" PRId64 ":%02" PRId64 ".%03" PRId64
-					" %c%d.%03d  %4d  %s  %-24s ",
-					timeBuf, durHours.count(), durMinutes.count(), durSecs.count(), durMillis.count(),
+					"%s  %02d:%02d:%02d.%03d "
+					"%c%d.%03d  %4d  %s  %-18s  ",
+					timeBuf,
+					int(durHours.count()), int(durMinutes.count()),
+					int(durSecs.count()), int(durMillis.count()),
 					diffMaxed ? '>' : '+', tDiffSec, tDiffMs,
 					line, severityToStr(severity), function);
 
