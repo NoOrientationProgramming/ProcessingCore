@@ -75,6 +75,23 @@ void entryLogCreateSet(FuncEntryLogCreate pFct)
 	pFctEntryLogCreate = pFct;
 }
 
+static const char *severityToStr(const int severity)
+{
+	switch (severity)
+	{
+	case 1:
+		return "ERR";
+	case 2:
+		return "WRN";
+	case 3:
+		return "INF";
+	default:
+		break;
+	}
+
+	return "DBG";
+}
+
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
 {
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -108,7 +125,8 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 	strftime(timeBuf, sizeof(timeBuf), "%d.%m.%y %H:%M:%S", &bt);
 
 	// "%03d"
-	pStart += snprintf(pStart, pEnd - pStart, "%s.000 +%3.3f %4d %3d  %-24s ", timeBuf, tDiffSec, line, severity, function);
+	pStart += snprintf(pStart, pEnd - pStart, "%s.000 +%3.3f  %4d  %s  %-24s ",
+					timeBuf, tDiffSec, line, severityToStr(severity), function);
 
 	va_start(args, msg);
 	pStart += vsnprintf(pStart, pEnd - pStart, msg, args);
