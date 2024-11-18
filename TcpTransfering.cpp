@@ -783,7 +783,7 @@ bool TcpTransfering::wsaInit()
 	if (globalInitDone)
 		return true;
 
-	dbgLog(LOG_LVL, "global WSA initialization");
+	dbgLog("global WSA initialization");
 
 	int verLow = 2;
 	int verHigh = 2;
@@ -817,7 +817,7 @@ bool TcpTransfering::wsaInit()
 void TcpTransfering::globalWsaDestruct()
 {
 	WSACleanup();
-	dbgLog(LOG_LVL, "TcpTransfering(): done");
+	dbgLog("TcpTransfering(): done");
 }
 #endif
 

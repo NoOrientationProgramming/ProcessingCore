@@ -1613,7 +1613,7 @@ void cmdReg(
 		const string &desc,
 		const string &group)
 {
-	dbgLog(LOG_LVL, "registering command %s", id.c_str());
+	dbgLog("registering command %s", id.c_str());
 #if CONFIG_PROC_HAVE_DRIVERS
 	Guard lock(mtxCmds);
 #endif
@@ -1641,6 +1641,6 @@ void cmdReg(
 	cmds.push_back(newCmd);
 	cmds.sort(commandSort);
 
-	dbgLog(LOG_LVL, "registering command %s: done", id.c_str());
+	dbgLog("registering command %s: done", id.c_str());
 }
 

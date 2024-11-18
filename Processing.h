@@ -332,7 +332,7 @@ inline int16_t logEntryCreateDummy(
 #define errLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__) : c)
 #define wrnLog(m, ...)					(genericLog(2, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
 #define infLog(m, ...)					(genericLog(3, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
-#define dbgLog(l, m, ...)				(genericLog(4 + l, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
+#define dbgLog(m, ...)					(genericLog(4, 0, "%-41s " m, __PROC_FILENAME__, ##__VA_ARGS__))
 
 #define procErrLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__) : c)
 #define procWrnLog(m, ...)				(genericLog(2, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
