@@ -34,8 +34,6 @@
 
 using namespace std;
 
-#define LOG_LVL	0
-
 typedef list<struct SystemDebuggingPeer>::iterator PeerIter;
 
 bool SystemDebugging::procTreeDetailed = true;

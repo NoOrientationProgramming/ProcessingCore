@@ -100,8 +100,6 @@ if (key == k) \
 using namespace std;
 using namespace chrono;
 
-#define LOG_LVL	0
-
 // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml#telnet-options-1
 #define keyIac			0xFF // RFC854
 #define keyIacDo		0xFD // RFC854

@@ -74,8 +74,6 @@ enum ProcStatBitDriver
 using namespace std;
 #endif
 
-#define LOG_LVL	1
-
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 typedef list<Processing *>::iterator ChildIter;
 #endif

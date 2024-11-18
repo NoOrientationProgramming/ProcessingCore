@@ -56,8 +56,6 @@ dProcessStateStr(ProcState);
 using namespace std;
 using namespace chrono;
 
-#define LOG_LVL	0
-
 const uint32_t cUpdateDelayMs = 200;
 const uint32_t cIfUpWaitTmoMs = 5000;
 
