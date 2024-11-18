@@ -337,7 +337,8 @@ inline int16_t logEntryCreateDummy(
 #define procErrLog(c, m, ...)				(c < 0 ? genericLog(1, c, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__) : c)
 #define procWrnLog(m, ...)				(genericLog(2, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
 #define procInfLog(m, ...)				(genericLog(3, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
-#define procDbgLog(l, m, ...)				(genericLog(4 + l, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
+#define procDbgLog(m, ...)				(genericLog(4, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
+#define procCoreLog(m, ...)				(genericLog(5, 0, "%p %-26s " m, this, this->procName(), ##__VA_ARGS__))
 
 #if CONFIG_PROC_HAVE_LIB_STD_C
 #define dInfoDebugPrefix
@@ -373,7 +374,7 @@ static const char *StateName ## String[] = \
 #define dStateTrace \
 if (mState != mStateOld) \
 { \
-	procDbgLog(LOG_LVL, "pst: %s > %s", \
+	procDbgLog("pst: %s > %s", \
 			ProcStateString[mStateOld], \
 			ProcStateString[mState]); \
 	mStateOld = mState; \

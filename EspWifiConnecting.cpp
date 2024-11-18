@@ -191,7 +191,7 @@ Success EspWifiConnecting::process()
 		if (!mWifiConnected)
 			break;
 
-		procDbgLog(LOG_LVL, "WiFi connected");
+		procDbgLog("WiFi connected");
 #endif
 		mState = StIfUpWait;
 
@@ -200,7 +200,7 @@ Success EspWifiConnecting::process()
 
 		if (diffMs > cIfUpWaitTmoMs)
 		{
-			//procDbgLog(LOG_LVL, "Timeout reached for interface up");
+			//procDbgLog("Timeout reached for interface up");
 			mState = StConnect;
 			break;
 		}
@@ -217,7 +217,7 @@ Success EspWifiConnecting::process()
 		if (!mIpInfo.ip.addr)
 			break;
 
-		procDbgLog(LOG_LVL, "Interface up. IP: " IPSTR, IP2STR(&mIpInfo.ip));
+		procDbgLog("Interface up. IP: " IPSTR, IP2STR(&mIpInfo.ip));
 
 		mConnected = true;
 
@@ -261,7 +261,7 @@ Success EspWifiConnecting::process()
 		if (mWifiConnected)
 			break;
 
-		procDbgLog(LOG_LVL, "WiFi disconnected");
+		procDbgLog("WiFi disconnected");
 
 		mState = StConfigure;
 

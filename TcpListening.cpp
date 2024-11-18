@@ -111,7 +111,7 @@ Success TcpListening::process()
 		if (!ok)
 			return procErrLog(-1, "could not init WSA");
 #endif
-		//procDbgLog(LOG_LVL, "creating listening sockets");
+		//procDbgLog("creating listening sockets");
 
 		success = socketCreate(false, mFdLstIPv4, mAddrIPv4);
 		if (success != Positive)
@@ -120,11 +120,11 @@ Success TcpListening::process()
 		success = socketCreate(true, mFdLstIPv6, mAddrIPv6);
 		if (success != Positive)
 		{
-			procDbgLog(LOG_LVL, "could not create IPv6 socket");
+			procDbgLog("could not create IPv6 socket");
 			socketClose(mFdLstIPv6);
 		}
 
-		//procDbgLog(LOG_LVL, "creating listening sockets: done");
+		//procDbgLog("creating listening sockets: done");
 
 		mState = StMain;
 
@@ -311,7 +311,7 @@ Success TcpListening::connectionsAccept(SOCKET &fdLst)
 		if (!ok)
 			return procErrLog(-1, "could not get socket address info");
 
-		procDbgLog(LOG_LVL, "got peer %s%s%s:%u",
+		procDbgLog("got peer %s%s%s:%u",
 				isIPv6 ? "[" : "",
 				strAddr.c_str(),
 				isIPv6 ? "]" : "",
@@ -355,14 +355,14 @@ void TcpListening::socketClose(SOCKET &fd)
 	if (fd == INVALID_SOCKET)
 		return;
 
-	//procDbgLog(LOG_LVL, "closing socket %d", fd);
+	//procDbgLog("closing socket %d", fd);
 #ifdef _WIN32
 	::closesocket(fd);
 #else
 	::close(fd);
 #endif
 	fd = INVALID_SOCKET;
-	//procDbgLog(LOG_LVL, "closing socket %d: done", fd);
+	//procDbgLog("closing socket %d: done", fd);
 }
 
 int TcpListening::errGet()

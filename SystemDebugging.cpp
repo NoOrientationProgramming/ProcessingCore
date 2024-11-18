@@ -220,13 +220,13 @@ bool SystemDebugging::disconnectRequestedCheck(TcpTransfering *pTrans)
 
 	if ((buf[0] == 0x03) || (buf[0] == 0x04))
 	{
-		procDbgLog(LOG_LVL, "end of transmission");
+		procDbgLog("end of transmission");
 		return true;
 	}
 
 	if (!strncmp(buf, cSeqCtrlC.c_str(), cLenSeqCtrlC))
 	{
-		procDbgLog(LOG_LVL, "transmission cancelled");
+		procDbgLog("transmission cancelled");
 		return true;
 	}
 
@@ -265,7 +265,7 @@ void SystemDebugging::peerCheck()
 			continue;
 		}
 
-		procDbgLog(LOG_LVL, "removing %s peer. process: %p", peer.typeDesc.c_str(), pProc);
+		procDbgLog("removing %s peer. process: %p", peer.typeDesc.c_str(), pProc);
 		repel(pProc);
 
 		iter = mPeerList.erase(iter);
@@ -306,7 +306,7 @@ void SystemDebugging::peerAdd(TcpListening *pListener, enum PeerType peerType, c
 
 		start(pProc);
 
-		procDbgLog(LOG_LVL, "adding %s peer. process: %p", pTypeDesc, pProc);
+		procDbgLog("adding %s peer. process: %p", pTypeDesc, pProc);
 
 		peer.type = peerType;
 		peer.typeDesc = pTypeDesc;
@@ -351,8 +351,8 @@ void SystemDebugging::processTreeSend()
 
 	mProcTreePeerAdded = false;
 
-	//procDbgLog(LOG_LVL, "process tree changed");
-	//procDbgLog(LOG_LVL, "\n%s", procTree.c_str());
+	//procDbgLog("process tree changed");
+	//procDbgLog("\n%s", procTree.c_str());
 
 	string msg("\033[2J\033[H");
 

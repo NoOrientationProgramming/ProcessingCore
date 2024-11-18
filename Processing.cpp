@@ -143,12 +143,12 @@ void Processing::treeTick()
 		char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 		procId(childId, childId + sizeof(childId), pChild);
 
-		procDbgLog(LOG_LVL, "removing %s from child list", childId);
+		procCoreLog("removing %s from child list", childId);
 		{
 #if CONFIG_PROC_HAVE_DRIVERS
-			procDbgLog(LOG_LVL, "Locking mChildListMtx");
+			procCoreLog("Locking mChildListMtx");
 			Guard lock(mChildListMtx);
-			procDbgLog(LOG_LVL, "Locking mChildListMtx: done");
+			procCoreLog("Locking mChildListMtx: done");
 #endif
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 			iter = mChildList.erase(iter);
@@ -157,7 +157,7 @@ void Processing::treeTick()
 			pChildListElem = childElemErase(pChildListElem);
 #endif
 		}
-		procDbgLog(LOG_LVL, "removing %s from child list: done", childId);
+		procCoreLog("removing %s from child list: done", childId);
 
 		destroy(pChild);
 	}
@@ -193,12 +193,12 @@ void Processing::treeTick()
 #endif
 		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "process canceled during state existent");
+			procCoreLog("process canceled during state existent");
 			mStateAbstract = PsFinishedPrepare;
 			break;
 		}
 
-		procDbgLog(LOG_LVL, "initializing()");
+		procCoreLog("initializing()");
 		mStateAbstract = PsInitializing;
 
 		break;
@@ -206,8 +206,8 @@ void Processing::treeTick()
 
 		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "process canceled during initializing");
-			procDbgLog(LOG_LVL, "downShutting()");
+			procCoreLog("process canceled during initializing");
+			procCoreLog("downShutting()");
 			mStateAbstract = PsDownShutting;
 			break;
 		}
@@ -220,16 +220,16 @@ void Processing::treeTick()
 		if (success != Positive)
 		{
 			mSuccess = success;
-			procDbgLog(LOG_LVL, "initializing(): failed. success = %d", int(mSuccess));
-			procDbgLog(LOG_LVL, "downShutting()");
+			procCoreLog("initializing(): failed. success = %d", int(mSuccess));
+			procCoreLog("downShutting()");
 			mStateAbstract = PsDownShutting;
 			break;
 		}
 
-		procDbgLog(LOG_LVL, "initializing(): done");
+		procCoreLog("initializing(): done");
 		mStatDrv |= PsbDrvInitDone;
 
-		procDbgLog(LOG_LVL, "processing()");
+		procCoreLog("processing()");
 		mStateAbstract = PsProcessing;
 
 		break;
@@ -237,8 +237,8 @@ void Processing::treeTick()
 
 		if (mStatParent & PsbParCanceled)
 		{
-			procDbgLog(LOG_LVL, "process canceled during processing");
-			procDbgLog(LOG_LVL, "downShutting()");
+			procCoreLog("process canceled during processing");
+			procCoreLog("downShutting()");
 			mStateAbstract = PsDownShutting;
 			break;
 		}
@@ -250,10 +250,10 @@ void Processing::treeTick()
 
 		mSuccess = success;
 
-		procDbgLog(LOG_LVL, "processing(): done. success = %d", int(mSuccess));
+		procCoreLog("processing(): done. success = %d", int(mSuccess));
 		mStatDrv |= PsbDrvProcessDone;
 
-		procDbgLog(LOG_LVL, "downShutting()");
+		procCoreLog("downShutting()");
 		mStateAbstract = PsDownShutting;
 
 		break;
@@ -264,7 +264,7 @@ void Processing::treeTick()
 		if (success == Pending)
 			break;
 
-		procDbgLog(LOG_LVL, "downShutting(): done");
+		procCoreLog("downShutting(): done");
 		mStatDrv |= PsbDrvShutdownDone;
 
 		mStateAbstract = PsChildrenUnusedSet;
@@ -272,7 +272,7 @@ void Processing::treeTick()
 		break;
 	case PsChildrenUnusedSet:
 
-		procDbgLog(LOG_LVL, "marking children as unused");
+		procCoreLog("marking children as unused");
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 		iter = mChildList.begin();
 		while (iter != mChildList.end())
@@ -286,22 +286,22 @@ void Processing::treeTick()
 #endif
 			pChild->unusedSet();
 		}
-		procDbgLog(LOG_LVL, "marking children as unused: done");
+		procCoreLog("marking children as unused: done");
 
 		mStateAbstract = PsFinishedPrepare;
 
 		break;
 	case PsFinishedPrepare:
 
-		procDbgLog(LOG_LVL, "preparing finish");
+		procCoreLog("preparing finish");
 
 		if (mStatParent & PsbParWhenFinishedUnused)
 		{
-			procDbgLog(LOG_LVL, "set process as unused when finished");
+			procCoreLog("set process as unused when finished");
 			unusedSet();
 		}
 
-		procDbgLog(LOG_LVL, "preparing finish: done -> finished");
+		procCoreLog("preparing finish: done -> finished");
 
 		mStateAbstract = PsFinished;
 
@@ -705,7 +705,7 @@ Processing::Processing(const char *name)
 #endif
 	//, mStatDrv(0) <- Initialized below
 {
-	procDbgLog(LOG_LVL, "Processing()");
+	procCoreLog("Processing()");
 
 	mStatDrv = 0;
 	if (disableTreeDefault)
@@ -728,9 +728,9 @@ Processing::Processing(const char *name)
 
 Processing::~Processing()
 {
-	procDbgLog(LOG_LVL, "~Processing()");
+	procCoreLog("~Processing()");
 #if CONFIG_PROC_HAVE_DRIVERS
-	procDbgLog(LOG_LVL, "mpDriver = 0x%08X", mpDriver);
+	procCoreLog("mpDriver = 0x%08X", mpDriver);
 #endif
 }
 
@@ -738,7 +738,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 {
 	if (!pChild)
 	{
-		procDbgLog(LOG_LVL, "could not start child. NULL pointer");
+		procCoreLog("could not start child. NULL pointer");
 		return NULL;
 	}
 
@@ -757,7 +757,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 	procId(childId, childId + sizeof(childId), pChild);
 
-	procDbgLog(LOG_LVL, "starting %s", childId);
+	procCoreLog("starting %s", childId);
 
 	pChild->mDriver = driver;
 	pChild->mLevelTree = mLevelTree + 1;
@@ -765,12 +765,12 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	pChild->mStatParent |= PsbParStarted;
 
 	// Add process to child list
-	procDbgLog(LOG_LVL, "adding %s to child list", childId);
+	procCoreLog("adding %s to child list", childId);
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
-		procDbgLog(LOG_LVL, "Locking mChildListMtx");
+		procCoreLog("Locking mChildListMtx");
 		Guard lock(mChildListMtx);
-		procDbgLog(LOG_LVL, "Locking mChildListMtx: done");
+		procCoreLog("Locking mChildListMtx: done");
 #endif
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 		mChildList.push_back(pChild);
@@ -779,16 +779,16 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 		childElemAdd(pChild);
 #endif
 	}
-	procDbgLog(LOG_LVL, "adding %s to child list: done", childId);
+	procCoreLog("adding %s to child list: done", childId);
 
 	// Optionally: Create and start new driver
 	if (driver == DrivenByNewInternalDriver)
 	{
 #if CONFIG_PROC_HAVE_DRIVERS
-		procDbgLog(LOG_LVL, "using new internal driver for %s", childId);
+		procCoreLog("using new internal driver for %s", childId);
 		++pChild->mLevelDriver;
 
-		procDbgLog(LOG_LVL, "creating new internal driver");
+		procCoreLog("creating new internal driver");
 		pChild->mpDriver = pFctDriverInternalCreate(pFctInternalDrive, pChild, pChild->mpConfigDriver);
 		pChild->mpConfigDriver = NULL;
 
@@ -799,7 +799,7 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 			pChild->mDriver = DrivenByParent;
 			--pChild->mLevelDriver;
 		} else
-			procDbgLog(LOG_LVL, "creating new internal driver: done");
+			procCoreLog("creating new internal driver: done");
 #else
 		procWrnLog("system does not have internal drivers. switching back to parental drive");
 		pChild->mDriver = DrivenByParent;
@@ -807,12 +807,12 @@ Processing *Processing::start(Processing *pChild, DriverMode driver)
 	}
 	else if (driver == DrivenByExternalDriver)
 	{
-		procDbgLog(LOG_LVL, "using external driver for %s", childId);
+		procCoreLog("using external driver for %s", childId);
 		++pChild->mLevelDriver;
 	} else
-		procDbgLog(LOG_LVL, "using parent as driver for %s", childId);
+		procCoreLog("using parent as driver for %s", childId);
 
-	procDbgLog(LOG_LVL, "starting %s: done", childId);
+	procCoreLog("starting %s: done", childId);
 
 	return pChild;
 }
@@ -840,23 +840,23 @@ Processing *Processing::cancel(Processing *pChild)
 	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 	procId(childId, childId + sizeof(childId), pChild);
 
-	procDbgLog(LOG_LVL, "canceling %s", childId);
+	procCoreLog("canceling %s", childId);
 	pChild->mStatParent |= PsbParCanceled;
-	procDbgLog(LOG_LVL, "canceling %s: done", childId);
+	procCoreLog("canceling %s: done", childId);
 
 	return pChild;
 }
 
 Processing *Processing::repel(Processing *pChild)
 {
-	procDbgLog(LOG_LVL, "trying to repel child");
+	procCoreLog("trying to repel child");
 
 	if (!cancel(pChild))
 		return NULL;
 
-	procDbgLog(LOG_LVL, "setting child unused");
+	procCoreLog("setting child unused");
 	pChild->unusedSet();
-	procDbgLog(LOG_LVL, "setting child unused: done");
+	procCoreLog("setting child unused: done");
 
 	return NULL;
 }
@@ -878,22 +878,22 @@ Processing *Processing::whenFinishedRepel(Processing *pChild)
 	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 	procId(childId, childId + sizeof(childId), pChild);
 
-	procDbgLog(LOG_LVL, "repelling %s when finished", childId);
+	procCoreLog("repelling %s when finished", childId);
 	pChild->mStatParent |= PsbParWhenFinishedUnused;
-	procDbgLog(LOG_LVL, "repelling %s when finished: done", childId);
+	procCoreLog("repelling %s when finished: done", childId);
 
 	return NULL;
 }
 
 Success Processing::initialize()
 {
-	procDbgLog(LOG_LVL, "initializing() not used");
+	procCoreLog("initializing() not used");
 	return Positive;
 }
 
 Success Processing::shutdown()
 {
-	procDbgLog(LOG_LVL, "shutdown() not used");
+	procCoreLog("shutdown() not used");
 	return Positive;
 }
 

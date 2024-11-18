@@ -269,7 +269,7 @@ Success TcpTransfering::process()
 
 Success TcpTransfering::shutdown()
 {
-	procDbgLog(LOG_LVL, "shutdown");
+	procDbgLog("shutdown");
 
 	if (mpHostAddr)
 	{
@@ -340,7 +340,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 
 		if (numErr == WSAECONNRESET)
 		{
-			procDbgLog(LOG_LVL, "connection reset by peer");
+			procDbgLog("connection reset by peer");
 			disconnect();
 			return -2;
 		}
@@ -350,7 +350,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 
 		if (numErr == ECONNRESET)
 		{
-			procDbgLog(LOG_LVL, "connection reset by peer");
+			procDbgLog("connection reset by peer");
 			disconnect();
 			return -2;
 		}
@@ -363,7 +363,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 
 	if (!numBytes)
 	{
-		procDbgLog(LOG_LVL, "connection reset by peer");
+		procDbgLog("connection reset by peer");
 		disconnect();
 		return -4;
 	}
@@ -375,7 +375,7 @@ ssize_t TcpTransfering::read(void *pBuf, size_t lenReq)
 #else
 	numBytes = ::recv(mSocketFd, (char *)pBuf, numBytes, 0);
 #endif
-	//procDbgLog(LOG_LVL, "received data. len: %d", numBytes);
+	//procDbgLog("received data. len: %d", numBytes);
 
 	mBytesReceived += numBytes;
 
@@ -467,11 +467,11 @@ void TcpTransfering::disconnect(int err)
 #endif
 	if (mSocketFd == INVALID_SOCKET)
 	{
-		procDbgLog(LOG_LVL, "socket closed already");
+		procDbgLog("socket closed already");
 		return;
 	}
 
-	procDbgLog(LOG_LVL, "closing socket: %d", mSocketFd);
+	procDbgLog("closing socket: %d", mSocketFd);
 	mErrno = err;
 #ifdef _WIN32
 	::closesocket(mSocketFd);
@@ -479,7 +479,7 @@ void TcpTransfering::disconnect(int err)
 	::close(mSocketFd);
 #endif
 	mSocketFd = INVALID_SOCKET;
-	procDbgLog(LOG_LVL, "closing socket: %d: done", mSocketFd);
+	procDbgLog("closing socket: %d: done", mSocketFd);
 }
 
 Success TcpTransfering::socketOptionsSet()
