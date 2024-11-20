@@ -492,7 +492,7 @@ void Processing::destroy(Processing *pChild)
 	char childId[CONFIG_PROC_ID_BUFFER_SIZE];
 	procId(childId, childId + sizeof(childId), pChild);
 
-	dbgLog("child %s destroy()", childId);
+	coreLog("child %s destroy()", childId);
 
 	if (pChild->mNumChildren)
 		errLog(-1, "destroying child with grand children");
@@ -500,34 +500,34 @@ void Processing::destroy(Processing *pChild)
 #if !CONFIG_PROC_HAVE_LIB_STD_CPP
 	if (pChild->mpChildList)
 	{
-		dbgLog("child %s deleting child list", childId);
+		coreLog("child %s deleting child list", childId);
 		delete[] pChild->mpChildList;
 		pChild->mpChildList = NULL;
-		dbgLog("child %s deleting child list: done", childId);
+		coreLog("child %s deleting child list: done", childId);
 	}
 #endif
 #if CONFIG_PROC_HAVE_DRIVERS
 	if (pChild->mpDriver)
 	{
-		dbgLog("driver cleanup");
+		coreLog("driver cleanup");
 		pFctDriverInternalCleanUp(pChild->mpDriver);
 		pChild->mpDriver = NULL;
-		dbgLog("driver cleanup: done");
+		coreLog("driver cleanup: done");
 	}
 #endif
-	dbgLog("child %s delete()", childId);
+	coreLog("child %s delete()", childId);
 	delete pChild;
-	dbgLog("child %s delete(): done", childId);
+	coreLog("child %s delete(): done", childId);
 
-	dbgLog("child %s destroy(): done", childId);
+	coreLog("child %s destroy(): done", childId);
 }
 
 void Processing::applicationClose()
 {
-	dbgLog("closing application");
+	coreLog("closing application");
 
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
-	dbgLog("executing global destructors");
+	coreLog("executing global destructors");
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 	list<FuncGlobDestruct>::iterator iter = globalDestructors.begin();
 
@@ -544,22 +544,22 @@ void Processing::applicationClose()
 	if (pGlobalDestructors)
 		delete[] pGlobalDestructors;
 #endif
-	dbgLog("executing global destructors: done");
+	coreLog("executing global destructors: done");
 #else
-	dbgLog("global destructors disabled");
+	coreLog("global destructors disabled");
 #endif
 
-	dbgLog("closing application: done");
+	coreLog("closing application: done");
 }
 
 void Processing::globalDestructorRegister(FuncGlobDestruct globDestr)
 {
 #if CONFIG_PROC_HAVE_GLOBAL_DESTRUCTORS
-	dbgLog("");
+	coreLog("");
 #if CONFIG_PROC_HAVE_LIB_STD_CPP
 	globalDestructors.push_front(globDestr);
 	globalDestructors.unique();
-	dbgLog(": done");
+	coreLog(": done");
 #else
 	FuncGlobDestruct *pGlobDestrListElem = NULL;
 
@@ -585,7 +585,7 @@ void Processing::globalDestructorRegister(FuncGlobDestruct globDestr)
 		if (!*pGlobDestrListElem)
 		{
 			*pGlobDestrListElem = globDestr;
-			dbgLog(": done");
+			coreLog(": done");
 			return;
 		}
 
@@ -1141,15 +1141,15 @@ void Processing::driverInternalCleanUp(void *pDriver)
 {
 	thread *pThread = (thread *)pDriver;
 
-	dbgLog("thread join()");
+	coreLog("thread join()");
 	if (pThread->joinable())
 		pThread->join();
-	dbgLog("thread join(): done");
+	coreLog("thread join(): done");
 
-	dbgLog("thread delete()");
+	coreLog("thread delete()");
 	delete pThread;
 	pThread = NULL;
-	dbgLog("thread delete(): done");
+	coreLog("thread delete(): done");
 }
 #endif
 
