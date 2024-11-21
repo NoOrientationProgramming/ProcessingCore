@@ -62,7 +62,7 @@ const int cDiffSecMax = 9;
 const int cDiffMsMax = 999;
 
 const size_t cLogEntryBufferSize = 1024;
-static int levelLog = 2;
+static int levelLog = 3;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxPrint;
 #endif
