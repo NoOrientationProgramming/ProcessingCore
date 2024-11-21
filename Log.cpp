@@ -84,9 +84,11 @@ static const char *severityToStr(const int severity)
 	case 1: return "ERR";
 	case 2: return "WRN";
 	case 3: return "INF";
+	case 4: return "DBG";
+	case 5: return "COR";
 	default: break;
 	}
-	return "DBG";
+	return "INV";
 }
 
 int16_t logEntryCreate(const int severity, const char *filename, const char *function, const int line, const int16_t code, const char *msg, ...)
