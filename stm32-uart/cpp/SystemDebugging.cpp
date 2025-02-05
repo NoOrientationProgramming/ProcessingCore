@@ -91,7 +91,7 @@ Command *SystemDebugging::freeCmdStructGet()
 
 	for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
 	{
-		if (pCmd->id and pCmd->func)
+		if (pCmd->id && pCmd->func)
 			continue;
 
 		return pCmd;
