@@ -380,13 +380,13 @@ if (mState != mStateOld) \
 }
 
 template <typename T>
-T MIN(T a, T b)
+T PMIN(T a, T b)
 {
 	return a < b ? a : b;
 }
 
 template <typename T>
-T MAX(T a, T b)
+T PMAX(T a, T b)
 {
 	return a > b ? a : b;
 }
