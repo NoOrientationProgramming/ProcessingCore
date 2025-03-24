@@ -94,6 +94,9 @@ bool SystemDebugging::ready()
 
 Success SystemDebugging::initialize()
 {
+	if (!mpTreeRoot)
+		return procErrLog(-1, "tree root not set");
+
 	mPeerList.clear();
 
 	// proc tree
