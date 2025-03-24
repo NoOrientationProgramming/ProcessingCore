@@ -72,6 +72,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 }
 
 /* member functions */
+
 void SystemDebugging::listenLocalSet()
 {
 	mListenLocal = true;
