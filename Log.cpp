@@ -36,13 +36,13 @@
 #define CONFIG_PROC_LOG_HAVE_STDOUT			1
 #endif
 
-#include <inttypes.h>
+#include <cinttypes>
 #if CONFIG_PROC_LOG_HAVE_CHRONO
 #include <chrono>
 #endif
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstdio>
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
 #endif
