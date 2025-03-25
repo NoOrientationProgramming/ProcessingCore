@@ -48,12 +48,19 @@ public:
 		return new dNoThrow SingleWireTransfering;
 	}
 
+	static void dataReceived(uint8_t *pData, size_t len);
+
 	bool mSendReady;
 
-	static uint8_t buffRx[2];
-	static uint8_t buffRxIdxIrq;
-	static uint8_t buffRxIdxWritten;
-	static uint8_t buffTxPending;
+	uint8_t mBufValid;
+	char mBufInCmd[64];
+	char mBufOutCmd[128];
+	char mBufOutProc[1024];
+
+	static uint8_t bufRx[2];
+	static uint8_t bufRxIdxIrq;
+	static uint8_t bufRxIdxWritten;
+	static uint8_t bufTxPending;
 
 protected:
 
@@ -80,10 +87,11 @@ private:
 	uint8_t byteReceived(uint8_t *pData);
 
 	/* member variables */
-	uint8_t contentTx;
-	uint8_t validIdTx;
-	char *pDataTx;
-	uint8_t idxRx;
+	uint8_t mContentTx;
+	uint8_t mValidIdTx;
+	char *mpDataTx;
+	uint8_t mIdxRx;
+	char mBufOutLog[256];
 
 	/* static functions */
 

@@ -52,10 +52,10 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
-uint8_t SingleWireTransfering::buffRx[2];
-uint8_t SingleWireTransfering::buffRxIdxIrq = 0; // used by IRQ only
-uint8_t SingleWireTransfering::buffRxIdxWritten = 0; // set by IRQ, cleared by main
-uint8_t SingleWireTransfering::buffTxPending = 0;
+uint8_t SingleWireTransfering::bufRx[2];
+uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
+uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
+uint8_t SingleWireTransfering::bufTxPending = 0;
 
 enum SwtFlowControlBytes
 {
@@ -79,6 +79,11 @@ enum SwtContentIdInBytes
 SingleWireTransfering::SingleWireTransfering()
 	: Processing("SingleWireTransfering")
 	, mSendReady(false)
+	, mBufValid(0)
+	, mContentTx(ContentOutNone)
+	, mValidIdTx(0)
+	, mpDataTx(NULL)
+	, mIdxRx(0)
 {
 	mState = StStart;
 }
@@ -110,39 +115,39 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSend:
 
-		if (pEnv->buffValid & dBuffValidOutCmd)
+		if (mBufValid & dBuffValidOutCmd)
 		{
-			validIdTx = dBuffValidOutCmd;
-			pDataTx = pEnv->buffOutCmd;
-			contentTx = ContentOutCmd;
+			mValidIdTx = dBuffValidOutCmd;
+			mpDataTx = mBufOutCmd;
+			mContentTx = ContentOutCmd;
 		}
-		else if (pEnv->buffValid & dBuffValidOutLog)
+		else if (mBufValid & dBuffValidOutLog)
 		{
-			validIdTx = dBuffValidOutLog;
-			pDataTx = pEnv->buffOutLog;
-			contentTx = ContentOutLog;
+			mValidIdTx = dBuffValidOutLog;
+			mpDataTx = mBufOutLog;
+			mContentTx = ContentOutLog;
 		}
-		else if (pEnv->buffValid & dBuffValidOutProc)
+		else if (mBufValid & dBuffValidOutProc)
 		{
-			validIdTx = dBuffValidOutProc;
-			pDataTx = pEnv->buffOutProc;
-			contentTx = ContentOutProc;
+			mValidIdTx = dBuffValidOutProc;
+			mpDataTx = mBufOutProc;
+			mContentTx = ContentOutProc;
 		}
 		else
-			contentTx = ContentOutNone;
+			mContentTx = ContentOutNone;
 
-		SingleWireTransfering::buffTxPending = 1;
-		HAL_UART_Transmit_IT(&huart1, &contentTx, 1);
+		SingleWireTransfering::bufTxPending = 1;
+		//HAL_UART_Transmit_IT(&huart1, &mContentTx, 1);
 
 		mState = StContentIdOutSendWait;
 
 		break;
 	case StContentIdOutSendWait:
 
-		if (SingleWireTransfering::buffTxPending)
+		if (SingleWireTransfering::bufTxPending)
 			return Pending;
 
-		if (contentTx == ContentOutNone)
+		if (mContentTx == ContentOutNone)
 			mState = StFlowControlByteRcv;
 		else
 			mState = StDataSend;
@@ -150,18 +155,18 @@ Success SingleWireTransfering::process()
 		break;
 	case StDataSend:
 
-		SingleWireTransfering::buffTxPending = 1;
-		HAL_UART_Transmit_IT(&huart1, (uint8_t *)pDataTx, strlen(pDataTx) + 1);
+		SingleWireTransfering::bufTxPending = 1;
+		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)mpDataTx, strlen(mpDataTx) + 1);
 
 		mState = StDataSendDoneWait;
 
 		break;
 	case StDataSendDoneWait:
 
-		if (SingleWireTransfering::buffTxPending)
+		if (SingleWireTransfering::bufTxPending)
 			return Pending;
 
-		pEnv->buffValid &= ~validIdTx;
+		mBufValid &= ~mValidIdTx;
 
 		mState = StFlowControlByteRcv;
 
@@ -171,7 +176,7 @@ Success SingleWireTransfering::process()
 		if (!byteReceived(&data))
 			return Pending;
 
-		idxRx = 0;
+		mIdxRx = 0;
 
 		if (data == ContentInCmd)
 			mState = StCmdRcv;
@@ -184,22 +189,22 @@ Success SingleWireTransfering::process()
 		if (!byteReceived(&data))
 			return Pending;
 
-		if (pEnv->buffValid & dBuffValidInCmd)
+		if (mBufValid & dBuffValidInCmd)
 		{
 			// Consumer not finished. Discard command
 			mState = StFlowControlByteRcv;
 			return Pending;
 		}
 
-		if (idxRx == sizeof(pEnv->buffInCmd) - 1)
+		if (mIdxRx == sizeof(mBufInCmd) - 1)
 			data = 0;
 
-		pEnv->buffInCmd[idxRx] = data;
-		++idxRx;
+		mBufInCmd[mIdxRx] = data;
+		++mIdxRx;
 
 		if (!data)
 		{
-			pEnv->buffValid |= dBuffValidInCmd;
+			mBufValid |= dBuffValidInCmd;
 			mState = StFlowControlByteRcv;
 		}
 
@@ -213,15 +218,15 @@ Success SingleWireTransfering::process()
 
 uint8_t SingleWireTransfering::byteReceived(uint8_t *pData)
 {
-	uint8_t idxWr = SingleWireTransfering::buffRxIdxWritten;
+	uint8_t idxWr = SingleWireTransfering::bufRxIdxWritten;
 
 	if (!idxWr)
 		return 0;
 
 	--idxWr;
-	*pData = SingleWireTransfering::buffRx[idxWr];
+	*pData = SingleWireTransfering::bufRx[idxWr];
 
-	SingleWireTransfering::buffRxIdxWritten = 0;
+	SingleWireTransfering::bufRxIdxWritten = 0;
 
 	return 1;
 }
@@ -237,4 +242,10 @@ void SingleWireTransfering::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+void SingleWireTransfering::dataReceived(uint8_t *pData, size_t len)
+{
+	SingleWireTransfering::bufRxIdxWritten = SingleWireTransfering::bufRxIdxIrq + 1;
+	SingleWireTransfering::bufRxIdxIrq ^= 1;
+}
 

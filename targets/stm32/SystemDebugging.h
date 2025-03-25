@@ -85,6 +85,7 @@ private:
 	Processing *mpTreeRoot;
 	uint8_t mStateCmd;
 	SingleWireTransfering *mpSwt;
+	uint8_t mDebugMode;
 
 	/* static functions */
 	static Command *freeCmdStructGet();

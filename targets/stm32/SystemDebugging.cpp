@@ -61,7 +61,7 @@ dProcessStateStr(CmdState);
 
 using namespace std;
 
-#define CMD(x)		(!strncmp(pEnv->buffInCmd, x, strlen(x)))
+#define CMD(x)		(!strncmp(mpSwt->mBufInCmd, x, strlen(x)))
 
 #ifndef dFwVersion
 #define dFwVersion "<unknown firmware version>"
@@ -75,6 +75,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpTreeRoot(pTreeRoot)
 	, mStateCmd(StCmdRcvdWait)
 	, mpSwt(NULL)
+	, mDebugMode(0)
 {
 	mState = StStart;
 }
@@ -160,15 +161,15 @@ Success SystemDebugging::process()
 
 void SystemDebugging::commandInterpret()
 {
-	char *pBuf = pEnv->buffOutCmd;
-	char *pBufEnd = pBuf + sizeof(pEnv->buffOutCmd);
+	char *pBuf = mpSwt->mBufOutCmd;
+	char *pBufEnd = pBuf + sizeof(mpSwt->mBufOutCmd);
 	Command *pCmd = commands;
 
 	switch (mStateCmd)
 	{
 	case StCmdRcvdWait: // fetch
 
-		if (!(pEnv->buffValid & dBuffValidInCmd))
+		if (!(mpSwt->mBufValid & dBuffValidInCmd))
 			break;
 
 		mStateCmd = StCmdInterpret;
@@ -178,24 +179,24 @@ void SystemDebugging::commandInterpret()
 
 		if (CMD("aaaaa"))
 		{
-			pEnv->debugMode ^= 1;
-			dInfo("Debug mode %d", pEnv->debugMode);
+			mDebugMode ^= 1;
+			dInfo("Debug mode %d", mDebugMode);
 			mStateCmd = StCmdSendStart;
 			break;
 		}
 
-		if (!pEnv->debugMode)
+		if (!mDebugMode)
 		{
 			// don't answer
-			pEnv->buffValid &= ~dBuffValidInCmd;
+			mpSwt->mBufValid &= ~dBuffValidInCmd;
 			mStateCmd = StCmdRcvdWait;
 
 			break;
 		}
 
-		procInfLog("Received command: %s", pEnv->buffInCmd);
+		procInfLog("Received command: %s", mpSwt->mBufInCmd);
 
-		*pEnv->buffOutCmd = 0;
+		*mpSwt->mBufOutCmd = 0;
 
 		for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
 		{
@@ -205,21 +206,21 @@ void SystemDebugging::commandInterpret()
 			if (!pCmd->func)
 				continue;
 
-			const char *pArg = pEnv->buffInCmd + strlen(pCmd->id);
+			const char *pArg = mpSwt->mBufInCmd + strlen(pCmd->id);
 
 			if (*pArg)
 				++pArg;
 
 			pCmd->func(pArg, pBuf, pBufEnd);
 
-			if (!*pEnv->buffOutCmd)
+			if (!*mpSwt->mBufOutCmd)
 				dInfo("Done");
 
 			mStateCmd = StCmdSendStart;
 			break;
 		}
 
-		if (*pEnv->buffOutCmd)
+		if (*mpSwt->mBufOutCmd)
 			break;
 
 		dInfo("Unknown command");
@@ -228,16 +229,16 @@ void SystemDebugging::commandInterpret()
 		break;
 	case StCmdSendStart: // write back
 
-		pEnv->buffValid |= dBuffValidOutCmd;
+		mpSwt->mBufValid |= dBuffValidOutCmd;
 		mStateCmd = StCmdSentWait;
 
 		break;
 	case StCmdSentWait:
 
-		if (pEnv->buffValid & dBuffValidOutCmd)
+		if (mpSwt->mBufValid & dBuffValidOutCmd)
 			break;
 
-		pEnv->buffValid &= ~dBuffValidInCmd;
+		mpSwt->mBufValid &= ~dBuffValidInCmd;
 		mStateCmd = StCmdRcvdWait;
 
 		break;
@@ -248,15 +249,15 @@ void SystemDebugging::commandInterpret()
 
 void SystemDebugging::procTreeSend()
 {
-	if (!pEnv->debugMode)
+	if (!mDebugMode)
 		return; // minimize CPU load in production
 
-	if (pEnv->buffValid & dBuffValidOutProc)
+	if (mpSwt->mBufValid & dBuffValidOutProc)
 		return;
 
-	mpTreeRoot->processTreeStr(pEnv->buffOutProc, pEnv->buffOutProc + sizeof(pEnv->buffOutProc), true, true);
+	mpTreeRoot->processTreeStr(mpSwt->mBufOutProc, mpSwt->mBufOutProc + sizeof(mpSwt->mBufOutProc), true, true);
 
-	pEnv->buffValid |= dBuffValidOutProc;
+	mpSwt->mBufValid |= dBuffValidOutProc;
 }
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
