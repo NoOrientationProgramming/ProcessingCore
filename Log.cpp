@@ -28,10 +28,21 @@
   SOFTWARE.
 */
 
-#include <cinttypes>
-#include <iostream>
+#ifndef CONFIG_PROC_LOG_HAVE_CHRONO
+#define CONFIG_PROC_LOG_HAVE_CHRONO			1
+#endif
+
+#ifndef CONFIG_PROC_LOG_HAVE_STDOUT
+#define CONFIG_PROC_LOG_HAVE_STDOUT			1
+#endif
+
+#include <inttypes.h>
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 #include <chrono>
+#endif
 #include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 #if CONFIG_PROC_HAVE_DRIVERS
 #include <mutex>
 #endif
@@ -40,7 +51,9 @@
 #endif
 
 using namespace std;
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 using namespace chrono;
+#endif
 
 typedef void (*FuncEntryLogCreate)(
 			const int severity,
@@ -53,11 +66,13 @@ typedef void (*FuncEntryLogCreate)(
 
 static FuncEntryLogCreate pFctEntryLogCreate = NULL;
 
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 static system_clock::time_point tOld;
+#endif
 
-const string red("\033[0;31m");
-const string yellow("\033[0;33m");
-const string reset("\033[37m");
+const char *red("\033[0;31m");
+const char *yellow("\033[0;33m");
+const char *reset("\033[37m");
 const int cDiffSecMax = 9;
 const int cDiffMsMax = 999;
 
@@ -96,18 +111,17 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 #if CONFIG_PROC_HAVE_DRIVERS
 	lock_guard<mutex> lock(mtxPrint); // Guard not defined!
 #endif
-	char *pBuf = new (nothrow) char[cLogEntryBufferSize];
-	if (!pBuf)
+	char *pBufStart = (char *)malloc(cLogEntryBufferSize);
+	if (!pBufStart)
 		return code;
 
-	char *pStart = pBuf;
-	char *pEnd = pStart + cLogEntryBufferSize - 1;
+	char *pBuf = pBufStart;
+	char *pBufEnd = pBuf + cLogEntryBufferSize - 1;
 
-	*pStart = 0;
-	*pEnd = 0;
+	*pBuf = 0;
+	*pBufEnd = 0;
 
-	va_list args;
-
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 	// get time
 	system_clock::time_point t = system_clock::now();
 	milliseconds durDiffMs = duration_cast<milliseconds>(t - tOld);
@@ -154,58 +168,70 @@ int16_t logEntryCreate(const int severity, const char *filename, const char *fun
 
 		diffMaxed = true;
 	}
-
+#endif
 	// merge
-	pStart += snprintf(pStart, pEnd - pStart,
+	pBuf += snprintf(pBuf, pBufEnd - pBuf,
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 					"%s  %02d:%02d:%02d.%03d "
-					"%c%d.%03d  %4d  %s  %-20s  ",
+					"%c%d.%03d  "
+#endif
+					"L%4d  %s  %-20s  ",
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 					timeBuf,
 					int(durHours.count()), int(durMinutes.count()),
 					int(durSecs.count()), int(durMillis.count()),
 					diffMaxed ? '>' : '+', tDiffSec, tDiffMs,
+#endif
 					line, severityToStr(severity), function);
 
+	va_list args;
+
 	va_start(args, msg);
-	pStart += vsnprintf(pStart, pEnd - pStart, msg, args);
+	pBuf += vsnprintf(pBuf, pBufEnd - pBuf, msg, args);
+	if (pBuf > pBufEnd)
+		pBuf = pBufEnd;
 	va_end(args);
 
-	// Creating log entry
+#if CONFIG_PROC_LOG_HAVE_STDOUT
+	// create log entry
 	if (severity <= levelLog)
 	{
+#if CONFIG_PROC_LOG_HAVE_CHRONO
 		tOld = t;
+#endif
 #ifdef _WIN32
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		if (severity == 1)
 		{
 			SetConsoleTextAttribute(hConsole, 4);
-			cerr << pBuf << "\r\n" << flush;
+			fprintf(stderr, "%s\r\n", pBufStart);
 		}
 		else
 		if (severity == 2)
 		{
 			SetConsoleTextAttribute(hConsole, 6);
-			cerr << pBuf << "\r\n" << flush;
+			fprintf(stderr, "%s\r\n", pBufStart);
 		}
 		else
-			cout << pBuf << "\r\n" << flush;
+			fprintf(stdout, "%s\r\n", pBufStart);
 
 		SetConsoleTextAttribute(hConsole, 7);
 #else
 		if (severity == 1)
-			cerr << red << pBuf << reset << "\r\n" << flush;
+			fprintf(stderr, "%s%s%s\r\n", red, pBufStart, reset);
 		else
 		if (severity == 2)
-			cerr << yellow << pBuf << reset << "\r\n" << flush;
+			fprintf(stderr, "%s%s%s\r\n", yellow, pBufStart, reset);
 		else
-			cout << pBuf << "\r\n" << flush;
+			fprintf(stdout, "%s\r\n", pBufStart);
 #endif
 	}
-
+#endif
 	if (pFctEntryLogCreate)
-		pFctEntryLogCreate(severity, filename, function, line, code, pBuf, pStart - pBuf);
+		pFctEntryLogCreate(severity, filename, function, line, code, pBufStart, pBuf - pBufStart);
 
-	delete[] pBuf;
+	free(pBufStart);
 
 	return code;
 }
