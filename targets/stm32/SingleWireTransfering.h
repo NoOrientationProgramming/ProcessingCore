@@ -57,6 +57,7 @@ public:
 	char mBufOutCmd[128];
 	char mBufOutProc[1024];
 
+	static char mBufOutLog[256];
 	static uint8_t bufRx[2];
 	static uint8_t bufRxIdxIrq;
 	static uint8_t bufRxIdxWritten;
@@ -91,7 +92,6 @@ private:
 	uint8_t mValidIdTx;
 	char *mpDataTx;
 	uint8_t mIdxRx;
-	char mBufOutLog[256];
 
 	/* static functions */
 

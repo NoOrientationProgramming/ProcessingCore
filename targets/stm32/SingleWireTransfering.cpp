@@ -52,6 +52,7 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
+char SingleWireTransfering::mBufOutLog[256];
 uint8_t SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
