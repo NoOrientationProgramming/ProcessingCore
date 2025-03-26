@@ -53,9 +53,9 @@ public:
 	bool mSendReady;
 
 	char mBufInCmd[64];
+	char mBufOutProc[1024];
 	char mBufOutLog[256];
 	char mBufOutCmd[128];
-	char mBufOutProc[1024];
 	uint8_t mBufValid;
 
 	static void dataReceived(uint8_t *pData, size_t len);

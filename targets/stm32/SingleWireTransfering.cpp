@@ -87,6 +87,11 @@ SingleWireTransfering::SingleWireTransfering()
 	, mIdxRx(0)
 {
 	mState = StStart;
+
+	mBufInCmd[0] = 0;
+	mBufOutProc[0] = 0;
+	mBufOutLog[0] = 0;
+	mBufOutCmd[0] = 0;
 }
 
 /* member functions */
