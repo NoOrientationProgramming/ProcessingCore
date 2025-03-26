@@ -68,6 +68,9 @@ using namespace std;
 #endif
 
 SingleWireTransfering *SystemDebugging::pSwt = NULL;
+#if CONFIG_PROC_HAVE_DRIVERS
+static mutex mtxLogEntries;
+#endif
 int SystemDebugging::levelLog = 3;
 
 #define dNumCmds		32
