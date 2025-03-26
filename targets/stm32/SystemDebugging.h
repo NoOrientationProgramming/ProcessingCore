@@ -84,6 +84,7 @@ private:
 
 	/* member variables */
 	Processing *mpTreeRoot;
+	bool mReady;
 	uint8_t mStateCmd;
 	uint8_t mDebugMode;
 

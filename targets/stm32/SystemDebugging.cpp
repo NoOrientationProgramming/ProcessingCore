@@ -79,6 +79,7 @@ Command commands[dNumCmds] = {};
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
+	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
 	, mDebugMode(0)
 {
@@ -89,7 +90,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 
 bool SystemDebugging::ready()
 {
-	return false;
+	return mReady;
 }
 
 bool SystemDebugging::cmdReg(const char *pId, CmdFunc pFunc)
@@ -139,6 +140,8 @@ Success SystemDebugging::process()
 			break;
 
 		entryLogCreateSet(SystemDebugging::entryLogCreate);
+
+		mReady = true;
 
 		mState = StMain;
 
