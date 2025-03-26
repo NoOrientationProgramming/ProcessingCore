@@ -56,11 +56,11 @@ public:
 
 	bool mSendReady;
 
-	uint8_t mBufValid;
 	char mBufInCmd[64];
 	char mBufOutLog[256];
 	char mBufOutCmd[128];
 	char mBufOutProc[1024];
+	uint8_t mBufValid;
 
 protected:
 
