@@ -38,6 +38,8 @@
 #define dBuffValidOutLog			(1 << 4)
 #define dBuffValidOutProc		(1 << 6)
 
+typedef void (*FuncDataSend)(uint8_t *pData, size_t len);
+
 class SingleWireTransfering : public Processing
 {
 
@@ -49,7 +51,8 @@ public:
 	}
 
 	static void dataReceived(uint8_t *pData, size_t len);
-	static void dataTransmitted();
+	static void fctDataSendSet(FuncDataSend pFct);
+	static void dataSent();
 
 	bool mSendReady;
 
@@ -92,6 +95,7 @@ private:
 	/* static functions */
 
 	/* static variables */
+	static FuncDataSend pSend;
 	static uint8_t bufRx[2];
 	static uint8_t bufRxIdxIrq;
 	static uint8_t bufRxIdxWritten;

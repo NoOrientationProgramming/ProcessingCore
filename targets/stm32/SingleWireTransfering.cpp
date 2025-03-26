@@ -52,6 +52,7 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
+FuncDataSend SingleWireTransfering::pSend = NULL;
 uint8_t SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
@@ -98,6 +99,9 @@ Success SingleWireTransfering::process()
 	{
 	case StStart:
 
+		if (!pSend)
+			return procErrLog(-1, "transmit function not set");
+
 		mState = StFlowControlByteRcv;
 
 		break;
@@ -137,7 +141,7 @@ Success SingleWireTransfering::process()
 			mContentTx = ContentOutNone;
 
 		bufTxPending = 1;
-		//HAL_UART_Transmit_IT(&huart1, &mContentTx, 1);
+		pSend((uint8_t *)&mContentTx, sizeof(mContentTx));
 
 		mState = StContentIdOutSendWait;
 
@@ -156,7 +160,7 @@ Success SingleWireTransfering::process()
 	case StDataSend:
 
 		bufTxPending = 1;
-		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)mpDataTx, strlen(mpDataTx) + 1);
+		pSend((uint8_t *)mpDataTx, strlen(mpDataTx) + 1);
 
 		mState = StDataSendDoneWait;
 
@@ -254,7 +258,12 @@ void SingleWireTransfering::dataReceived(uint8_t *pData, size_t len)
 	bufRxIdxIrq ^= 1;
 }
 
-void SingleWireTransfering::dataTransmitted()
+void SingleWireTransfering::fctDataSendSet(FuncDataSend pFct)
+{
+	pSend = pFct;
+}
+
+void SingleWireTransfering::dataSent()
 {
 	bufTxPending = 0;
 }
