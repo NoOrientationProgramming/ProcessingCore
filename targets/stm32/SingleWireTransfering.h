@@ -37,6 +37,7 @@
 #define dBuffValidOutCmd			(1 << 2)
 #define dBuffValidOutLog			(1 << 4)
 #define dBuffValidOutProc		(1 << 6)
+//#define dFragmentBit(x)			((x) << 1)
 
 typedef void (*FuncDataSend)(uint8_t *pData, size_t len);
 
