@@ -316,6 +316,9 @@ void SystemDebugging::entryLogCreate(
 	if (severity > levelLog)
 		return;
 
+	if (pSwt->mBufValid & dBuffValidOutLog)
+		return;
+
 	char *pBufLog = pSwt->mBufOutLog;
 	size_t lenMax = sizeof(pSwt->mBufOutLog) - 1;
 	size_t lenReq = PMIN(len, lenMax);
