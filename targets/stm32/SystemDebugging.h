@@ -86,7 +86,7 @@ private:
 	Processing *mpTreeRoot;
 	bool mReady;
 	uint8_t mStateCmd;
-	uint8_t mDebugMode;
+	uint8_t mModeDebug;
 
 	/* static functions */
 	static Command *freeCmdStructGet();

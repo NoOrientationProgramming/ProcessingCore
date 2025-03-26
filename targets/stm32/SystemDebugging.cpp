@@ -67,6 +67,10 @@ using namespace std;
 #define dFwVersion "<unknown firmware version>"
 #endif
 
+#ifndef dKeyModeDebug
+#define dKeyModeDebug "aaaaa"
+#endif
+
 SingleWireTransfering *SystemDebugging::pSwt = NULL;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxLogEntries;
@@ -81,7 +85,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpTreeRoot(pTreeRoot)
 	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
-	, mDebugMode(0)
+	, mModeDebug(0)
 {
 	mState = StStart;
 }
@@ -177,15 +181,15 @@ void SystemDebugging::commandInterpret()
 		break;
 	case StCmdInterpret: // interpret/decode and execute
 
-		if (CMD("aaaaa"))
+		if (CMD(dKeyModeDebug))
 		{
-			mDebugMode ^= 1;
-			dInfo("Debug mode %d", mDebugMode);
+			mModeDebug ^= 1;
+			dInfo("Debug mode %d", mModeDebug);
 			mStateCmd = StCmdSendStart;
 			break;
 		}
 
-		if (!mDebugMode)
+		if (!mModeDebug)
 		{
 			// don't answer
 			pSwt->mBufValid &= ~dBuffValidInCmd;
@@ -249,7 +253,7 @@ void SystemDebugging::commandInterpret()
 
 void SystemDebugging::procTreeSend()
 {
-	if (!mDebugMode)
+	if (!mModeDebug)
 		return; // minimize CPU load in production
 
 	if (pSwt->mBufValid & dBuffValidOutProc)
