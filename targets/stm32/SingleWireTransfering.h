@@ -39,7 +39,7 @@
 #define dBufValidOutProc		(1 << 6)
 //#define dFragmentBit(x)			((x) << 1)
 
-typedef void (*FuncDataSend)(uint8_t *pData, size_t len);
+typedef void (*FuncDataSend)(char *pData, size_t len);
 
 class SingleWireTransfering : public Processing
 {
@@ -51,6 +51,10 @@ public:
 		return new dNoThrow SingleWireTransfering;
 	}
 
+	void fctDataSendSet(FuncDataSend pFct);
+	void dataReceived(char *pData, size_t len);
+	void dataSent();
+
 	bool mSendReady;
 
 	char mBufInCmd[64];
@@ -58,11 +62,6 @@ public:
 	char mBufOutLog[256];
 	char mBufOutCmd[128];
 	uint8_t mValidBuf;
-
-	static void dataReceived(uint8_t *pData, size_t len);
-	static void fctDataSendSet(FuncDataSend pFct);
-	static void dataSent();
-	static bool mOverflowLog;
 
 protected:
 
@@ -86,10 +85,11 @@ private:
 	Success process();
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	uint8_t byteReceived(uint8_t *pData);
+	uint8_t byteReceived(char *pData);
 
 	/* member variables */
-	uint8_t mContentTx;
+	FuncDataSend mpSend;
+	char mContentTx;
 	uint8_t mValidIdTx;
 	char *mpDataTx;
 	uint8_t mIdxRx;
@@ -98,7 +98,7 @@ private:
 
 	/* static variables */
 	static FuncDataSend pSend;
-	static uint8_t bufRx[2];
+	static char bufRx[2];
 	static uint8_t bufRxIdxIrq;
 	static uint8_t bufRxIdxWritten;
 	static uint8_t bufTxPending;

@@ -52,10 +52,7 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
-bool SingleWireTransfering::mOverflowLog = false;
-
-FuncDataSend SingleWireTransfering::pSend = NULL;
-uint8_t SingleWireTransfering::bufRx[2];
+char SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
 uint8_t SingleWireTransfering::bufTxPending = 0;
@@ -83,6 +80,7 @@ SingleWireTransfering::SingleWireTransfering()
 	: Processing("SingleWireTransfering")
 	, mSendReady(false)
 	, mValidBuf(0)
+	, mpSend(NULL)
 	, mContentTx(ContentOutNone)
 	, mValidIdTx(0)
 	, mpDataTx(NULL)
@@ -98,16 +96,37 @@ SingleWireTransfering::SingleWireTransfering()
 
 /* member functions */
 
+void SingleWireTransfering::fctDataSendSet(FuncDataSend pFct)
+{
+	mpSend = pFct;
+}
+
+void SingleWireTransfering::dataReceived(char *pData, size_t len)
+{
+	char *pDest = &bufRx[bufRxIdxIrq];
+
+	*pDest = *pData;
+	(void)len;
+
+	bufRxIdxWritten = bufRxIdxIrq + 1;
+	bufRxIdxIrq ^= 1;
+}
+
+void SingleWireTransfering::dataSent()
+{
+	bufTxPending = 0;
+}
+
 Success SingleWireTransfering::process()
 {
-	uint8_t data;
+	char data;
 
 	switch (mState)
 	{
 	case StStart:
 
-		if (!pSend)
-			return procErrLog(-1, "transmit function not set");
+		if (!mpSend)
+			return procErrLog(-1, "send function not set");
 
 		mSendReady = true;
 
@@ -150,7 +169,7 @@ Success SingleWireTransfering::process()
 			mContentTx = ContentOutNone;
 
 		bufTxPending = 1;
-		pSend((uint8_t *)&mContentTx, sizeof(mContentTx));
+		mpSend(&mContentTx, sizeof(mContentTx));
 
 		mState = StContentIdOutSendWait;
 
@@ -169,7 +188,7 @@ Success SingleWireTransfering::process()
 	case StDataSend:
 
 		bufTxPending = 1;
-		pSend((uint8_t *)mpDataTx, strlen(mpDataTx) + 1);
+		mpSend(mpDataTx, strlen(mpDataTx) + 1);
 
 		mState = StDataSendDoneWait;
 
@@ -229,7 +248,7 @@ Success SingleWireTransfering::process()
 	return Pending;
 }
 
-uint8_t SingleWireTransfering::byteReceived(uint8_t *pData)
+uint8_t SingleWireTransfering::byteReceived(char *pData)
 {
 	uint8_t idxWr = bufRxIdxWritten;
 
@@ -255,25 +274,4 @@ void SingleWireTransfering::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
-
-void SingleWireTransfering::dataReceived(uint8_t *pData, size_t len)
-{
-	uint8_t *pDest = &bufRx[bufRxIdxIrq];
-
-	*pDest = *pData;
-	(void)len;
-
-	bufRxIdxWritten = bufRxIdxIrq + 1;
-	bufRxIdxIrq ^= 1;
-}
-
-void SingleWireTransfering::fctDataSendSet(FuncDataSend pFct)
-{
-	pSend = pFct;
-}
-
-void SingleWireTransfering::dataSent()
-{
-	bufTxPending = 0;
-}
 
