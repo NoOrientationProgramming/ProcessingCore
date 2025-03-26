@@ -91,7 +91,6 @@ private:
 	Processing *mpTreeRoot;
 	FuncDataSend mpSend;
 	bool mReady;
-	bool mLogOverflowed;
 	uint8_t mStateCmd;
 	uint8_t mModeDebug;
 
