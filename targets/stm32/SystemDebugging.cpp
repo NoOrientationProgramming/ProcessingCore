@@ -71,11 +71,12 @@ using namespace std;
 #define dKeyModeDebug "aaaaa"
 #endif
 
-SingleWireTransfering *SystemDebugging::pSwt = NULL;
+static SingleWireTransfering *pSwt = NULL;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxLogEntries;
 #endif
-int SystemDebugging::levelLog = 3;
+static int levelLog = 3;
+static bool logOvf = false;
 
 #define dNumCmds		32
 Command commands[dNumCmds] = {};
@@ -83,6 +84,7 @@ Command commands[dNumCmds] = {};
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
+	, mpSend(NULL)
 	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
 	, mModeDebug(0)
@@ -92,9 +94,35 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 
 /* member functions */
 
+void SystemDebugging::fctDataSendSet(FuncDataSend pFct)
+{
+	mpSend = pFct;
+}
+
+void SystemDebugging::dataReceived(char *pData, size_t len)
+{
+	if (!pSwt)
+		return;
+
+	pSwt->dataReceived(pData, len);
+}
+
+void SystemDebugging::dataSent()
+{
+	if (!pSwt)
+		return;
+
+	pSwt->dataSent();
+}
+
 bool SystemDebugging::ready()
 {
 	return mReady;
+}
+
+bool SystemDebugging::logOverflowed()
+{
+	return logOvf;
 }
 
 bool SystemDebugging::cmdReg(const char *pId, CmdFunc pFunc)
@@ -129,9 +157,14 @@ Success SystemDebugging::process()
 		if (!mpTreeRoot)
 			return procErrLog(-1, "tree root not set");
 
+		if (!mpSend)
+			return procErrLog(-1, "send function not set");
+
 		pSwt = SingleWireTransfering::create();
 		if (!pSwt)
 			return procErrLog(-1, "could not create process");
+
+		pSwt->fctDataSendSet(mpSend);
 
 		start(pSwt);
 
@@ -319,7 +352,7 @@ void SystemDebugging::entryLogCreate(
 
 	if (pSwt->mValidBuf & dBufValidOutLog)
 	{
-		pSwt->mOverflowLog = true;
+		logOvf = true;
 		return;
 	}
 

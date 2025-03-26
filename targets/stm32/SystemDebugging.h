@@ -52,7 +52,12 @@ public:
 		return new dNoThrow SystemDebugging(pTreeRoot);
 	}
 
+	void fctDataSendSet(FuncDataSend pFct);
+	void dataReceived(char *pData, size_t len);
+	void dataSent();
+
 	bool ready();
+	bool logOverflowed();
 
 	static bool cmdReg(const char *pId, CmdFunc pFunc);
 	static void levelLogSet(int lvl);
@@ -84,7 +89,9 @@ private:
 
 	/* member variables */
 	Processing *mpTreeRoot;
+	FuncDataSend mpSend;
 	bool mReady;
+	bool mLogOverflowed;
 	uint8_t mStateCmd;
 	uint8_t mModeDebug;
 
@@ -100,8 +107,6 @@ private:
 			const size_t len);
 
 	/* static variables */
-	static SingleWireTransfering *pSwt;
-	static int levelLog;
 
 	/* constants */
 
