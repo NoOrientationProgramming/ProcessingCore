@@ -314,9 +314,6 @@ void SystemDebugging::entryLogCreate(
 	(void)line;
 	(void)code;
 
-	if (!pSwt)
-		return;
-
 	if (severity > levelLog)
 		return;
 
