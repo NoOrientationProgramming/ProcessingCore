@@ -50,10 +50,6 @@ public:
 		return new dNoThrow SingleWireTransfering;
 	}
 
-	static void dataReceived(uint8_t *pData, size_t len);
-	static void fctDataSendSet(FuncDataSend pFct);
-	static void dataSent();
-
 	bool mSendReady;
 
 	char mBufInCmd[64];
@@ -61,6 +57,10 @@ public:
 	char mBufOutCmd[128];
 	char mBufOutProc[1024];
 	uint8_t mBufValid;
+
+	static void dataReceived(uint8_t *pData, size_t len);
+	static void fctDataSendSet(FuncDataSend pFct);
+	static void dataSent();
 
 protected:
 
