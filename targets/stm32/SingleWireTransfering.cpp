@@ -52,6 +52,8 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
+bool SingleWireTransfering::mOverflowLog = false;
+
 FuncDataSend SingleWireTransfering::pSend = NULL;
 uint8_t SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
@@ -80,7 +82,7 @@ enum SwtContentIdInBytes
 SingleWireTransfering::SingleWireTransfering()
 	: Processing("SingleWireTransfering")
 	, mSendReady(false)
-	, mBufValid(0)
+	, mValidBuf(0)
 	, mContentTx(ContentOutNone)
 	, mValidIdTx(0)
 	, mpDataTx(NULL)
@@ -126,21 +128,21 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSend:
 
-		if (mBufValid & dBuffValidOutCmd)
+		if (mValidBuf & dBufValidOutCmd)
 		{
-			mValidIdTx = dBuffValidOutCmd;
+			mValidIdTx = dBufValidOutCmd;
 			mpDataTx = mBufOutCmd;
 			mContentTx = ContentOutCmd;
 		}
-		else if (mBufValid & dBuffValidOutLog)
+		else if (mValidBuf & dBufValidOutLog)
 		{
-			mValidIdTx = dBuffValidOutLog;
+			mValidIdTx = dBufValidOutLog;
 			mpDataTx = mBufOutLog;
 			mContentTx = ContentOutLog;
 		}
-		else if (mBufValid & dBuffValidOutProc)
+		else if (mValidBuf & dBufValidOutProc)
 		{
-			mValidIdTx = dBuffValidOutProc;
+			mValidIdTx = dBufValidOutProc;
 			mpDataTx = mBufOutProc;
 			mContentTx = ContentOutProc;
 		}
@@ -177,7 +179,7 @@ Success SingleWireTransfering::process()
 		if (bufTxPending)
 			return Pending;
 
-		mBufValid &= ~mValidIdTx;
+		mValidBuf &= ~mValidIdTx;
 
 		mState = StFlowControlByteRcv;
 
@@ -200,7 +202,7 @@ Success SingleWireTransfering::process()
 		if (!byteReceived(&data))
 			return Pending;
 
-		if (mBufValid & dBuffValidInCmd)
+		if (mValidBuf & dBufValidInCmd)
 		{
 			// Consumer not finished. Discard command
 			mState = StFlowControlByteRcv;
@@ -215,7 +217,7 @@ Success SingleWireTransfering::process()
 
 		if (!data)
 		{
-			mBufValid |= dBuffValidInCmd;
+			mValidBuf |= dBufValidInCmd;
 			mState = StFlowControlByteRcv;
 		}
 

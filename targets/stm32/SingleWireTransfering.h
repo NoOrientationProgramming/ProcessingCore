@@ -33,10 +33,10 @@
 
 #include "Processing.h"
 
-#define dBuffValidInCmd			(1 << 0)
-#define dBuffValidOutCmd			(1 << 2)
-#define dBuffValidOutLog			(1 << 4)
-#define dBuffValidOutProc		(1 << 6)
+#define dBufValidInCmd			(1 << 0)
+#define dBufValidOutCmd			(1 << 2)
+#define dBufValidOutLog			(1 << 4)
+#define dBufValidOutProc		(1 << 6)
 //#define dFragmentBit(x)			((x) << 1)
 
 typedef void (*FuncDataSend)(uint8_t *pData, size_t len);
@@ -57,11 +57,12 @@ public:
 	char mBufOutProc[1024];
 	char mBufOutLog[256];
 	char mBufOutCmd[128];
-	uint8_t mBufValid;
+	uint8_t mValidBuf;
 
 	static void dataReceived(uint8_t *pData, size_t len);
 	static void fctDataSendSet(FuncDataSend pFct);
 	static void dataSent();
+	static bool mOverflowLog;
 
 protected:
 

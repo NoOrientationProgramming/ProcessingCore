@@ -173,7 +173,7 @@ void SystemDebugging::commandInterpret()
 	{
 	case StCmdRcvdWait: // fetch
 
-		if (!(pSwt->mBufValid & dBuffValidInCmd))
+		if (!(pSwt->mValidBuf & dBufValidInCmd))
 			break;
 
 		mStateCmd = StCmdInterpret;
@@ -192,7 +192,7 @@ void SystemDebugging::commandInterpret()
 		if (!mModeDebug)
 		{
 			// don't answer
-			pSwt->mBufValid &= ~dBuffValidInCmd;
+			pSwt->mValidBuf &= ~dBufValidInCmd;
 			mStateCmd = StCmdRcvdWait;
 
 			break;
@@ -233,16 +233,16 @@ void SystemDebugging::commandInterpret()
 		break;
 	case StCmdSendStart: // write back
 
-		pSwt->mBufValid |= dBuffValidOutCmd;
+		pSwt->mValidBuf |= dBufValidOutCmd;
 		mStateCmd = StCmdSentWait;
 
 		break;
 	case StCmdSentWait:
 
-		if (pSwt->mBufValid & dBuffValidOutCmd)
+		if (pSwt->mValidBuf & dBufValidOutCmd)
 			break;
 
-		pSwt->mBufValid &= ~dBuffValidInCmd;
+		pSwt->mValidBuf &= ~dBufValidInCmd;
 		mStateCmd = StCmdRcvdWait;
 
 		break;
@@ -256,7 +256,7 @@ void SystemDebugging::procTreeSend()
 	if (!mModeDebug)
 		return; // minimize CPU load in production
 
-	if (pSwt->mBufValid & dBuffValidOutProc)
+	if (pSwt->mValidBuf & dBufValidOutProc)
 		return;
 
 	mpTreeRoot->processTreeStr(
@@ -264,7 +264,7 @@ void SystemDebugging::procTreeSend()
 				pSwt->mBufOutProc + sizeof(pSwt->mBufOutProc),
 				true, true);
 
-	pSwt->mBufValid |= dBuffValidOutProc;
+	pSwt->mValidBuf |= dBufValidOutProc;
 }
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
@@ -317,8 +317,11 @@ void SystemDebugging::entryLogCreate(
 	if (severity > levelLog)
 		return;
 
-	if (pSwt->mBufValid & dBuffValidOutLog)
+	if (pSwt->mValidBuf & dBufValidOutLog)
+	{
+		pSwt->mOverflowLog = true;
 		return;
+	}
 
 	char *pBufLog = pSwt->mBufOutLog;
 	size_t lenMax = sizeof(pSwt->mBufOutLog) - 1;
@@ -327,6 +330,6 @@ void SystemDebugging::entryLogCreate(
 	memcpy(pBufLog, msg, lenReq);
 	pBufLog[lenReq] = 0;
 
-	pSwt->mBufValid |= dBuffValidOutLog;
+	pSwt->mValidBuf |= dBufValidOutLog;
 }
 
