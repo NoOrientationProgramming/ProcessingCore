@@ -102,6 +102,8 @@ Success SingleWireTransfering::process()
 		if (!pSend)
 			return procErrLog(-1, "transmit function not set");
 
+		mSendReady = true;
+
 		mState = StFlowControlByteRcv;
 
 		break;
