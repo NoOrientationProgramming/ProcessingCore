@@ -52,7 +52,6 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
-char SingleWireTransfering::mBufOutLog[256];
 uint8_t SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
@@ -137,7 +136,7 @@ Success SingleWireTransfering::process()
 		else
 			mContentTx = ContentOutNone;
 
-		SingleWireTransfering::bufTxPending = 1;
+		bufTxPending = 1;
 		//HAL_UART_Transmit_IT(&huart1, &mContentTx, 1);
 
 		mState = StContentIdOutSendWait;
@@ -145,7 +144,7 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSendWait:
 
-		if (SingleWireTransfering::bufTxPending)
+		if (bufTxPending)
 			return Pending;
 
 		if (mContentTx == ContentOutNone)
@@ -156,7 +155,7 @@ Success SingleWireTransfering::process()
 		break;
 	case StDataSend:
 
-		SingleWireTransfering::bufTxPending = 1;
+		bufTxPending = 1;
 		//HAL_UART_Transmit_IT(&huart1, (uint8_t *)mpDataTx, strlen(mpDataTx) + 1);
 
 		mState = StDataSendDoneWait;
@@ -164,7 +163,7 @@ Success SingleWireTransfering::process()
 		break;
 	case StDataSendDoneWait:
 
-		if (SingleWireTransfering::bufTxPending)
+		if (bufTxPending)
 			return Pending;
 
 		mBufValid &= ~mValidIdTx;
@@ -219,15 +218,15 @@ Success SingleWireTransfering::process()
 
 uint8_t SingleWireTransfering::byteReceived(uint8_t *pData)
 {
-	uint8_t idxWr = SingleWireTransfering::bufRxIdxWritten;
+	uint8_t idxWr = bufRxIdxWritten;
 
 	if (!idxWr)
 		return 0;
 
 	--idxWr;
-	*pData = SingleWireTransfering::bufRx[idxWr];
+	*pData = bufRx[idxWr];
 
-	SingleWireTransfering::bufRxIdxWritten = 0;
+	bufRxIdxWritten = 0;
 
 	return 1;
 }
@@ -246,7 +245,17 @@ void SingleWireTransfering::processInfo(char *pBuf, char *pBufEnd)
 
 void SingleWireTransfering::dataReceived(uint8_t *pData, size_t len)
 {
-	SingleWireTransfering::bufRxIdxWritten = SingleWireTransfering::bufRxIdxIrq + 1;
-	SingleWireTransfering::bufRxIdxIrq ^= 1;
+	uint8_t *pDest = &bufRx[bufRxIdxIrq];
+
+	*pDest = *pData;
+	(void)len;
+
+	bufRxIdxWritten = bufRxIdxIrq + 1;
+	bufRxIdxIrq ^= 1;
+}
+
+void SingleWireTransfering::dataTransmitted()
+{
+	bufTxPending = 0;
 }
 

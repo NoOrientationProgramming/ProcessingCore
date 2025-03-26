@@ -61,11 +61,14 @@ dProcessStateStr(CmdState);
 
 using namespace std;
 
-#define CMD(x)		(!strncmp(mpSwt->mBufInCmd, x, strlen(x)))
+#define CMD(x)		(!strncmp(pSwt->mBufInCmd, x, strlen(x)))
 
 #ifndef dFwVersion
 #define dFwVersion "<unknown firmware version>"
 #endif
+
+SingleWireTransfering *SystemDebugging::pSwt = NULL;
+int SystemDebugging::levelLog = 3;
 
 #define dNumCmds		32
 Command commands[dNumCmds] = {};
@@ -74,11 +77,12 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
 	, mStateCmd(StCmdRcvdWait)
-	, mpSwt(NULL)
 	, mDebugMode(0)
 {
 	mState = StStart;
 }
+
+/* member functions */
 
 bool SystemDebugging::ready()
 {
@@ -103,22 +107,10 @@ bool SystemDebugging::cmdReg(const char *pId, CmdFunc pFunc)
 	return true;
 }
 
-Command *SystemDebugging::freeCmdStructGet()
+void SystemDebugging::levelLogSet(int lvl)
 {
-	Command *pCmd = commands;
-
-	for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
-	{
-		if (pCmd->id && pCmd->func)
-			continue;
-
-		return pCmd;
-	}
-
-	return NULL;
+	levelLog = lvl;
 }
-
-/* member functions */
 
 Success SystemDebugging::process()
 {
@@ -129,19 +121,21 @@ Success SystemDebugging::process()
 		if (!mpTreeRoot)
 			return procErrLog(-1, "tree root not set");
 
-		mpSwt = SingleWireTransfering::create();
-		if (!mpSwt)
+		pSwt = SingleWireTransfering::create();
+		if (!pSwt)
 			return procErrLog(-1, "could not create process");
 
-		start(mpSwt);
+		start(pSwt);
 
 		mState = StSendReadyWait;
 
 		break;
 	case StSendReadyWait:
 
-		if (!mpSwt->mSendReady)
+		if (!pSwt->mSendReady)
 			break;
+
+		entryLogCreateSet(SystemDebugging::entryLogCreate);
 
 		mState = StMain;
 
@@ -161,15 +155,15 @@ Success SystemDebugging::process()
 
 void SystemDebugging::commandInterpret()
 {
-	char *pBuf = mpSwt->mBufOutCmd;
-	char *pBufEnd = pBuf + sizeof(mpSwt->mBufOutCmd);
+	char *pBuf = pSwt->mBufOutCmd;
+	char *pBufEnd = pBuf + sizeof(pSwt->mBufOutCmd);
 	Command *pCmd = commands;
 
 	switch (mStateCmd)
 	{
 	case StCmdRcvdWait: // fetch
 
-		if (!(mpSwt->mBufValid & dBuffValidInCmd))
+		if (!(pSwt->mBufValid & dBuffValidInCmd))
 			break;
 
 		mStateCmd = StCmdInterpret;
@@ -188,15 +182,15 @@ void SystemDebugging::commandInterpret()
 		if (!mDebugMode)
 		{
 			// don't answer
-			mpSwt->mBufValid &= ~dBuffValidInCmd;
+			pSwt->mBufValid &= ~dBuffValidInCmd;
 			mStateCmd = StCmdRcvdWait;
 
 			break;
 		}
 
-		procInfLog("Received command: %s", mpSwt->mBufInCmd);
+		procInfLog("Received command: %s", pSwt->mBufInCmd);
 
-		*mpSwt->mBufOutCmd = 0;
+		*pSwt->mBufOutCmd = 0;
 
 		for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
 		{
@@ -206,21 +200,21 @@ void SystemDebugging::commandInterpret()
 			if (!pCmd->func)
 				continue;
 
-			const char *pArg = mpSwt->mBufInCmd + strlen(pCmd->id);
+			const char *pArg = pSwt->mBufInCmd + strlen(pCmd->id);
 
 			if (*pArg)
 				++pArg;
 
 			pCmd->func(pArg, pBuf, pBufEnd);
 
-			if (!*mpSwt->mBufOutCmd)
+			if (!*pSwt->mBufOutCmd)
 				dInfo("Done");
 
 			mStateCmd = StCmdSendStart;
 			break;
 		}
 
-		if (*mpSwt->mBufOutCmd)
+		if (*pSwt->mBufOutCmd)
 			break;
 
 		dInfo("Unknown command");
@@ -229,16 +223,16 @@ void SystemDebugging::commandInterpret()
 		break;
 	case StCmdSendStart: // write back
 
-		mpSwt->mBufValid |= dBuffValidOutCmd;
+		pSwt->mBufValid |= dBuffValidOutCmd;
 		mStateCmd = StCmdSentWait;
 
 		break;
 	case StCmdSentWait:
 
-		if (mpSwt->mBufValid & dBuffValidOutCmd)
+		if (pSwt->mBufValid & dBuffValidOutCmd)
 			break;
 
-		mpSwt->mBufValid &= ~dBuffValidInCmd;
+		pSwt->mBufValid &= ~dBuffValidInCmd;
 		mStateCmd = StCmdRcvdWait;
 
 		break;
@@ -252,12 +246,15 @@ void SystemDebugging::procTreeSend()
 	if (!mDebugMode)
 		return; // minimize CPU load in production
 
-	if (mpSwt->mBufValid & dBuffValidOutProc)
+	if (pSwt->mBufValid & dBuffValidOutProc)
 		return;
 
-	mpTreeRoot->processTreeStr(mpSwt->mBufOutProc, mpSwt->mBufOutProc + sizeof(mpSwt->mBufOutProc), true, true);
+	mpTreeRoot->processTreeStr(
+				pSwt->mBufOutProc,
+				pSwt->mBufOutProc + sizeof(pSwt->mBufOutProc),
+				true, true);
 
-	mpSwt->mBufValid |= dBuffValidOutProc;
+	pSwt->mBufValid |= dBuffValidOutProc;
 }
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
@@ -274,4 +271,52 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+Command *SystemDebugging::freeCmdStructGet()
+{
+	Command *pCmd = commands;
+
+	for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
+	{
+		if (pCmd->id && pCmd->func)
+			continue;
+
+		return pCmd;
+	}
+
+	return NULL;
+}
+
+void SystemDebugging::entryLogCreate(
+		const int severity,
+		const char *filename,
+		const char *function,
+		const int line,
+		const int16_t code,
+		const char *msg,
+		const size_t len)
+{
+#if CONFIG_PROC_HAVE_DRIVERS
+	Guard lock(mtxLogEntries);
+#endif
+	(void)filename;
+	(void)function;
+	(void)line;
+	(void)code;
+
+	if (!pSwt)
+		return;
+
+	if (severity > levelLog)
+		return;
+
+	char *pBufLog = pSwt->mBufOutLog;
+	size_t lenMax = sizeof(pSwt->mBufOutLog) - 1;
+	size_t lenReq = PMIN(len, lenMax);
+
+	memcpy(pBufLog, msg, lenReq);
+	pBufLog[lenReq] = 0;
+
+	pSwt->mBufValid |= dBuffValidOutLog;
+}
 

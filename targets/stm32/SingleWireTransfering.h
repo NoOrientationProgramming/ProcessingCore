@@ -49,19 +49,15 @@ public:
 	}
 
 	static void dataReceived(uint8_t *pData, size_t len);
+	static void dataTransmitted();
 
 	bool mSendReady;
 
 	uint8_t mBufValid;
 	char mBufInCmd[64];
+	char mBufOutLog[256];
 	char mBufOutCmd[128];
 	char mBufOutProc[1024];
-
-	static char mBufOutLog[256];
-	static uint8_t bufRx[2];
-	static uint8_t bufRxIdxIrq;
-	static uint8_t bufRxIdxWritten;
-	static uint8_t bufTxPending;
 
 protected:
 
@@ -96,6 +92,10 @@ private:
 	/* static functions */
 
 	/* static variables */
+	static uint8_t bufRx[2];
+	static uint8_t bufRxIdxIrq;
+	static uint8_t bufRxIdxWritten;
+	static uint8_t bufTxPending;
 
 	/* constants */
 

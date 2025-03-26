@@ -55,6 +55,7 @@ public:
 	bool ready();
 
 	static bool cmdReg(const char *pId, CmdFunc pFunc);
+	static void levelLogSet(int lvl);
 
 protected:
 
@@ -84,13 +85,22 @@ private:
 	/* member variables */
 	Processing *mpTreeRoot;
 	uint8_t mStateCmd;
-	SingleWireTransfering *mpSwt;
 	uint8_t mDebugMode;
 
 	/* static functions */
 	static Command *freeCmdStructGet();
+	static void entryLogCreate(
+			const int severity,
+			const char *filename,
+			const char *function,
+			const int line,
+			const int16_t code,
+			const char *msg,
+			const size_t len);
 
 	/* static variables */
+	static SingleWireTransfering *pSwt;
+	static int levelLog;
 
 	/* constants */
 
