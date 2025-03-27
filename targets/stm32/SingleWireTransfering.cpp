@@ -55,7 +55,7 @@ using namespace std;
 char SingleWireTransfering::bufRx[2];
 uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
-uint8_t SingleWireTransfering::bufTxPending = 0;
+uint8_t SingleWireTransfering::bufTxPending = 0; // set by main, cleared by IRQ
 
 enum SwtFlowControlBytes
 {
