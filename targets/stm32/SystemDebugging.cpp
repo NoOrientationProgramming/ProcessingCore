@@ -216,7 +216,7 @@ void SystemDebugging::commandInterpret()
 
 		if (CMD(dKeyModeDebug))
 		{
-			mModeDebug ^= 1;
+			mModeDebug |= 1;
 			dInfo("Debug mode %d", mModeDebug);
 			mStateCmd = StCmdSendStart;
 			break;
