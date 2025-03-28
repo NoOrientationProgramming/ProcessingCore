@@ -166,8 +166,11 @@ class SingleWireTransfering(Processing):
 	def ResponseWait(self):
 
 		msCurTime = time_ns() // 10**6
+		diffTime = msCurTime - self.msLastReceived
 
-		if msCurTime - self.msLastReceived > 500:
+		#self.procDbgLog(f"diffTime: {diffTime}")
+
+		if diffTime > 500:
 			self.procDbgLog("TxD: Timeout reached for single wire transfer")
 
 			aEnv.devOnline = False
