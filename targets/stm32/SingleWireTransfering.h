@@ -97,7 +97,6 @@ private:
 	/* static functions */
 
 	/* static variables */
-	static FuncDataSend pSend;
 	static char bufRx[2];
 	static uint8_t bufRxIdxIrq;
 	static uint8_t bufRxIdxWritten;
