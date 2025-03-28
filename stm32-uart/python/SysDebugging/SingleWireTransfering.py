@@ -56,7 +56,7 @@ class SingleWireTransfering(Processing):
 		if aEnv.dbgChannel == 'socket':
 			self.firstRcvState = self.ContentByteRcv
 		else:
-			self.firstRcvState = self.FlowControlByteRcv
+			self.firstRcvState = self.ContentByteRcv
 
 		# Internal
 		self.logLevel = 0
@@ -90,7 +90,7 @@ class SingleWireTransfering(Processing):
 
 	def ttyCreate(self):
 		self.TIOCM_RTS_str = struct.pack('I', termios.TIOCM_RTS)
-		self.fd = os.open("/dev/ttyUSB0", os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+		self.fd = os.open(aEnv.deviceComm, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
 
 		old = termios.tcgetattr(self.fd)
 		new = old
@@ -166,8 +166,11 @@ class SingleWireTransfering(Processing):
 	def ResponseWait(self):
 
 		msCurTime = time_ns() // 10**6
+		diffTime = msCurTime - self.msLastReceived
 
-		if msCurTime - self.msLastReceived > 500:
+		#self.procDbgLog(f"diffTime: {diffTime}")
+
+		if diffTime > 500:
 			self.procDbgLog("TxD: Timeout reached for single wire transfer")
 
 			aEnv.devOnline = False
@@ -235,14 +238,13 @@ class SingleWireTransfering(Processing):
 
 		self.contentId = self.data
 
+		#self.procDbgLog("RxD: Received content ID from device: 0x%02X" % self.contentId)
+
 		if self.data == ContentInNone:
 			self.frameDone = 1
 			self.stateRcv = self.firstRcvState
 			#self.procDbgLog("RxD: Receiving data: done")
 		else:
-			if self.contentId != 0xC2:
-				self.procDbgLog("RxD: Received content ID from device: 0x%02X" % self.contentId)
-
 			self.stateRcv = self.DataRcv
 
 	def DataRcv(self):

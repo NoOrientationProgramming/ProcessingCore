@@ -50,16 +50,16 @@ class SwartDebugging(Processing):
 
 		self.start(SingleWireTransfering())
 
-		self.logListener = TcpListening()
-		self.logListener.portSet(3000)
-		self.start(self.logListener)
-
 		self.procListener = TcpListening()
-		self.procListener.portSet(3001)
+		self.procListener.portSet(3000)
 		self.start(self.procListener)
 
+		self.logListener = TcpListening()
+		self.logListener.portSet(3002)
+		self.start(self.logListener)
+
 		self.cmdListener = TcpListening()
-		self.cmdListener.portSet(3002)
+		self.cmdListener.portSet(3004)
 		self.start(self.cmdListener)
 
 		return Positive
@@ -149,11 +149,13 @@ if __name__ == "__main__":
 
 	parser = argparse.ArgumentParser(description = 'Debugging via single wire interface')
 	parser.add_argument('-c', '--channel', type = str, help = 'Debug channel: tty (default), socket', required = False, default = 'tty')
+	parser.add_argument('-d', '--device', type = str, help = 'Communication device: /dev/ttyUSB0 (default)', required = False, default = '/dev/ttyUSB0')
 	parser.add_argument('-p', '--port', type = int, help = 'Port', required = False, default = 2000)
 	args = parser.parse_args()
 
 	aEnv.dbgChannel = args.channel
 	aEnv.dbgPort = args.port
+	aEnv.deviceComm = args.device
 
 	pApp = SwartDebugging()
 

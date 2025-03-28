@@ -32,6 +32,7 @@
 #define SYSTEM_DEBUGGING_H
 
 #include "Processing.h"
+#include "SingleWireTransfering.h"
 
 typedef void (*CmdFunc)(const char *pArg, char *pBuf, char *pBufEnd);
 
@@ -46,19 +47,26 @@ class SystemDebugging : public Processing
 
 public:
 
-	static SystemDebugging *create()
+	static SystemDebugging *create(Processing *pTreeRoot)
 	{
-		return new (std::nothrow) SystemDebugging;
+		return new dNoThrow SystemDebugging(pTreeRoot);
 	}
 
-	void treeRootSet(Processing *pTreeRoot);
+	void fctDataSendSet(FuncDataSend pFct, void *pUser);
+	void dataReceived(char *pData, size_t len);
+	void dataSent();
+
+	bool ready();
+	bool logOverflowed();
 
 	static bool cmdReg(const char *pId, CmdFunc pFunc);
+	static void levelLogSet(int lvl);
 
 protected:
 
-	SystemDebugging();
-	virtual ~SystemDebugging();
+	SystemDebugging() : Processing("SystemDebugging") {}
+	SystemDebugging(Processing *pTreeRoot);
+	virtual ~SystemDebugging() {}
 
 private:
 
@@ -74,7 +82,6 @@ private:
 	 */
 
 	/* member functions */
-	Success initialize();
 	Success process();
 	void commandInterpret();
 	void procTreeSend();
@@ -82,10 +89,22 @@ private:
 
 	/* member variables */
 	Processing *mpTreeRoot;
-	uint8_t state;
+	FuncDataSend mpSend;
+	void *mpUser;
+	bool mReady;
+	uint8_t mStateCmd;
+	uint8_t mModeDebug;
 
 	/* static functions */
 	static Command *freeCmdStructGet();
+	static void entryLogCreate(
+			const int severity,
+			const char *filename,
+			const char *function,
+			const int line,
+			const int16_t code,
+			const char *msg,
+			const size_t len);
 
 	/* static variables */
 

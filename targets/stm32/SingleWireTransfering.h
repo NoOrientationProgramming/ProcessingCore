@@ -33,7 +33,13 @@
 
 #include "Processing.h"
 
-#include "env.h"
+#define dBufValidInCmd			(1 << 0)
+#define dBufValidOutCmd			(1 << 2)
+#define dBufValidOutLog			(1 << 4)
+#define dBufValidOutProc		(1 << 6)
+//#define dFragmentBit(x)			((x) << 1)
+
+typedef void (*FuncDataSend)(char *pData, size_t len, void *pUser);
 
 class SingleWireTransfering : public Processing
 {
@@ -42,18 +48,25 @@ public:
 
 	static SingleWireTransfering *create()
 	{
-		return new (std::nothrow) SingleWireTransfering;
+		return new dNoThrow SingleWireTransfering;
 	}
 
-	static uint8_t buffRx[2];
-	static uint8_t buffRxIdxIrq;
-	static uint8_t buffRxIdxWritten;
-	static uint8_t buffTxPending;
+	void fctDataSendSet(FuncDataSend pFct, void *pUser);
+	void dataReceived(char *pData, size_t len);
+	void dataSent();
+
+	bool mSendReady;
+
+	char mBufInCmd[64];
+	char mBufOutProc[1024];
+	char mBufOutLog[256];
+	char mBufOutCmd[128];
+	uint8_t mValidBuf;
 
 protected:
 
 	SingleWireTransfering();
-	virtual ~SingleWireTransfering();
+	virtual ~SingleWireTransfering() {}
 
 private:
 
@@ -69,22 +82,26 @@ private:
 	 */
 
 	/* member functions */
-	Success initialize();
 	Success process();
 	void processInfo(char *pBuf, char *pBufEnd);
 
-	uint8_t byteReceived(uint8_t *pData);
+	uint8_t byteReceived(char *pData);
 
 	/* member variables */
-	uint8_t state;
-	uint8_t contentTx;
-	uint8_t validIdTx;
-	char *pDataTx;
-	uint8_t idxRx;
+	FuncDataSend mpSend;
+	void *mpUser;
+	char mContentTx;
+	uint8_t mValidIdTx;
+	char *mpDataTx;
+	uint8_t mIdxRx;
 
 	/* static functions */
 
 	/* static variables */
+	static char bufRx[2];
+	static uint8_t bufRxIdxIrq;
+	static uint8_t bufRxIdxWritten;
+	static uint8_t bufTxPending;
 
 	/* constants */
 

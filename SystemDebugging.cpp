@@ -83,14 +83,14 @@ void SystemDebugging::portStartSet(uint16_t port)
 	mPortStart = port;
 }
 
-void SystemDebugging::levelLogSet(int lvl)
-{
-	levelLog = lvl;
-}
-
 bool SystemDebugging::ready()
 {
 	return mPeerLogOnceConnected;
+}
+
+void SystemDebugging::levelLogSet(int lvl)
+{
+	levelLog = lvl;
 }
 
 Success SystemDebugging::initialize()
