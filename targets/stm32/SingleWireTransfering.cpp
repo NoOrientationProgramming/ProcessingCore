@@ -81,6 +81,7 @@ SingleWireTransfering::SingleWireTransfering()
 	, mSendReady(false)
 	, mValidBuf(0)
 	, mpSend(NULL)
+	, mpUser(NULL)
 	, mContentTx(ContentOutNone)
 	, mValidIdTx(0)
 	, mpDataTx(NULL)
@@ -96,9 +97,10 @@ SingleWireTransfering::SingleWireTransfering()
 
 /* member functions */
 
-void SingleWireTransfering::fctDataSendSet(FuncDataSend pFct)
+void SingleWireTransfering::fctDataSendSet(FuncDataSend pFct, void *pUser)
 {
 	mpSend = pFct;
+	mpUser = pUser;
 }
 
 void SingleWireTransfering::dataReceived(char *pData, size_t len)
@@ -169,7 +171,7 @@ Success SingleWireTransfering::process()
 			mContentTx = ContentOutNone;
 
 		bufTxPending = 1;
-		mpSend(&mContentTx, sizeof(mContentTx));
+		mpSend(&mContentTx, sizeof(mContentTx), mpUser);
 
 		mState = StContentIdOutSendWait;
 
@@ -188,7 +190,7 @@ Success SingleWireTransfering::process()
 	case StDataSend:
 
 		bufTxPending = 1;
-		mpSend(mpDataTx, strlen(mpDataTx) + 1);
+		mpSend(mpDataTx, strlen(mpDataTx) + 1, mpUser);
 
 		mState = StDataSendDoneWait;
 

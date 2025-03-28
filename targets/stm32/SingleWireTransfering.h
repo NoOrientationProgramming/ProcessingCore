@@ -39,7 +39,7 @@
 #define dBufValidOutProc		(1 << 6)
 //#define dFragmentBit(x)			((x) << 1)
 
-typedef void (*FuncDataSend)(char *pData, size_t len);
+typedef void (*FuncDataSend)(char *pData, size_t len, void *pUser);
 
 class SingleWireTransfering : public Processing
 {
@@ -51,7 +51,7 @@ public:
 		return new dNoThrow SingleWireTransfering;
 	}
 
-	void fctDataSendSet(FuncDataSend pFct);
+	void fctDataSendSet(FuncDataSend pFct, void *pUser);
 	void dataReceived(char *pData, size_t len);
 	void dataSent();
 
@@ -89,6 +89,7 @@ private:
 
 	/* member variables */
 	FuncDataSend mpSend;
+	void *mpUser;
 	char mContentTx;
 	uint8_t mValidIdTx;
 	char *mpDataTx;
