@@ -50,16 +50,16 @@ class SwartDebugging(Processing):
 
 		self.start(SingleWireTransfering())
 
-		self.logListener = TcpListening()
-		self.logListener.portSet(3000)
-		self.start(self.logListener)
-
 		self.procListener = TcpListening()
-		self.procListener.portSet(3001)
+		self.procListener.portSet(3000)
 		self.start(self.procListener)
 
+		self.logListener = TcpListening()
+		self.logListener.portSet(3002)
+		self.start(self.logListener)
+
 		self.cmdListener = TcpListening()
-		self.cmdListener.portSet(3002)
+		self.cmdListener.portSet(3004)
 		self.start(self.cmdListener)
 
 		return Positive
