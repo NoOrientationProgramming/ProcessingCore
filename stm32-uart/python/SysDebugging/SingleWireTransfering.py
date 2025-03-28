@@ -56,7 +56,7 @@ class SingleWireTransfering(Processing):
 		if aEnv.dbgChannel == 'socket':
 			self.firstRcvState = self.ContentByteRcv
 		else:
-			self.firstRcvState = self.FlowControlByteRcv
+			self.firstRcvState = self.ContentByteRcv
 
 		# Internal
 		self.logLevel = 0
