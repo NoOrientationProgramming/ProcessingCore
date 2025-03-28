@@ -76,13 +76,13 @@ static FuncEntryLogCreate pFctEntryLogCreate = NULL;
 
 #if CONFIG_PROC_LOG_HAVE_CHRONO
 static system_clock::time_point tOld;
+const int cDiffSecMax = 9;
+const int cDiffMsMax = 999;
 #endif
 
 const char *red("\033[0;31m");
 const char *yellow("\033[0;33m");
 const char *reset("\033[37m");
-const int cDiffSecMax = 9;
-const int cDiffMsMax = 999;
 
 const size_t cLogEntryBufferSize = 1024;
 static int levelLog = 3;
