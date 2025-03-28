@@ -304,8 +304,8 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 {
 	dInfo("Firmware\t\t%s\n", dFwVersion);
 #if 1
-	dInfo("State\t\t\t%s\n", ProcStateString[mState]);
-	dInfo("State cmd\t\t\t%s\n", CmdStateString[mStateCmd]);
+	dInfo("State\t\t%s\n", ProcStateString[mState]);
+	dInfo("State cmd\t\t%s\n", CmdStateString[mStateCmd]);
 #endif
 #if 0
 	dInfo("En High sens\t%d\n", HAL_GPIO_ReadPin(HighSensEn_GPIO_Port, HighSensEn_Pin));
