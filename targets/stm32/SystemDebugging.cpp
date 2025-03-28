@@ -85,6 +85,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	: Processing("SystemDebugging")
 	, mpTreeRoot(pTreeRoot)
 	, mpSend(NULL)
+	, mpUser(NULL)
 	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
 	, mModeDebug(0)
@@ -94,9 +95,10 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 
 /* member functions */
 
-void SystemDebugging::fctDataSendSet(FuncDataSend pFct)
+void SystemDebugging::fctDataSendSet(FuncDataSend pFct, void *pUser)
 {
 	mpSend = pFct;
+	mpUser = pUser;
 }
 
 void SystemDebugging::dataReceived(char *pData, size_t len)
@@ -164,7 +166,7 @@ Success SystemDebugging::process()
 		if (!pSwt)
 			return procErrLog(-1, "could not create process");
 
-		pSwt->fctDataSendSet(mpSend);
+		pSwt->fctDataSendSet(mpSend, mpUser);
 
 		start(pSwt);
 

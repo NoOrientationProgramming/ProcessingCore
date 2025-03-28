@@ -52,7 +52,7 @@ public:
 		return new dNoThrow SystemDebugging(pTreeRoot);
 	}
 
-	void fctDataSendSet(FuncDataSend pFct);
+	void fctDataSendSet(FuncDataSend pFct, void *pUser);
 	void dataReceived(char *pData, size_t len);
 	void dataSent();
 
@@ -90,6 +90,7 @@ private:
 	/* member variables */
 	Processing *mpTreeRoot;
 	FuncDataSend mpSend;
+	void *mpUser;
 	bool mReady;
 	uint8_t mStateCmd;
 	uint8_t mModeDebug;
