@@ -90,7 +90,7 @@ class SingleWireTransfering(Processing):
 
 	def ttyCreate(self):
 		self.TIOCM_RTS_str = struct.pack('I', termios.TIOCM_RTS)
-		self.fd = os.open("/dev/ttyUSB0", os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+		self.fd = os.open(aEnv.deviceComm, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
 
 		old = termios.tcgetattr(self.fd)
 		new = old
