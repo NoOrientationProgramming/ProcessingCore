@@ -238,14 +238,13 @@ class SingleWireTransfering(Processing):
 
 		self.contentId = self.data
 
+		#self.procDbgLog("RxD: Received content ID from device: 0x%02X" % self.contentId)
+
 		if self.data == ContentInNone:
 			self.frameDone = 1
 			self.stateRcv = self.firstRcvState
 			#self.procDbgLog("RxD: Receiving data: done")
 		else:
-			if self.contentId != 0xC2:
-				self.procDbgLog("RxD: Received content ID from device: 0x%02X" % self.contentId)
-
 			self.stateRcv = self.DataRcv
 
 	def DataRcv(self):
