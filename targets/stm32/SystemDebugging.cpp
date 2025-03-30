@@ -63,10 +63,6 @@ using namespace std;
 
 #define CMD(x)		(!strncmp(pSwt->mBufInCmd, x, strlen(x)))
 
-#ifndef dFwVersion
-#define dFwVersion "<unknown firmware version>"
-#endif
-
 #ifndef dKeyModeDebug
 #define dKeyModeDebug "aaaaa"
 #endif
@@ -304,7 +300,6 @@ void SystemDebugging::procTreeSend()
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 {
-	dInfo("Firmware\t\t%s\n", dFwVersion);
 #if 1
 	dInfo("State\t\t%s\n", ProcStateString[mState]);
 	dInfo("State cmd\t\t%s\n", CmdStateString[mStateCmd]);
