@@ -34,13 +34,13 @@
 
 #define dForEach_ProcState(gen) \
 		gen(StStart) \
-		gen(StFlowControlByteRcv) \
+		gen(StFlowControlRcvdWait) \
 		gen(StContentIdOutSend) \
-		gen(StContentIdOutSendWait) \
+		gen(StContentIdOutSentWait) \
 		gen(StDataSend) \
-		gen(StDataSendDoneWait) \
-		gen(StContentIdInRcv) \
-		gen(StCmdRcv) \
+		gen(StDataSentWait) \
+		gen(StContentIdInRcvdWait) \
+		gen(StCmdRcvdWait) \
 
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
@@ -132,16 +132,16 @@ Success SingleWireTransfering::process()
 
 		mSendReady = true;
 
-		mState = StFlowControlByteRcv;
+		mState = StFlowControlRcvdWait;
 
 		break;
-	case StFlowControlByteRcv:
+	case StFlowControlRcvdWait:
 
 		if (!byteReceived(&data))
 			return Pending;
 
 		if (data == FlowMasterSlave)
-			mState = StContentIdInRcv;
+			mState = StContentIdInRcvdWait;
 
 		if (data == FlowSlaveMaster)
 			mState = StContentIdOutSend;
@@ -173,16 +173,16 @@ Success SingleWireTransfering::process()
 		bufTxPending = 1;
 		mpSend(&mContentTx, sizeof(mContentTx), mpUser);
 
-		mState = StContentIdOutSendWait;
+		mState = StContentIdOutSentWait;
 
 		break;
-	case StContentIdOutSendWait:
+	case StContentIdOutSentWait:
 
 		if (bufTxPending)
 			return Pending;
 
 		if (mContentTx == ContentOutNone)
-			mState = StFlowControlByteRcv;
+			mState = StFlowControlRcvdWait;
 		else
 			mState = StDataSend;
 
@@ -192,20 +192,20 @@ Success SingleWireTransfering::process()
 		bufTxPending = 1;
 		mpSend(mpDataTx, strlen(mpDataTx) + 1, mpUser);
 
-		mState = StDataSendDoneWait;
+		mState = StDataSentWait;
 
 		break;
-	case StDataSendDoneWait:
+	case StDataSentWait:
 
 		if (bufTxPending)
 			return Pending;
 
 		mValidBuf &= ~mValidIdTx;
 
-		mState = StFlowControlByteRcv;
+		mState = StFlowControlRcvdWait;
 
 		break;
-	case StContentIdInRcv:
+	case StContentIdInRcvdWait:
 
 		if (!byteReceived(&data))
 			return Pending;
@@ -213,12 +213,12 @@ Success SingleWireTransfering::process()
 		mIdxRx = 0;
 
 		if (data == ContentInCmd)
-			mState = StCmdRcv;
+			mState = StCmdRcvdWait;
 		else
-			mState = StFlowControlByteRcv;
+			mState = StFlowControlRcvdWait;
 
 		break;
-	case StCmdRcv:
+	case StCmdRcvdWait:
 
 		if (!byteReceived(&data))
 			return Pending;
@@ -226,7 +226,7 @@ Success SingleWireTransfering::process()
 		if (mValidBuf & dBufValidInCmd)
 		{
 			// Consumer not finished. Discard command
-			mState = StFlowControlByteRcv;
+			mState = StFlowControlRcvdWait;
 			return Pending;
 		}
 
@@ -239,7 +239,7 @@ Success SingleWireTransfering::process()
 		if (!data)
 		{
 			mValidBuf |= dBufValidInCmd;
-			mState = StFlowControlByteRcv;
+			mState = StFlowControlRcvdWait;
 		}
 
 		break;
