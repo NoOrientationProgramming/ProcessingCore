@@ -40,7 +40,7 @@
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
 
-#if 1
+#if 0
 #define dGenProcStateString(s) #s,
 dProcessStateStr(ProcState);
 #endif
@@ -54,7 +54,7 @@ dProcessStateStr(ProcState);
 #define dGenCmdStateEnum(s) s,
 dProcessStateEnum(CmdState);
 
-#if 1
+#if 0
 #define dGenCmdStateString(s) #s,
 dProcessStateStr(CmdState);
 #endif
@@ -300,7 +300,7 @@ void SystemDebugging::procTreeSend()
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 {
-#if 1
+#if 0
 	dInfo("State\t\t%s\n", ProcStateString[mState]);
 	dInfo("State cmd\t\t%s\n", CmdStateString[mStateCmd]);
 #endif
