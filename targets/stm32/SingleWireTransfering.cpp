@@ -45,7 +45,7 @@
 #define dGenProcStateEnum(s) s,
 dProcessStateEnum(ProcState);
 
-#if 1
+#if 0
 #define dGenProcStateString(s) #s,
 dProcessStateStr(ProcState);
 #endif
@@ -267,7 +267,7 @@ uint8_t SingleWireTransfering::byteReceived(char *pData)
 
 void SingleWireTransfering::processInfo(char *pBuf, char *pBufEnd)
 {
-#if 1
+#if 0
 	dInfo("State\t\t%s\n", ProcStateString[mState]);
 #else
 	(void)pBuf;
