@@ -252,7 +252,7 @@ void SystemDebugging::commandInterpret()
 			break;
 		}
 
-		procInfLog("Received command: %s", pSwt->mBufInCmd);
+		//procInfLog("Received command: %s", pSwt->mBufInCmd);
 
 		*pSwt->mBufOutCmd = 0;
 
