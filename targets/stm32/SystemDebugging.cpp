@@ -74,7 +74,7 @@ static mutex mtxLogEntries;
 static int levelLog = 3;
 static bool logOvf = false;
 
-#define dNumCmds		32
+#define dNumCmds		23
 Command commands[dNumCmds] = {};
 
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
