@@ -66,7 +66,7 @@ cat > $hppfilename << EOF
 
   File created on ${thedate}
 
-  Copyright (C) ${theyear}-now Authors and www.dsp-crowd.com
+  Copyright (C) ${theyear}, Johannes Natter
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
