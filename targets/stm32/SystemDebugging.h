@@ -34,13 +34,23 @@
 #include "Processing.h"
 #include "SingleWireTransfering.h"
 
-typedef void (*CmdFunc)(const char *pArg, char *pBuf, char *pBufEnd);
+typedef void (*FuncCommand)(char *pArg, char *pBuf, char *pBufEnd);
 
 struct Command
 {
-	const char *id;
-	CmdFunc func;
+	const char *pId;
+	FuncCommand pFctExec;
+	const char *pShortcut;
+	const char *pDesc;
+	const char *pGroup;
 };
+
+bool cmdReg(
+		const char *pId,
+		FuncCommand pFct,
+		const char *pShortcut = "",
+		const char *pDesc = "",
+		const char *pGroup = "");
 
 class SystemDebugging : public Processing
 {
@@ -59,7 +69,6 @@ public:
 	bool ready();
 	bool logOverflowed();
 
-	static bool cmdReg(const char *pId, CmdFunc pFunc);
 	static void levelLogSet(int lvl);
 
 protected:
@@ -96,7 +105,6 @@ private:
 	uint8_t mModeDebug;
 
 	/* static functions */
-	static Command *freeCmdStructGet();
 	static void entryLogCreate(
 			const int severity,
 			const char *filename,

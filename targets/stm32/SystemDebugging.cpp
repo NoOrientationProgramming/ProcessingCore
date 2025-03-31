@@ -123,7 +123,27 @@ bool SystemDebugging::logOverflowed()
 	return logOvf;
 }
 
-bool SystemDebugging::cmdReg(const char *pId, CmdFunc pFunc)
+Command *freeCmdStructGet()
+{
+	Command *pCmd = commands;
+
+	for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
+	{
+		if (pCmd->pId && pCmd->pFctExec)
+			continue;
+
+		return pCmd;
+	}
+
+	return NULL;
+}
+
+bool cmdReg(
+		const char *pId,
+		FuncCommand pFct,
+		const char *pShortcut,
+		const char *pDesc,
+		const char *pGroup)
 {
 	Command *pCmd = freeCmdStructGet();
 
@@ -133,8 +153,11 @@ bool SystemDebugging::cmdReg(const char *pId, CmdFunc pFunc)
 		return false;
 	}
 
-	pCmd->id = pId;
-	pCmd->func = pFunc;
+	pCmd->pId = pId;
+	pCmd->pFctExec = pFct;
+	pCmd->pShortcut = pShortcut;
+	pCmd->pDesc = pDesc;
+	pCmd->pGroup = pGroup;
 
 	infLog("Registered command '%s'", pId);
 
@@ -235,18 +258,18 @@ void SystemDebugging::commandInterpret()
 
 		for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
 		{
-			if (!CMD(pCmd->id))
+			if (!CMD(pCmd->pId))
 				continue;
 
-			if (!pCmd->func)
+			if (!pCmd->pFctExec)
 				continue;
 
-			const char *pArg = pSwt->mBufInCmd + strlen(pCmd->id);
+			char *pArg = pSwt->mBufInCmd + strlen(pCmd->pId);
 
 			if (*pArg)
 				++pArg;
 
-			pCmd->func(pArg, pBuf, pBufEnd);
+			pCmd->pFctExec(pArg, pBuf, pBufEnd);
 
 			if (!*pSwt->mBufOutCmd)
 				dInfo("Done");
@@ -311,21 +334,6 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
-
-Command *SystemDebugging::freeCmdStructGet()
-{
-	Command *pCmd = commands;
-
-	for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
-	{
-		if (pCmd->id && pCmd->func)
-			continue;
-
-		return pCmd;
-	}
-
-	return NULL;
-}
 
 void SystemDebugging::entryLogCreate(
 		const int severity,
