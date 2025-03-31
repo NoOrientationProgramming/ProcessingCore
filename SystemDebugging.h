@@ -45,7 +45,6 @@ enum PeerType {
 	PeerProc = 0,
 	PeerLog,
 	PeerCmd,
-	PeerEnv,
 };
 
 struct SystemDebuggingPeer
