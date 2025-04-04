@@ -41,9 +41,9 @@ from Processing import *
 FlowCtrlToTarget = 0xF1
 FlowTargetToCtrl = 0xF2
 
-ContentOutCmd = 0x80
+ContentOutCmd = 0x90
 
-ContentInCmd = 0x41
+ContentInCmd = 0xA1
 ContentInNone = 0x00
 
 DataEnd = 0x00 # String termination
