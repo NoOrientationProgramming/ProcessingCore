@@ -38,12 +38,12 @@ import socket
 
 from Processing import *
 
-FlowMasterSlave = 0xF0
-FlowSlaveMaster = 0xF1
+FlowCtrlToTarget = 0xF1
+FlowTargetToCtrl = 0xF2
 
-ContentOutCmd = 0xC0
+ContentOutCmd = 0x80
 
-ContentInCmd = 0xC1
+ContentInCmd = 0x41
 ContentInNone = 0x00
 
 DataEnd = 0x00 # String termination
@@ -155,7 +155,7 @@ class SingleWireTransfering(Processing):
 			self.cmdSend(aEnv.dataOut["cmd"]["name"])
 			self.cmdIdOld = aEnv.dataOut["cmd"]["id"]
 		else:
-			self.dataSend(bytes([FlowSlaveMaster]))
+			self.dataSend(bytes([FlowTargetToCtrl]))
 
 			self.msLastReceived = time_ns() // 10**6
 			self.frameDone = 0
@@ -202,7 +202,7 @@ class SingleWireTransfering(Processing):
 	def cmdSend(self, cmd):
 
 		try:
-			self.dataSend(bytes([FlowMasterSlave]))
+			self.dataSend(bytes([FlowCtrlToTarget]))
 			self.dataSend(bytes([ContentOutCmd]))
 			self.dataSend(str.encode(cmd))
 			self.dataSend(b"\x00")
@@ -219,10 +219,10 @@ class SingleWireTransfering(Processing):
 	# RCV STATES
 	def FlowControlByteRcv(self):
 
-		if self.data == FlowMasterSlave:
+		if self.data == FlowCtrlToTarget:
 			self.stateRcv = self.DataIgnore
 			self.procDbgLog("RxD: Ignoring data")
-		elif self.data == FlowSlaveMaster:
+		elif self.data == FlowTargetToCtrl:
 			self.stateRcv = self.ContentByteRcv
 			#self.procDbgLog("RxD: Receiving data")
 
@@ -276,9 +276,6 @@ class SingleWireTransfering(Processing):
 					aEnv.dataIn["cmd"]["resp"] = resp
 				else:
 					self.procDbgLog("RxD: Ignored received command response")
-
-			if self.contentId != 0xC2:
-				self.procDbgLog("RxD: Receiving data: done")
 
 			self.frameDone = 1
 			self.stateRcv = self.firstRcvState
