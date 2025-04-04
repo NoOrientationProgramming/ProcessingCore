@@ -66,14 +66,14 @@ enum SwtFlowDirection
 enum SwtContentId
 {
 	ContentNone = 0x00,
-	ContentLog = 0x40,
+	ContentLog = 0xA0,
 	ContentCmd,
 	ContentProc,
 };
 
 enum SwtContentIdIn
 {
-	ContentInCmd = 0x80,
+	ContentInCmd = 0x90,
 };
 
 SingleWireTransfering::SingleWireTransfering()
