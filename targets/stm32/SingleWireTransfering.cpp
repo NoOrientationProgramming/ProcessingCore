@@ -57,23 +57,23 @@ uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
 uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
 uint8_t SingleWireTransfering::bufTxPending = 0; // set by main, cleared by IRQ
 
-enum SwtFlowControlBytes
+enum SwtFlowDirection
 {
-	FlowMasterSlave = 0xF0,
-	FlowSlaveMaster
+	FlowCtrlToTarget = 0xF1,
+	FlowTargetToCtrl
 };
 
-enum SwtContentIdOutBytes
+enum SwtContentId
 {
-	ContentOutNone = 0x00,
-	ContentOutLog = 0xC0,
-	ContentOutCmd,
-	ContentOutProc,
+	ContentNone = 0x00,
+	ContentLog = 0x40,
+	ContentCmd,
+	ContentProc,
 };
 
-enum SwtContentIdInBytes
+enum SwtContentIdIn
 {
-	ContentInCmd = 0xC0,
+	ContentInCmd = 0x80,
 };
 
 SingleWireTransfering::SingleWireTransfering()
@@ -82,7 +82,7 @@ SingleWireTransfering::SingleWireTransfering()
 	, mValidBuf(0)
 	, mpSend(NULL)
 	, mpUser(NULL)
-	, mContentTx(ContentOutNone)
+	, mContentTx(ContentNone)
 	, mValidIdTx(0)
 	, mpDataTx(NULL)
 	, mIdxRx(0)
@@ -140,10 +140,10 @@ Success SingleWireTransfering::process()
 		if (!byteReceived(&data))
 			return Pending;
 
-		if (data == FlowMasterSlave)
+		if (data == FlowCtrlToTarget)
 			mState = StContentIdInRcvdWait;
 
-		if (data == FlowSlaveMaster)
+		if (data == FlowTargetToCtrl)
 			mState = StContentIdOutSend;
 
 		break;
@@ -153,22 +153,22 @@ Success SingleWireTransfering::process()
 		{
 			mValidIdTx = dBufValidOutCmd;
 			mpDataTx = mBufOutCmd;
-			mContentTx = ContentOutCmd;
+			mContentTx = ContentCmd;
 		}
 		else if (mValidBuf & dBufValidOutLog)
 		{
 			mValidIdTx = dBufValidOutLog;
 			mpDataTx = mBufOutLog;
-			mContentTx = ContentOutLog;
+			mContentTx = ContentLog;
 		}
 		else if (mValidBuf & dBufValidOutProc)
 		{
 			mValidIdTx = dBufValidOutProc;
 			mpDataTx = mBufOutProc;
-			mContentTx = ContentOutProc;
+			mContentTx = ContentProc;
 		}
 		else
-			mContentTx = ContentOutNone;
+			mContentTx = ContentNone;
 
 		bufTxPending = 1;
 		mpSend(&mContentTx, sizeof(mContentTx), mpUser);
@@ -181,7 +181,7 @@ Success SingleWireTransfering::process()
 		if (bufTxPending)
 			return Pending;
 
-		if (mContentTx == ContentOutNone)
+		if (mContentTx == ContentNone)
 			mState = StFlowControlRcvdWait;
 		else
 			mState = StDataSend;
