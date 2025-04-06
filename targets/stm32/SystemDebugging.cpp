@@ -220,7 +220,7 @@ Success SystemDebugging::process()
 void SystemDebugging::commandInterpret()
 {
 	char *pBuf = pSwt->mBufOutCmd;
-	char *pBufEnd = pBuf + sizeof(pSwt->mBufOutCmd);
+	char *pBufEnd = pBuf + sizeof(pSwt->mBufOutCmd) - 1;
 	Command *pCmd = commands;
 
 	switch (mStateCmd)
@@ -315,7 +315,7 @@ void SystemDebugging::procTreeSend()
 
 	mpTreeRoot->processTreeStr(
 				pSwt->mBufOutProc,
-				pSwt->mBufOutProc + sizeof(pSwt->mBufOutProc),
+				pSwt->mBufOutProc + sizeof(pSwt->mBufOutProc) - 1,
 				true, true);
 
 	pSwt->mValidBuf |= dBufValidOutProc;
