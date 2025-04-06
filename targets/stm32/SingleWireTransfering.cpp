@@ -155,12 +155,12 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSend:
 
-		if (mValidBuf & dBufValidOutProc)
+		if (mValidBuf & dBufValidOutCmd) // highest prio
 		{
-			mValidIdTx = dBufValidOutProc;
-			mContentTx = ContentProc;
-			mpDataTx = mBufOutProc;
-			mLenSend = sizeof(mBufOutProc);
+			mValidIdTx = dBufValidOutCmd;
+			mContentTx = ContentCmd;
+			mpDataTx = mBufOutCmd;
+			mLenSend = sizeof(mBufOutCmd);
 		}
 		else if (mValidBuf & dBufValidOutLog)
 		{
@@ -169,12 +169,12 @@ Success SingleWireTransfering::process()
 			mpDataTx = mBufOutLog;
 			mLenSend = sizeof(mBufOutLog);
 		}
-		else if (mValidBuf & dBufValidOutCmd)
+		else if (mValidBuf & dBufValidOutProc) // lowest prio
 		{
-			mValidIdTx = dBufValidOutCmd;
-			mContentTx = ContentCmd;
-			mpDataTx = mBufOutCmd;
-			mLenSend = sizeof(mBufOutCmd);
+			mValidIdTx = dBufValidOutProc;
+			mContentTx = ContentProc;
+			mpDataTx = mBufOutProc;
+			mLenSend = sizeof(mBufOutProc);
 		}
 		else
 			mLenSend = 0;
