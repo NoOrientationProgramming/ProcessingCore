@@ -43,11 +43,11 @@ FlowTargetToCtrl = 0xF2
 
 ContentOutCmd = 0x90
 
-ContentInCmd = 0xA1
-ContentInNone = 0x00
+ContentInNone = 0xA0
+ContentInCmd = 0xA3
 
-DataEnd = 0x00 # String termination
-DataCut = 0x17 # End of transmittion block
+DataCut = 0x0F # Shift in
+DataEnd = 0x17 # End of transmittion block
 
 class SingleWireTransfering(Processing):
 

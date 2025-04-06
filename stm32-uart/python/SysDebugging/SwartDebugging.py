@@ -41,8 +41,8 @@ class SwartDebugging(Processing):
 
 		self.procPeers = []
 		self.logPeers = []
-		self.contentIdLog = 0xA0
-		self.contentIdProc = 0xA2
+		self.contentIdProc = 0xA1
+		self.contentIdLog = 0xA2
 
 		self.procTree = ""
 		self.procTreeUpdated = False
