@@ -65,15 +65,20 @@ enum SwtFlowDirection
 
 enum SwtContentId
 {
-	ContentNone = 0x00,
-	ContentLog = 0xA0,
-	ContentCmd,
+	ContentNone = 0xA0,
 	ContentProc,
+	ContentLog,
+	ContentCmd,
 };
 
 enum SwtContentIdIn
 {
 	ContentInCmd = 0x90,
+};
+
+enum SwtMessageEnd
+{
+	MessageFinished = 0x17,
 };
 
 SingleWireTransfering::SingleWireTransfering()
@@ -86,6 +91,7 @@ SingleWireTransfering::SingleWireTransfering()
 	, mValidIdTx(0)
 	, mpDataTx(NULL)
 	, mIdxRx(0)
+	, mLenSend(0)
 {
 	mState = StStart;
 
@@ -149,25 +155,31 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSend:
 
-		if (mValidBuf & dBufValidOutCmd)
+		if (mValidBuf & dBufValidOutProc)
 		{
-			mValidIdTx = dBufValidOutCmd;
-			mpDataTx = mBufOutCmd;
-			mContentTx = ContentCmd;
+			mValidIdTx = dBufValidOutProc;
+			mContentTx = ContentProc;
+			mpDataTx = mBufOutProc;
+			mLenSend = sizeof(mBufOutProc);
 		}
 		else if (mValidBuf & dBufValidOutLog)
 		{
 			mValidIdTx = dBufValidOutLog;
-			mpDataTx = mBufOutLog;
 			mContentTx = ContentLog;
+			mpDataTx = mBufOutLog;
+			mLenSend = sizeof(mBufOutLog);
 		}
-		else if (mValidBuf & dBufValidOutProc)
+		else if (mValidBuf & dBufValidOutCmd)
 		{
-			mValidIdTx = dBufValidOutProc;
-			mpDataTx = mBufOutProc;
-			mContentTx = ContentProc;
+			mValidIdTx = dBufValidOutCmd;
+			mContentTx = ContentCmd;
+			mpDataTx = mBufOutCmd;
+			mLenSend = sizeof(mBufOutCmd);
 		}
 		else
+			mLenSend = 0;
+
+		if (mLenSend < 2)
 			mContentTx = ContentNone;
 
 		bufTxPending = 1;
@@ -182,15 +194,30 @@ Success SingleWireTransfering::process()
 			return Pending;
 
 		if (mContentTx == ContentNone)
+		{
 			mState = StFlowControlRcvdWait;
-		else
-			mState = StDataSend;
+			break;
+		}
+
+		// protect strlen(). Zero byte and 'message end' identifier byte must be stored at least
+		mLenSend -= 2;
+		mpDataTx[mLenSend] = 0;
+
+		mLenSend = strlen(mpDataTx);
+
+		mpDataTx[mLenSend] = 0;
+		++mLenSend;
+
+		mpDataTx[mLenSend] = MessageFinished;
+		++mLenSend;
+
+		mState = StDataSend;
 
 		break;
 	case StDataSend:
 
 		bufTxPending = 1;
-		mpSend(mpDataTx, strlen(mpDataTx) + 1, mpUser);
+		mpSend(mpDataTx, mLenSend, mpUser);
 
 		mState = StDataSentWait;
 

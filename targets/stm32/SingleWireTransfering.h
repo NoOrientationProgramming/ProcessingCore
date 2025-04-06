@@ -94,6 +94,7 @@ private:
 	uint8_t mValidIdTx;
 	char *mpDataTx;
 	uint8_t mIdxRx;
+	uint16_t mLenSend;
 
 	/* static functions */
 
