@@ -63,17 +63,17 @@ enum SwtFlowDirection
 	FlowTargetToCtrl
 };
 
+enum SwtContentIdIn
+{
+	ContentInCmd = 0x90,
+};
+
 enum SwtContentId
 {
 	ContentNone = 0xA0,
 	ContentProc,
 	ContentLog,
 	ContentCmd,
-};
-
-enum SwtContentIdIn
-{
-	ContentInCmd = 0x90,
 };
 
 enum SwtMessageEnd
