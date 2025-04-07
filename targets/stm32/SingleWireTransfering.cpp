@@ -76,9 +76,10 @@ enum SwtContentId
 	ContentCmd,
 };
 
-enum SwtMessageEnd
+enum SwtContentEnd
 {
-	MessageFinished = 0x17,
+	ContentCut = 0x0F,
+	ContentEnd = 0x17,
 };
 
 SingleWireTransfering::SingleWireTransfering()
@@ -144,7 +145,7 @@ Success SingleWireTransfering::process()
 	case StFlowControlRcvdWait:
 
 		if (!byteReceived(&data))
-			return Pending;
+			break;
 
 		if (data == FlowCtrlToTarget)
 			mState = StContentIdInRcvdWait;
@@ -191,7 +192,7 @@ Success SingleWireTransfering::process()
 	case StContentIdOutSentWait:
 
 		if (bufTxPending)
-			return Pending;
+			break;
 
 		if (mContentTx == ContentNone)
 		{
@@ -208,7 +209,7 @@ Success SingleWireTransfering::process()
 		mpDataTx[mLenSend] = 0;
 		++mLenSend;
 
-		mpDataTx[mLenSend] = MessageFinished;
+		mpDataTx[mLenSend] = ContentEnd;
 		++mLenSend;
 
 		mState = StDataSend;
@@ -225,7 +226,7 @@ Success SingleWireTransfering::process()
 	case StDataSentWait:
 
 		if (bufTxPending)
-			return Pending;
+			break;
 
 		mValidBuf &= ~mValidIdTx;
 
@@ -235,39 +236,46 @@ Success SingleWireTransfering::process()
 	case StContentIdInRcvdWait:
 
 		if (!byteReceived(&data))
-			return Pending;
+			break;
 
-		mIdxRx = 0;
+		if (data == ContentInCmd && !(mValidBuf & dBufValidInCmd))
+		{
+			mIdxRx = 0;
+			mBufInCmd[mIdxRx] = 0;
 
-		if (data == ContentInCmd)
 			mState = StCmdRcvdWait;
-		else
-			mState = StFlowControlRcvdWait;
+			break;
+		}
+
+		mState = StFlowControlRcvdWait;
 
 		break;
 	case StCmdRcvdWait:
 
 		if (!byteReceived(&data))
-			return Pending;
+			break;
 
-		if (mValidBuf & dBufValidInCmd)
+		if (data == FlowTargetToCtrl)
 		{
-			// Consumer not finished. Discard command
-			mState = StFlowControlRcvdWait;
-			return Pending;
+			mBufInCmd[0] = 0;
+			mState = StContentIdOutSend;
+			break;
 		}
 
-		if (mIdxRx == sizeof(mBufInCmd) - 1)
-			data = 0;
+		if (data == ContentEnd)
+		{
+			mBufInCmd[mIdxRx] = 0;
+			mValidBuf |= dBufValidInCmd;
+
+			mState = StFlowControlRcvdWait;
+			break;
+		}
+
+		if (mIdxRx >= sizeof(mBufInCmd) - 1)
+			break;
 
 		mBufInCmd[mIdxRx] = data;
 		++mIdxRx;
-
-		if (!data)
-		{
-			mValidBuf |= dBufValidInCmd;
-			mState = StFlowControlRcvdWait;
-		}
 
 		break;
 	default:
