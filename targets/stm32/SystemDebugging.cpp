@@ -84,7 +84,6 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpUser(NULL)
 	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
-	, mModeDebug(0)
 {
 	mState = StStart;
 }
@@ -237,18 +236,16 @@ void SystemDebugging::commandInterpret()
 
 		if (CMD(dKeyModeDebug))
 		{
-			mModeDebug |= 1;
-			dInfo("Debug mode %d", mModeDebug);
+			pSwt->mModeDebug |= 1;
+			dInfo("Debug mode %d", pSwt->mModeDebug);
 			mStateCmd = StCmdSendStart;
 			break;
 		}
 
-		if (!mModeDebug)
+		if (!pSwt->mModeDebug)
 		{
-			// don't answer
-			pSwt->mValidBuf &= ~dBufValidInCmd;
+			pSwt->mValidBuf &= ~dBufValidInCmd; // don't answer
 			mStateCmd = StCmdRcvdWait;
-
 			break;
 		}
 
@@ -307,7 +304,7 @@ void SystemDebugging::commandInterpret()
 
 void SystemDebugging::procTreeSend()
 {
-	if (!mModeDebug)
+	if (!pSwt->mModeDebug)
 		return; // minimize CPU load in production
 
 	if (pSwt->mValidBuf & dBufValidOutProc)

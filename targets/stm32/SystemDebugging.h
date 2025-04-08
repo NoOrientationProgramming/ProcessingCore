@@ -102,7 +102,6 @@ private:
 	void *mpUser;
 	bool mReady;
 	uint8_t mStateCmd;
-	uint8_t mModeDebug;
 
 	/* static functions */
 	static void entryLogCreate(
