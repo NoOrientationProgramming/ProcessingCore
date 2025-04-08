@@ -84,6 +84,7 @@ enum SwtContentEnd
 
 SingleWireTransfering::SingleWireTransfering()
 	: Processing("SingleWireTransfering")
+	, mModeDebug(0)
 	, mSendReady(false)
 	, mValidBuf(0)
 	, mpSend(NULL)
@@ -149,6 +150,9 @@ Success SingleWireTransfering::process()
 
 		if (data == FlowCtrlToTarget)
 			mState = StContentIdInRcvdWait;
+
+		if (!mModeDebug)
+			break;
 
 		if (data == FlowTargetToCtrl)
 			mState = StContentIdOutSend;

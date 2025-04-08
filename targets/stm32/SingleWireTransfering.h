@@ -51,6 +51,8 @@ public:
 		return new dNoThrow SingleWireTransfering;
 	}
 
+	uint8_t mModeDebug;
+
 	void fctDataSendSet(FuncDataSend pFct, void *pUser);
 	void dataReceived(char *pData, size_t len);
 	void dataSent();
