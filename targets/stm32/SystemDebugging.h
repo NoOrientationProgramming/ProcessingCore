@@ -102,6 +102,7 @@ private:
 	void *mpUser;
 	bool mReady;
 	uint8_t mStateCmd;
+	uint16_t mCntDelay;
 
 	/* static functions */
 	static void entryLogCreate(

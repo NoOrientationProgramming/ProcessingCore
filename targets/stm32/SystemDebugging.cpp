@@ -67,6 +67,8 @@ using namespace std;
 #define dKeyModeDebug "aaaaa"
 #endif
 
+const uint16_t cCntDelayMin = 3500;
+
 static SingleWireTransfering *pSwt = NULL;
 #if CONFIG_PROC_HAVE_DRIVERS
 static mutex mtxLogEntries;
@@ -84,6 +86,7 @@ SystemDebugging::SystemDebugging(Processing *pTreeRoot)
 	, mpUser(NULL)
 	, mReady(false)
 	, mStateCmd(StCmdRcvdWait)
+	, mCntDelay(0)
 {
 	mState = StStart;
 }
@@ -309,6 +312,14 @@ void SystemDebugging::procTreeSend()
 
 	if (pSwt->mValidBuf & dBufValidOutProc)
 		return;
+
+	if (mCntDelay < cCntDelayMin)
+	{
+		++mCntDelay;
+		return;
+	}
+
+	mCntDelay = 0;
 
 	mpTreeRoot->processTreeStr(
 				pSwt->mBufOutProc,
