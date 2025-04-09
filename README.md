@@ -1,3 +1,6 @@
+
+<h2 id="processing-start" style="display:none;"></h2>
+
 [![Standard](https://img.shields.io/badge/standard-C%2B%2B11-blue.svg?style=plastic&logo=c%2B%2B)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 ![GitHub](https://img.shields.io/github/license/NoOrientationProgramming/ProcessingCore?style=plastic&color=blue)
 
