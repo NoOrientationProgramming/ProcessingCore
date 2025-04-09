@@ -59,19 +59,19 @@ uint8_t SingleWireTransfering::bufTxPending = 0; // set by main, cleared by IRQ
 
 enum SwtFlowDirection
 {
-	FlowCtrlToTarget = 0xF1,
-	FlowTargetToCtrl
+	FlowCtrlToTarget = 0x0B,
+	FlowTargetToCtrl = 0x0C
 };
 
 enum SwtContentIdIn
 {
-	ContentInCmd = 0x90,
+	ContentInCmd = 0x1A,
 };
 
 enum SwtContentId
 {
-	ContentNone = 0xA0,
-	ContentProc,
+	ContentNone = 0x15,
+	ContentProc = 0x11,
 	ContentLog,
 	ContentCmd,
 };
