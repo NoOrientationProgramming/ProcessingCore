@@ -204,7 +204,7 @@ Success SingleWireTransfering::process()
 			break;
 		}
 
-		// protect strlen(). Zero byte and 'message end' identifier byte must be stored at least
+		// protect strlen(). Zero byte and 'content end' identifier byte must be stored at least
 		mLenSend -= 2;
 		mpDataTx[mLenSend] = 0;
 
