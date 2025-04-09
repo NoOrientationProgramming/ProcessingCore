@@ -67,7 +67,7 @@ using namespace std;
 #define dKeyModeDebug "aaaaa"
 #endif
 
-const uint16_t cCntDelayMin = 3500;
+const uint16_t cCntDelayMin = 5000;
 
 static SingleWireTransfering *pSwt = NULL;
 #if CONFIG_PROC_HAVE_DRIVERS
@@ -310,14 +310,14 @@ void SystemDebugging::procTreeSend()
 	if (!pSwt->mModeDebug)
 		return; // minimize CPU load in production
 
-	if (pSwt->mValidBuf & dBufValidOutProc)
-		return;
-
 	if (mCntDelay < cCntDelayMin)
 	{
 		++mCntDelay;
 		return;
 	}
+
+	if (pSwt->mValidBuf & dBufValidOutProc)
+		return;
 
 	mCntDelay = 0;
 
