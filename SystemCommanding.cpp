@@ -270,17 +270,17 @@ Success SystemCommanding::process()
 		// IAC WONT LINEMODE
 		msg += "\xFF\xFC\x22";
 
-		// Alternative screen buffer
-		msg += "\033[?1049h";
-
 		// Hide cursor
 		msg += "\033[?25l";
 
-		// Clear screen
-		msg += "\033[2J\033[H";
+		// Alternative screen buffer
+		msg += "\033[?1049h";
 
 		// Set terminal title
 		msg += "\033]2;SystemCommanding()\a";
+
+		// Clear screen
+		msg += "\033[2J\033[H";
 
 		mpTrans->send(msg.c_str(), msg.size());
 
