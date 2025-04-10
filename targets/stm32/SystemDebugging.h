@@ -105,6 +105,7 @@ private:
 	uint16_t mCntDelay;
 
 	/* static functions */
+	static void cmdInfoHelp(char *pArgs, char *pBuf, char *pBufEnd);
 	static void entryLogCreate(
 			const int severity,
 			const char *filename,

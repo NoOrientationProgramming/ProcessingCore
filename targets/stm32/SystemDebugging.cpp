@@ -75,6 +75,7 @@ static mutex mtxLogEntries;
 #endif
 static int levelLog = 3;
 static bool logOvf = false;
+static uint16_t idxInfo = 0;
 
 #define dNumCmds		23
 Command commands[dNumCmds] = {};
@@ -190,6 +191,8 @@ Success SystemDebugging::process()
 		pSwt->fctDataSendSet(mpSend, mpUser);
 
 		start(pSwt);
+
+		cmdReg("infoHelp", cmdInfoHelp);
 
 		mState = StSendReadyWait;
 
@@ -336,6 +339,33 @@ void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
 }
 
 /* static functions */
+
+void SystemDebugging::cmdInfoHelp(char *pArgs, char *pBuf, char *pBufEnd)
+{
+	Command *pCmd;
+	(void)pArgs;
+
+	if (idxInfo >= dNumCmds)
+		goto emptySend;
+
+	pCmd = &commands[idxInfo];
+	++idxInfo;
+
+	if (!pCmd->pId || !pCmd->pFctExec)
+		goto emptySend;
+
+	dInfo("%s|%s|%s|%s",
+		pCmd->pId,
+		pCmd->pShortcut,
+		pCmd->pDesc,
+		pCmd->pGroup);
+
+	return;
+
+emptySend:
+	*pBuf = 0;
+	idxInfo = 0;
+}
 
 void SystemDebugging::entryLogCreate(
 		const int severity,
