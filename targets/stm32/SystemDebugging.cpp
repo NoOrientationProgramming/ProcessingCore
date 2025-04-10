@@ -271,15 +271,9 @@ void SystemDebugging::commandInterpret()
 
 			pCmd->pFctExec(pArg, pBuf, pBufEnd);
 
-			if (!*pSwt->mBufOutCmd)
-				dInfo("Done");
-
 			mStateCmd = StCmdSendStart;
-			break;
+			return;
 		}
-
-		if (*pSwt->mBufOutCmd)
-			break;
 
 		dInfo("Unknown command");
 		mStateCmd = StCmdSendStart;
