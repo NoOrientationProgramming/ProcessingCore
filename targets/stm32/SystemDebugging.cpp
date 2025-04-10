@@ -257,6 +257,8 @@ void SystemDebugging::commandInterpret()
 
 		//procInfLog("Received command: %s", pSwt->mBufInCmd);
 
+		*pBuf = 0; // dInfo!
+
 		for (size_t i = 0; i < dNumCmds; ++i, ++pCmd)
 		{
 			if (!CMD(pCmd->pId))
@@ -270,7 +272,6 @@ void SystemDebugging::commandInterpret()
 			if (*pArg)
 				++pArg;
 
-			*pBuf = 0;
 			pCmd->pFctExec(pArg, pBuf, pBufEnd);
 
 			mStateCmd = StCmdSendStart;
