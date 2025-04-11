@@ -117,6 +117,14 @@
 typedef std::lock_guard<std::mutex> Guard;
 #endif
 
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+#ifndef _SSIZE_T_DEFINED
+typedef SSIZE_T ssize_t;
+#define _SSIZE_T_DEFINED
+#endif
+#endif
+
 enum DriverMode
 {
 	DrivenByParent = 0,
@@ -390,13 +398,6 @@ T PMAX(T a, T b)
 {
 	return a > b ? a : b;
 }
-
-#ifdef _MSC_VER
-#ifndef SSIZE_TYPE_DEFINE
-#define SSIZE_TYPE_DEFINE
-#define ssize_t SSIZE_T
-#endif
-#endif
 
 #endif
 
