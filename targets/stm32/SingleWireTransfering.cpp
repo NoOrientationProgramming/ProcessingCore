@@ -52,10 +52,12 @@ dProcessStateStr(ProcState);
 
 using namespace std;
 
-char SingleWireTransfering::bufRx[2];
-uint8_t SingleWireTransfering::bufRxIdxIrq = 0; // used by IRQ only
-uint8_t SingleWireTransfering::bufRxIdxWritten = 0; // set by IRQ, cleared by main
-uint8_t SingleWireTransfering::bufTxPending = 0; // set by main, cleared by IRQ
+static char bufRx[2];
+static uint8_t bufRxIdxIrq = 0; // used by IRQ only
+static uint8_t bufRxIdxWritten = 0; // set by IRQ, cleared by main
+static uint8_t bufTxPending = 0; // set by main, cleared by IRQ
+
+uint8_t SingleWireTransfering::idStarted = 0;
 
 enum SwtFlowDirection
 {
@@ -136,8 +138,12 @@ Success SingleWireTransfering::process()
 	case StStart:
 
 		if (!mpSend)
-			return procErrLog(-1, "send function not set");
+			return procErrLog(-1, "err");
 
+		if (idStarted & cStartedTrans)
+			return procErrLog(-1, "err");
+
+		idStarted |= cStartedTrans;
 		mSendReady = true;
 
 		mState = StFlowControlRcvdWait;
@@ -160,23 +166,23 @@ Success SingleWireTransfering::process()
 		break;
 	case StContentIdOutSend:
 
-		if (mValidBuf & dBufValidOutCmd) // highest prio
+		if (mValidBuf & cBufValidOutCmd) // highest prio
 		{
-			mValidIdTx = dBufValidOutCmd;
+			mValidIdTx = cBufValidOutCmd;
 			mContentTx = ContentCmd;
 			mpDataTx = mBufOutCmd;
 			mLenSend = sizeof(mBufOutCmd);
 		}
-		else if (mValidBuf & dBufValidOutLog)
+		else if (mValidBuf & cBufValidOutLog)
 		{
-			mValidIdTx = dBufValidOutLog;
+			mValidIdTx = cBufValidOutLog;
 			mContentTx = ContentLog;
 			mpDataTx = mBufOutLog;
 			mLenSend = sizeof(mBufOutLog);
 		}
-		else if (mValidBuf & dBufValidOutProc) // lowest prio
+		else if (mValidBuf & cBufValidOutProc) // lowest prio
 		{
-			mValidIdTx = dBufValidOutProc;
+			mValidIdTx = cBufValidOutProc;
 			mContentTx = ContentProc;
 			mpDataTx = mBufOutProc;
 			mLenSend = sizeof(mBufOutProc);
@@ -242,7 +248,7 @@ Success SingleWireTransfering::process()
 		if (!byteReceived(&data))
 			break;
 
-		if (data == ContentInCmd && !(mValidBuf & dBufValidInCmd))
+		if (data == ContentInCmd && !(mValidBuf & cBufValidInCmd))
 		{
 			mIdxRx = 0;
 			mBufInCmd[mIdxRx] = 0;
@@ -269,7 +275,7 @@ Success SingleWireTransfering::process()
 		if (data == ContentEnd)
 		{
 			mBufInCmd[mIdxRx] = 0;
-			mValidBuf |= dBufValidInCmd;
+			mValidBuf |= cBufValidInCmd;
 
 			mState = StFlowControlRcvdWait;
 			break;

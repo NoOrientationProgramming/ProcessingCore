@@ -77,7 +77,7 @@ static int levelLog = 3;
 static bool logOvf = false;
 static uint16_t idxInfo = 0;
 
-#define dNumCmds		23
+const size_t dNumCmds = 23;
 Command commands[dNumCmds] = {};
 
 SystemDebugging::SystemDebugging(Processing *pTreeRoot)
@@ -148,11 +148,35 @@ bool cmdReg(
 		const char *pDesc,
 		const char *pGroup)
 {
+	if (cSzBufInCmd < 2)
+	{
+		errLog(-1, "err");
+		return false;
+	}
+
+	bool foundPipe = false;
+	bool foundTerm = false;
+
+	for (size_t i = 0; i < cSzBufInCmd - 1; ++i)
+	{
+		if (pId[i] == '|')  foundPipe = true;
+		if (pId[i] == '\0') foundTerm = true;
+
+		if (foundTerm || foundPipe)
+			break;
+	}
+
+	if (foundPipe || !foundTerm)
+	{
+		errLog(-1, "err");
+		return false;
+	}
+
 	Command *pCmd = freeCmdStructGet();
 
 	if (!pCmd)
 	{
-		errLog(-1, "Max registered commands reached");
+		errLog(-1, "err");
 		return false;
 	}
 
@@ -162,7 +186,7 @@ bool cmdReg(
 	pCmd->pDesc = pDesc;
 	pCmd->pGroup = pGroup;
 
-	infLog("Registered command '%s'", pId);
+	infLog("reg '%s'", pId);
 
 	return true;
 }
@@ -179,14 +203,19 @@ Success SystemDebugging::process()
 	case StStart:
 
 		if (!mpTreeRoot)
-			return procErrLog(-1, "tree root not set");
+			return procErrLog(-1, "err");
 
 		if (!mpSend)
-			return procErrLog(-1, "send function not set");
+			return procErrLog(-1, "err");
+
+		if (SingleWireTransfering::idStarted & cStartedDbg)
+			return procErrLog(-1, "err");
+
+		SingleWireTransfering::idStarted |= cStartedDbg;
 
 		pSwt = SingleWireTransfering::create();
 		if (!pSwt)
-			return procErrLog(-1, "could not create process");
+			return procErrLog(-1, "err");
 
 		pSwt->fctDataSendSet(mpSend, mpUser);
 
@@ -232,7 +261,7 @@ void SystemDebugging::commandInterpret()
 	{
 	case StCmdRcvdWait: // fetch
 
-		if (!(pSwt->mValidBuf & dBufValidInCmd))
+		if (!(pSwt->mValidBuf & cBufValidInCmd))
 			break;
 
 		mStateCmd = StCmdInterpret;
@@ -250,7 +279,7 @@ void SystemDebugging::commandInterpret()
 
 		if (!pSwt->mModeDebug)
 		{
-			pSwt->mValidBuf &= ~dBufValidInCmd; // don't answer
+			pSwt->mValidBuf &= ~cBufValidInCmd; // don't answer
 			mStateCmd = StCmdRcvdWait;
 			break;
 		}
@@ -284,16 +313,16 @@ void SystemDebugging::commandInterpret()
 		break;
 	case StCmdSendStart: // write back
 
-		pSwt->mValidBuf |= dBufValidOutCmd;
+		pSwt->mValidBuf |= cBufValidOutCmd;
 		mStateCmd = StCmdSentWait;
 
 		break;
 	case StCmdSentWait:
 
-		if (pSwt->mValidBuf & dBufValidOutCmd)
+		if (pSwt->mValidBuf & cBufValidOutCmd)
 			break;
 
-		pSwt->mValidBuf &= ~dBufValidInCmd;
+		pSwt->mValidBuf &= ~cBufValidInCmd;
 		mStateCmd = StCmdRcvdWait;
 
 		break;
@@ -313,7 +342,7 @@ void SystemDebugging::procTreeSend()
 		return;
 	}
 
-	if (pSwt->mValidBuf & dBufValidOutProc)
+	if (pSwt->mValidBuf & cBufValidOutProc)
 		return;
 
 	mCntDelay = 0;
@@ -323,7 +352,7 @@ void SystemDebugging::procTreeSend()
 				pSwt->mBufOutProc + sizeof(pSwt->mBufOutProc) - 1,
 				true, true);
 
-	pSwt->mValidBuf |= dBufValidOutProc;
+	pSwt->mValidBuf |= cBufValidOutProc;
 }
 
 void SystemDebugging::processInfo(char *pBuf, char *pBufEnd)
@@ -387,7 +416,7 @@ void SystemDebugging::entryLogCreate(
 	if (severity > levelLog)
 		return;
 
-	if (pSwt->mValidBuf & dBufValidOutLog)
+	if (pSwt->mValidBuf & cBufValidOutLog)
 	{
 		logOvf = true;
 		return;
@@ -400,6 +429,6 @@ void SystemDebugging::entryLogCreate(
 	memcpy(pBufLog, msg, lenReq);
 	pBufLog[lenReq] = 0;
 
-	pSwt->mValidBuf |= dBufValidOutLog;
+	pSwt->mValidBuf |= cBufValidOutLog;
 }
 

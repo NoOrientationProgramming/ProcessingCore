@@ -33,13 +33,20 @@
 
 #include "Processing.h"
 
-#define dBufValidInCmd			(1 << 0)
-#define dBufValidOutCmd			(1 << 2)
-#define dBufValidOutLog			(1 << 4)
-#define dBufValidOutProc		(1 << 6)
-//#define dFragmentBit(x)			((x) << 1)
+const uint8_t cStartedTrans = 1 << 0;
+const uint8_t cStartedDbg = 1 << 1;
+
+const uint8_t cBufValidInCmd = 1 << 0;
+const uint8_t cBufValidOutCmd = 1 << 2;
+const uint8_t cBufValidOutLog = 1 << 4;
+const uint8_t cBufValidOutProc = 1 << 6;
 
 typedef void (*FuncDataSend)(char *pData, size_t len, void *pUser);
+
+const size_t cSzBufInCmd = 64;
+const size_t cSzBufOutProc = 1024;
+const size_t cSzBufOutLog = 256;
+const size_t cSzBufOutCmd = 128;
 
 class SingleWireTransfering : public Processing
 {
@@ -59,11 +66,13 @@ public:
 
 	bool mSendReady;
 
-	char mBufInCmd[64];
-	char mBufOutProc[1024];
-	char mBufOutLog[256];
-	char mBufOutCmd[128];
+	char mBufInCmd[cSzBufInCmd];
+	char mBufOutProc[cSzBufOutProc];
+	char mBufOutLog[cSzBufOutLog];
+	char mBufOutCmd[cSzBufOutCmd];
 	uint8_t mValidBuf;
+
+	static uint8_t idStarted;
 
 protected:
 
@@ -101,10 +110,6 @@ private:
 	/* static functions */
 
 	/* static variables */
-	static char bufRx[2];
-	static uint8_t bufRxIdxIrq;
-	static uint8_t bufRxIdxWritten;
-	static uint8_t bufTxPending;
 
 	/* constants */
 
