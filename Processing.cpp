@@ -374,7 +374,7 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 	{
 #if CONFIG_PROC_USE_DRIVER_COLOR
 		if (colored)
-			dInfo("\033[95m");
+			dInfo("\033[38;5;135m");
 		else
 #endif
 			dInfo("### ");
@@ -382,14 +382,14 @@ size_t Processing::processTreeStr(char *pBuf, char *pBufEnd, bool detailed, bool
 
 #if CONFIG_PROC_USE_DRIVER_COLOR
 	if (colored && !mLevelDriver)
-		dInfo("\033[32m");
+		dInfo("\033[38;5;40m");
 #endif
 
 	if (mDriver == DrivenByNewInternalDriver)
 	{
 #if CONFIG_PROC_USE_DRIVER_COLOR
 		if (colored)
-			dInfo("\033[36m");
+			dInfo("\033[38;5;81m");
 		else
 #endif
 			dInfo("*** ");
