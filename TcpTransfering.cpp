@@ -610,7 +610,7 @@ void TcpTransfering::addrInfoSet()
 	if (res == -1)
 		return;
 #endif
-	sockaddrInfoGet(addr, mAddrRemote, mPortRemote, mIsIPv6Remote);
+	ok = sockaddrInfoGet(addr, mAddrRemote, mPortRemote, mIsIPv6Remote);
 	if (!ok)
 		return;
 
