@@ -156,14 +156,20 @@ bool cmdReg(
 
 	bool foundPipe = false;
 	bool foundTerm = false;
+	size_t i = 0;
 
-	for (size_t i = 0; i < cSzBufInCmd - 1; ++i)
+	while (1)
 	{
+		if (i >= cSzBufInCmd - 1)
+			break;
+
 		if (pId[i] == '|')  foundPipe = true;
 		if (pId[i] == '\0') foundTerm = true;
 
 		if (foundTerm || foundPipe)
 			break;
+
+		++i;
 	}
 
 	if (foundPipe || !foundTerm)
