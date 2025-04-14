@@ -162,8 +162,6 @@ Success TcpTransfering::process()
 		ok = wsaInit();
 		if (!ok)
 			return procErrLog(-2, "could not init WSA");
-#else
-		(void)ok;
 #endif
 		mState = StCltArgCheck;
 

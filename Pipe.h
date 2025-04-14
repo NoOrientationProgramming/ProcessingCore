@@ -257,7 +257,7 @@ class Pipe : public PipeBase
 {
 
 public:
-	typedef typename std::list<Pipe<T> *>::iterator QueueIter;
+	typedef typename std::list<Pipe<T> *>::iterator PipeListIter;
 	Pipe()
 		: PipeBase(defaultSizeMax)
 	{
@@ -325,7 +325,7 @@ public:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mParentListMtx);
 #endif
-		QueueIter iter = mParentList.begin();
+		PipeListIter iter = mParentList.begin();
 		while (iter != mParentList.end())
 		{
 			(*iter)->childRemove(this);
@@ -379,7 +379,7 @@ public:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lockChildren(mChildListMtx);
 #endif
-		QueueIter iter;
+		PipeListIter iter;
 		bool wouldBlock = false;
 		bool somethingPushed = false;
 		PipeEntry<T> entry;
@@ -468,7 +468,7 @@ private:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(*pMtx);
 #endif
-		QueueIter iter = pList->begin();
+		PipeListIter iter = pList->begin();
 		while (iter != pList->end())
 		{
 #if DEBUG_PIPE
@@ -527,7 +527,7 @@ private:
 #if CONFIG_PROC_HAVE_DRIVERS
 		Guard lock(mParentListMtx);
 #endif
-		QueueIter iter = mParentList.begin();
+		PipeListIter iter = mParentList.begin();
 		while (iter != mParentList.end())
 		{
 #if DEBUG_PIPE

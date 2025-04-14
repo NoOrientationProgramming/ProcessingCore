@@ -273,12 +273,12 @@ Success TcpListening::connectionsAccept(SOCKET &fdLst)
 		return Pending;
 
 	SOCKET peerSocketFd;
-	int numErr = 0;
 	struct sockaddr_storage addr;
 	socklen_t addrLen;
 	string strAddr;
 	uint16_t numPort;
 	bool isIPv6, ok;
+	int numErr;
 	int res;
 
 	peerSocketFd = ::accept(fdLst, NULL, NULL);
