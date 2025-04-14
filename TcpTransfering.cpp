@@ -131,7 +131,9 @@ Success TcpTransfering::process()
 	Success success;
 	int res, numErr = 0;
 	ssize_t connCheck;
+#ifdef _WIN32
 	bool ok;
+#endif
 #if 0
 	dStateTrace;
 #endif
