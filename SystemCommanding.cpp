@@ -189,6 +189,8 @@ SystemCommanding::SystemCommanding(SOCKET fd)
 	, mIdxColCursor(0)
 	, mIdxColLineEnd(0)
 {
+	mBufOut[0] = 0;
+
 	mState = StStart;
 
 	for (size_t i = 0; i < cNumCmdInBuffer; ++i)
@@ -367,10 +369,10 @@ Success SystemCommanding::autoCommandReceive()
 
 	// remove newline
 
-	if (lenDone && pEdit[lenDone - 1] == '\n')
+	if (pEdit[lenDone - 1] == '\n')
 		pEdit[--lenDone] = 0;
 
-	if (lenDone && pEdit[lenDone - 1] == '\r')
+	if (pEdit[lenDone - 1] == '\r')
 		pEdit[--lenDone] = 0;
 #if 0
 	procInfLog("auto bytes received: %d", lenDone);
@@ -998,15 +1000,16 @@ bool SystemCommanding::keyIsAlphaNum(uint16_t key)
 
 void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 {
-	size_t lenBuf = strlen(pBuf);
 	char *pBufLineStart, *pBufIter;
 	char *pBufEnd;
+	size_t lenBuf;
 
 	str.clear();
 
 	if (!pBuf || !*pBuf)
 		return;
 
+	lenBuf = strlen(pBuf);
 	str.reserve(lenBuf);
 
 	pBufEnd = pBuf + lenBuf;
@@ -1524,10 +1527,10 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 	char *pBufStart = pBuf;
 	const char *pByte = (const char *)pData;
 	uint32_t addressAbs = 0;
-	const char *pLine = pByte;
+	const char *pLine;
 	uint8_t lenPrinted;
 	uint8_t numBytesPerLine = colWidth;
-	size_t i = 0;
+	size_t i;
 
 	dInfo("%p  %s\n", pData, pName ? pName : "Data");
 
@@ -1579,7 +1582,7 @@ size_t SystemCommanding::hexDumpPrint(char *pBuf, char *pBufEnd,
 	return pBuf - pBufStart;
 }
 
-static bool commandSort(SystemCommand &cmdFirst, SystemCommand &cmdSecond)
+static bool commandSort(const SystemCommand &cmdFirst, const SystemCommand &cmdSecond)
 {
 	if (cmdFirst.group == cInternalCmdCls && cmdSecond.group != cInternalCmdCls)
 		return true;
