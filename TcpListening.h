@@ -92,11 +92,8 @@ protected:
 
 private:
 
-	TcpListening(const TcpListening &) : Processing("") {}
-	TcpListening &operator=(const TcpListening &)
-	{
-		return *this;
-	}
+	TcpListening(const TcpListening &) = delete;
+	TcpListening &operator=(const TcpListening &) = delete;
 
 	Success process();
 	Success shutdown();

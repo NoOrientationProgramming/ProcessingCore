@@ -94,17 +94,14 @@ public:
 
 protected:
 
-	SystemCommanding() : Processing("SystemCommanding") {}
 	SystemCommanding(SOCKET fd);
 	virtual ~SystemCommanding() {}
 
 private:
 
-	SystemCommanding(const SystemCommanding &) : Processing("") {}
-	SystemCommanding &operator=(const SystemCommanding &)
-	{
-		return *this;
-	}
+	SystemCommanding() = delete;
+	SystemCommanding(const SystemCommanding &) = delete;
+	SystemCommanding &operator=(const SystemCommanding &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()

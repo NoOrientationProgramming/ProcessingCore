@@ -223,12 +223,9 @@ protected:
 private:
 	// This area is used by the abstract process
 
-	Processing() {}
-	Processing(const Processing &) {}
-	Processing &operator=(const Processing &)
-	{
-		return *this;
-	}
+	Processing() = delete;
+	Processing(const Processing &) = delete;
+	Processing &operator=(const Processing &) = delete;
 
 	/* member functions */
 

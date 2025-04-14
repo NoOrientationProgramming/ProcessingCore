@@ -101,12 +101,9 @@ protected:
 
 private:
 
-	TcpTransfering() : Transfering("") {}
-	TcpTransfering(const TcpTransfering &) : Transfering("") {}
-	TcpTransfering &operator=(const TcpTransfering &)
-	{
-		return *this;
-	}
+	TcpTransfering() = delete;
+	TcpTransfering(const TcpTransfering &) = delete;
+	TcpTransfering &operator=(const TcpTransfering &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()

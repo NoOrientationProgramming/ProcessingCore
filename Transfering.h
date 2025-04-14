@@ -112,9 +112,9 @@ protected:
 
 private:
 
-	Transfering() : Processing("") {}
-	Transfering(const Transfering &) : Processing("") {}
-	Transfering &operator=(const Transfering &) { return *this; }
+	Transfering() = delete;
+	Transfering(const Transfering &) = delete;
+	Transfering &operator=(const Transfering &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()

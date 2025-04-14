@@ -73,17 +73,14 @@ public:
 
 protected:
 
-	SystemDebugging() : Processing("SystemDebugging") {}
 	SystemDebugging(Processing *pTreeRoot);
 	virtual ~SystemDebugging() {}
 
 private:
 
-	SystemDebugging(const SystemDebugging &) : Processing("") {}
-	SystemDebugging &operator=(const SystemDebugging &)
-	{
-		return *this;
-	}
+	SystemDebugging() = delete;
+	SystemDebugging(const SystemDebugging &) = delete;
+	SystemDebugging &operator=(const SystemDebugging &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()

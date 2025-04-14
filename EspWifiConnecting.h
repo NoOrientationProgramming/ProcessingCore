@@ -62,8 +62,8 @@ protected:
 
 private:
 
-	EspWifiConnecting(const EspWifiConnecting &) : Processing("") {}
-	EspWifiConnecting &operator=(const EspWifiConnecting &) { return *this; }
+	EspWifiConnecting(const EspWifiConnecting &) = delete;
+	EspWifiConnecting &operator=(const EspWifiConnecting &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()
