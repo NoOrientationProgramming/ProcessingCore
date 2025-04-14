@@ -57,11 +57,11 @@ public:
 
 protected:
 
-	EspWifiConnecting();
 	virtual ~EspWifiConnecting() {}
 
 private:
 
+	EspWifiConnecting();
 	EspWifiConnecting(const EspWifiConnecting &) = delete;
 	EspWifiConnecting &operator=(const EspWifiConnecting &) = delete;
 

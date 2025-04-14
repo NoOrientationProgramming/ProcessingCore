@@ -95,13 +95,13 @@ public:
 
 protected:
 
-	TcpTransfering(SOCKET fd);
-	TcpTransfering(const std::string &hostAddr, uint16_t hostPort);
 	virtual ~TcpTransfering() {}
 
 private:
 
 	TcpTransfering() = delete;
+	TcpTransfering(SOCKET fd);
+	TcpTransfering(const std::string &hostAddr, uint16_t hostPort);
 	TcpTransfering(const TcpTransfering &) = delete;
 	TcpTransfering &operator=(const TcpTransfering &) = delete;
 

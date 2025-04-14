@@ -87,11 +87,11 @@ public:
 
 protected:
 
-	TcpListening();
 	virtual ~TcpListening() {}
 
 private:
 
+	TcpListening();
 	TcpListening(const TcpListening &) = delete;
 	TcpListening &operator=(const TcpListening &) = delete;
 

@@ -94,12 +94,12 @@ public:
 
 protected:
 
-	SystemCommanding(SOCKET fd);
 	virtual ~SystemCommanding() {}
 
 private:
 
 	SystemCommanding() = delete;
+	SystemCommanding(SOCKET fd);
 	SystemCommanding(const SystemCommanding &) = delete;
 	SystemCommanding &operator=(const SystemCommanding &) = delete;
 
