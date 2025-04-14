@@ -81,8 +81,8 @@ protected:
 
 private:
 
-	SingleWireTransfering(const SingleWireTransfering &) : Processing("") = delete;
-	SingleWireTransfering &operator=(const SingleWireTransfering = delete;
+	SingleWireTransfering(const SingleWireTransfering &) = delete;
+	SingleWireTransfering &operator=(const SingleWireTransfering &) = delete;
 
 	/*
 	 * Naming of functions:  objectVerb()
