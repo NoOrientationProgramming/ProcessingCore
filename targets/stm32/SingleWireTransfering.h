@@ -76,11 +76,11 @@ public:
 
 protected:
 
-	SingleWireTransfering();
 	virtual ~SingleWireTransfering() {}
 
 private:
 
+	SingleWireTransfering();
 	SingleWireTransfering(const SingleWireTransfering &) = delete;
 	SingleWireTransfering &operator=(const SingleWireTransfering &) = delete;
 

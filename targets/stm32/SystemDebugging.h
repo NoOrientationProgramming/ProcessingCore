@@ -73,12 +73,12 @@ public:
 
 protected:
 
-	SystemDebugging(Processing *pTreeRoot);
 	virtual ~SystemDebugging() {}
 
 private:
 
 	SystemDebugging() = delete;
+	SystemDebugging(Processing *pTreeRoot);
 	SystemDebugging(const SystemDebugging &) = delete;
 	SystemDebugging &operator=(const SystemDebugging &) = delete;
 

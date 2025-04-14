@@ -180,11 +180,11 @@ public:
 
 protected:
 
-	${classname}();
 	virtual ~${classname}() {}
 
 private:
 
+	${classname}();
 	${classname}(const ${classname} &) = delete;
 	${classname} &operator=(const ${classname} &) = delete;
 
