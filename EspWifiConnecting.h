@@ -53,7 +53,7 @@ public:
 
 	// output
 
-	static bool ok();
+	static bool isOk();
 
 protected:
 

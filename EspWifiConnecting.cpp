@@ -324,7 +324,7 @@ void EspWifiConnecting::processInfo(char *pBuf, char *pBufEnd)
 
 /* static functions */
 
-bool EspWifiConnecting::ok()
+bool EspWifiConnecting::isOk()
 {
 	return mConnected;
 }
