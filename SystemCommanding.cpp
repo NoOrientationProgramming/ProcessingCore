@@ -352,7 +352,7 @@ Success SystemCommanding::shutdown()
 Success SystemCommanding::autoCommandReceive()
 {
 	ssize_t lenReq, lenDone;
-	char *pEdit= mCmdInBuf[mIdxLineEdit];
+	char *pEdit = mCmdInBuf[mIdxLineEdit];
 
 	*pEdit = 0;
 
@@ -535,7 +535,7 @@ void SystemCommanding::cmdCandidatesShow()
 	size_t widthNameCmdMax = 20;
 	uint8_t idxColCmdMax = 1;
 	uint8_t idxColCmd = 0;
-	string str, msg;
+	string str, str2, msg;
 
 	cmdCandidatesGet(candidates);
 
@@ -547,8 +547,8 @@ void SystemCommanding::cmdCandidatesShow()
 	iter = candidates.begin();
 	for (; iter != candidates.end(); ++iter)
 	{
-		str = *iter;
-		str = str.substr(0, widthNameCmdMax);
+		str2 = *iter;
+		str = str2.substr(0, widthNameCmdMax);
 
 		if (str.size() < widthNameCmdMax)
 			str += string(widthNameCmdMax - str.size(), ' ');
@@ -580,7 +580,7 @@ void SystemCommanding::cmdCandidatesShow()
 
 void SystemCommanding::cmdCandidatesGet(list<const char *> &listCandidates)
 {
-	char *pEdit= mCmdInBuf[mIdxLineEdit];
+	const char *pEdit = mCmdInBuf[mIdxLineEdit];
 	list<SystemCommand>::const_iterator iter;
 	const char *pId;
 
@@ -600,7 +600,7 @@ void SystemCommanding::lineAck()
 {
 	promptSend(false, false, true);
 
-	char *pEdit= mCmdInBuf[mIdxLineEdit];
+	const char *pEdit = mCmdInBuf[mIdxLineEdit];
 
 	if (*pEdit)
 	{
@@ -842,7 +842,7 @@ bool SystemCommanding::chRemove(uint16_t key)
 	if (!pRemove)
 		return false;
 
-	char *pInsert = pRemove + 1;
+	const char *pInsert = pRemove + 1;
 
 	while (true)
 	{
@@ -1001,7 +1001,7 @@ bool SystemCommanding::keyIsAlphaNum(uint16_t key)
 void SystemCommanding::lfToCrLf(char *pBuf, string &str)
 {
 	char *pBufLineStart, *pBufIter;
-	char *pBufEnd;
+	const char *pBufEnd;
 	size_t lenBuf;
 
 	str.clear();
@@ -1486,7 +1486,7 @@ void SystemCommanding::cmdHelpPrint(char *pArgs, char *pBuf, char *pBufEnd)
 
 void SystemCommanding::cmdHexDump(char *pArgs, char *pBuf, char *pBufEnd)
 {
-	void *pData = NULL;
+	const void *pData = NULL;
 	long int len = cLenHexDumpStd;
 
 	if (pArgs)
@@ -1632,7 +1632,7 @@ void cmdReg(
 			return;
 		}
 
-		if (newCmd.id == cmd.id)
+		if (newCmd.shortcut == cmd.shortcut)
 		{
 			wrnLog("shortcut '%s' already registered. skipping", cmd.shortcut.c_str());
 			return;
