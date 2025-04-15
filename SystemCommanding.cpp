@@ -1632,7 +1632,8 @@ void cmdReg(
 			return;
 		}
 
-		if (newCmd.shortcut == cmd.shortcut)
+		if (newCmd.shortcut.size() &&
+				newCmd.shortcut == cmd.shortcut)
 		{
 			wrnLog("shortcut '%s' already registered. skipping", cmd.shortcut.c_str());
 			return;
