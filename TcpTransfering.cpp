@@ -661,16 +661,19 @@ string TcpTransfering::errnoToStr(int num)
 {
 	char buf[64];
 	size_t len = sizeof(buf) - 1;
-	char *pBuf = buf;
+	char *pBuf;
 
 	buf[0] = 0;
 	buf[len] = 0;
 
 #if defined(_WIN32)
+	pBuf = buf;
 	errno_t numErr = ::strerror_s(buf, len, num);
 	(void)numErr;
 #elif defined(__FreeBSD__) || defined(__APPLE__)
 	int res;
+
+	pBuf = buf;
 	res = ::strerror_r(num, buf, len);
 	if (res)
 		*pBuf = 0;
